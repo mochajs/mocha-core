@@ -1,0 +1,9 @@
+---
+extends: semistandard
+plugins:
+  - lodash3
+  - no-class
+  - mocha-only
+
+rules:
+  space-before-function-paren: 0
