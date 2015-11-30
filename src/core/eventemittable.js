@@ -2,20 +2,13 @@
 
 const EventEmitter = require('events').EventEmitter;
 const stampit = require('stampit');
-const omit = require('lodash/object/omit');
+const Promise = require('bluebird');
+const isNumber = require('lodash/lang/isNumber');
+
+let privateState;
 
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
-    static(staticProps) {
-      return this.static(omit(staticProps, [
-        'init',
-        'props',
-        'refs',
-        'methods',
-        'compose',
-        'create'
-      ]));
-    },
     on(event, action) {
       return this.init(function () {
         this.on(event, action);
@@ -26,6 +19,24 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
         this.once(event, action);
       });
     }
+  })
+  .methods({
+    waitOn(event, timeout) {
+      const wait = privateState.get(this).wait;
+      return isNumber(timeout) ? wait(event).timeout(timeout) : wait(event);
+    }
   });
+
+privateState = require('./private-state')(EventEmittable, {
+  wait(event) {
+    return new Promise(resolve => {
+      this.once(event, (...args) => {
+        resolve(args);
+      });
+    });
+  }
+});
+
+EventEmittable.init = EventEmittable.enclose;
 
 module.exports = EventEmittable;
