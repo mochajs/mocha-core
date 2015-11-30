@@ -31,7 +31,7 @@ privateState = require('./private-state')(EventEmittable, {
   wait(event) {
     return new Promise(resolve => {
       this.once(event, (...args) => {
-        resolve(args);
+        resolve(args.length === 1 ? args[0] : args);
       });
     });
   }

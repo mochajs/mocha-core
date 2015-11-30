@@ -70,6 +70,17 @@ describe(`core/eventemittable`, () => {
             return expect(thing.waitOn('bar', 10)).to.eventually.be.rejected;
           });
         });
+
+        describe(`if the event emits multiple parameters`, () => {
+          it(`should return them as an array`, () => {
+            const thing = EventEmittable();
+            setImmediate(() => thing.emit('bar', 'baz', 'quux'));
+            return expect(thing.waitOn('bar'))
+              .to
+              .eventually
+              .eql(['baz', 'quux']);
+          });
+        });
       });
     });
   });
