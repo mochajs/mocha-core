@@ -1,8 +1,6 @@
 'use strict';
 
-var babel = require('babel-core');
-
-module.exports = function wallabyConfig() {
+module.exports = function wallabyConfig(wallaby) {
   return {
     files: [
       'src/**/*.js',
@@ -19,19 +17,18 @@ module.exports = function wallabyConfig() {
       type: 'node',
       runner: 'node'
     },
-    preprocessors: {
-      '**/*.js': function(file) {
-        return babel.transform(file.content, {
-          sourceMap: true,
-          presets: 'es2015'
-        });
-      }
+    compilers: {
+      '**/*.js': wallaby.compilers.babel({
+        babel: require('babel-core'),
+        sourceMap: true,
+        presets: ['es2015']
+      })
     },
     testFramework: 'mocha',
     debug: true,
     bootstrap: function bootstrap(wallaby) {
-      var path = require('path');
-      require(path.join(wallaby.projectCacheDir, 'test', 'fixture'));
+      // set NODE_PATH here once we start forking things
+      require(require('path').join(wallaby.projectCacheDir, 'test', 'fixture'));
     }
   };
 };
