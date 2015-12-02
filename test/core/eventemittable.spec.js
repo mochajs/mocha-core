@@ -13,14 +13,16 @@ describe(`core/eventemittable`, () => {
   });
 
   describe(`EventEmittable`, () => {
-    it(`should return an object`, () => {
-      expect(EventEmittable()).to.be.an('object');
-    });
+    describe(`init()`, () => {
+      it(`should return an object`, () => {
+        expect(EventEmittable()).to.be.an('object');
+      });
 
-    it(`should implement EventEmitter`, done => {
-      const ee = EventEmittable();
-      ee.on('event', done);
-      ee.emit('event');
+      it(`should implement EventEmitter`, done => {
+        const ee = EventEmittable();
+        ee.on('event', done);
+        ee.emit('event');
+      });
     });
 
     describe(`static method`, () => {
