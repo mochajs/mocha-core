@@ -1,20 +1,24 @@
 'use strict';
 
 const stampit = require('stampit');
-const path = require('path');
 const packageName = require('../../package.json').name;
 
-const root = path.join(__dirname, '..', '..');
-const delimiter = ':';
-
 const Debuggable = stampit({
-  init() {
-    const filepath = path.relative(root, module.parent.filename);
-    const splitPath = filepath.split(path.sep);
-    splitPath.push(splitPath.pop().replace(path.extname(filepath), ''));
-    splitPath.unshift(packageName);
-    this.debug = require('debug')(splitPath.join(delimiter));
+  'static': {
+    namespace(ns = packageName) {
+
+      return this.init(function debuggableInit() {
+        privateState.set(this, {
+
+        })
+      })
+        .methods({
+        debug: require('debug')(ns)
+      });
+    }
   }
 });
+
+const privateState = require('./private-state')(Debuggable);
 
 module.exports = Debuggable;
