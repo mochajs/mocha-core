@@ -60,14 +60,34 @@ describe(`core/eventemittable`, () => {
           () => {
             const thing = EventEmittable();
             setImmediate(() => thing.emit('bar'));
-            return expect(thing.waitOn('bar')).to.eventually.be.fulfilled;
+            return expect(thing.waitOn('bar')).to.eventually.be.resolved;
           });
 
-        describe(`if a numeric "timeout" parameter is supplied`, () => {
+        describe(`if a finite "timeout" parameter is supplied`, () => {
           it(`should timeout`, () => {
             const thing = EventEmittable();
-            setTimeout(() => thing.emit('bar'), 20);
-            return expect(thing.waitOn('bar', 10)).to.eventually.be.rejected;
+            const t = setTimeout(() => thing.emit('bar'), 20);
+            return expect(thing.waitOn('bar', 10)).to.eventually.be.rejected
+              .then(() => clearTimeout(t));
+          });
+        });
+
+        describe(`if a non-finite "timeout" parameter is supplied`, () => {
+          it(`should not timeout`, () => {
+            const thing = EventEmittable();
+            return expect(thing.waitOn('bar',
+              Infinity)).to.eventually.be.resolved;
+          });
+        });
+
+        describe(`if the event emits a single parameter`, () => {
+          it(`should return the parameter`, () => {
+            const thing = EventEmittable();
+            setImmediate(() => thing.emit('bar', 'baz'));
+            return expect(thing.waitOn('bar'))
+              .to
+              .eventually
+              .equal('baz');
           });
         });
 
@@ -79,6 +99,14 @@ describe(`core/eventemittable`, () => {
               .to
               .eventually
               .eql(['baz', 'quux']);
+          });
+        });
+
+        describe(`if the event emits no parameters`, () => {
+          it(`should return nothing`, () => {
+            const thing = EventEmittable();
+            setImmediate(() => thing.emit('bar'));
+            return expect(thing.waitOn('bar')).to.eventually.be.undefined;
           });
         });
       });
