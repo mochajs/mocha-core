@@ -7,11 +7,11 @@ const idProp = Symbol();
 const Unique = stampit({
   init() {
     this[idProp] = Symbol();
-  },
-  methods: {
-    id() {
-      return this[idProp];
-    }
+    Object.defineProperty(this, 'id', {
+      value: this[idProp],
+      writable: false,
+      configurable: true
+    });
   }
 });
 

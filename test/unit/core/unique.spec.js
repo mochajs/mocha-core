@@ -10,10 +10,10 @@ describe(`core/unique`, () => {
       });
     });
 
-    describe(`method`, () => {
-      describe(`id()`, () => {
+    describe(`property`, () => {
+      describe(`id`, () => {
         it(`should return the object's ID`, () => {
-          expect(Unique().id()).to.be.a('symbol');
+          expect(Unique().id).to.be.a('symbol');
         });
       });
     });
