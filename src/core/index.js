@@ -5,5 +5,6 @@ module.exports = {
   ParamValidator: require('./param-validator'),
   Unique: require('./unique'),
   API: require('./api'),
-  PluginLoader: require('./plugin-loader')
+  Reflectable: require('./reflectable'),
+  Plugin: require('./plugin')
 };
