@@ -61,10 +61,11 @@ const Plugin = ParamValidator
             .label('api')
             .description('API object which each plugin will have access to')
         })
+          .label('instance')
           .unknown(true)
-          .label('context')
-          .description('Stampit init context')
+          .description('Stampit instance')
       })
+        .unknown(true)
     ]
   })
   .methods({
