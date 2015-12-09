@@ -28,7 +28,8 @@ module.exports = function wallabyConfig(wallaby) {
     debug: true,
     bootstrap: function bootstrap(wallaby) {
       // set NODE_PATH here once we start forking things
-      require(require('path').join(wallaby.projectCacheDir, 'test', 'fixture'));
+      require(require('path')
+        .join(wallaby.projectCacheDir, 'test', 'unit', 'fixture'));
     }
   };
 };
