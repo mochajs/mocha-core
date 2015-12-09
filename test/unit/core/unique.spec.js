@@ -1,16 +1,7 @@
 'use strict';
 
 describe(`core/unique`, () => {
-  const Unique = require('../../src/core/unique');
-  let sandbox;
-
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create('core/unique');
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
+  const Unique = require('../../../src/core/unique');
 
   describe(`Unique()`, () => {
     describe(`init()`, () => {
@@ -19,7 +10,7 @@ describe(`core/unique`, () => {
       });
 
       it(`should assign a unique ID to the object`, () => {
-        expect(Unique().id).to.be.a('string');
+        expect(Unique()[Unique.idProp]).to.be.a('symbol');
       });
     });
 

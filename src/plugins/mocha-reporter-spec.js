@@ -4,8 +4,8 @@ function specReporter(mocha, opts) {
 
 }
 
-bddInterface.attributes = {
+specReporter.attributes = {
   name: 'mocha-reporter-spec'
 };
 
-module.exports = bddInterface;
+module.exports = specReporter;

@@ -3,7 +3,7 @@
 const noop = require('lodash/utility/noop');
 
 describe(`ui/`, () => {
-  const ui = require('../../src/ui');
+  const ui = require('../../../src/ui');
   it(`should be an object`, () => {
     expect(ui).to.be.an('object');
   });

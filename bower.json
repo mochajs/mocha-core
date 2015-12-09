@@ -1,0 +1,33 @@
+{
+  "name": "mocha3",
+  "description": "next-gen Mocha",
+  "main": "mocha.js",
+  "authors": [
+    {
+      "name": "Christopher Hiller",
+      "email": "boneskull@boneskull.com",
+      "homepage": "https://boneskull.com"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "mocha",
+    "test",
+    "bdd",
+    "tdd",
+    "tap"
+  ],
+  "homepage": "https://mochajs.org",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules/",
+    "test/",
+    "src/",
+    "lib/"
+  ]
+}

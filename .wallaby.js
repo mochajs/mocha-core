@@ -5,13 +5,13 @@ module.exports = function wallabyConfig(wallaby) {
     files: [
       'src/**/*.js',
       {
-        pattern: 'test/fixture.js',
+        pattern: 'test/unit/fixture.js',
         instrument: false
       },
       'package.json'
     ],
     tests: [
-      'test/**/*.spec.js'
+      'test/unit/**/*.spec.js'
     ],
     env: {
       type: 'node',

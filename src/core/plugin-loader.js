@@ -22,14 +22,14 @@ const PluginLoader = stampit({
       plugins.set(name, plugin);
       dependencies = [].concat(dependencies || []);
       depGraph.addNode(name);
-      each(dependencies, (dep) => {
+      each(dependencies, dep => {
         depGraph.addDependency(name, dep);
       });
     },
     load: Promise.coroutine(function *() {
       for (let key of this) {
         const d = domain.create();
-        d.on('error', (err) => {
+        d.on('error', err => {
           this.emit('error', err);
         });
         d.run(this.plugins[key]);

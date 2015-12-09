@@ -1,7 +1,7 @@
 'use strict';
 
 describe('ui/context', () => {
-  const Context = require('../../src/ui/context');
+  const Context = require('../../../src/ui/context');
 
   describe(`Context()`, () => {
     it('should be a function', () => {

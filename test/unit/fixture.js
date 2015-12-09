@@ -1,8 +1,10 @@
 'use strict';
 
-require('babel-polyfill');
+if (!global._babelPolyfill && !process.browser) {
+  require('babel-polyfill');
+}
 
-var chai = require('chai');
+const chai = require('chai');
 
 global.expect = chai.expect;
 global.sinon = require('sinon');

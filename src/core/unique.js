@@ -1,14 +1,18 @@
 'use strict';
 
-const uuid = require('uuid');
 const stampit = require('stampit');
+
+const idProp = Symbol();
 
 const Unique = stampit({
   'static': {
-    generate: uuid.v4
+    idProp,
+    id(value) {
+      return value[idProp];
+    }
   },
   init() {
-    this.id = this.id || Unique.generate();
+    this[idProp] = Symbol();
   }
 });
 

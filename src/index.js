@@ -1,6 +1,9 @@
 'use strict';
 
-require('babel-polyfill');
+if (!global._babelPolyfill) {
+  require('babel-polyfill');
+}
+
 const Mocha = require('./mocha');
 
 module.exports = Mocha;

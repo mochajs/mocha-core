@@ -1,7 +1,7 @@
 'use strict';
 
 describe(`core/api`, () => {
-  const API = require('../../src/core/api');
+  const API = require('../../../src/core/api');
   let sandbox;
 
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe(`core/api`, () => {
     describe(`method`, () => {
       describe(`version()`, () => {
         it(`should return the package version if none specified`, () => {
-          const pkg = require('../../package.json');
+          const pkg = require('../../../package.json');
           expect(API().version()).to.equal(pkg.version);
         });
 
@@ -41,12 +41,6 @@ describe(`core/api`, () => {
           sandbox.stub(api.loader, 'load');
           api.load();
           expect(api.loader.load).to.have.been.calledOnce;
-        });
-      });
-
-      describe(`use()`, () => {
-        it(`should `, () => {
-          
         });
       });
     });

@@ -1,2 +1,8 @@
-node_modules
-coverage
+npm-debug.log*
+coverage/
+node_modules/
+lib/
+mocha.js
+mocha.min.js.map
+mocha.min.js
+!src/mocha.js

@@ -1,7 +1,7 @@
 'use strict';
 
 describe('ui/suite', () => {
-  const Suite = require('../../src/ui/suite');
+  const Suite = require('../../../src/ui/suite');
 
   describe(`Suite()`, () => {
     it('should be a function', () => {

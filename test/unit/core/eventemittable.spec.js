@@ -1,7 +1,7 @@
 'use strict';
 
 describe(`core/eventemittable`, () => {
-  const EventEmittable = require('../../src/core/eventemittable');
+  const EventEmittable = require('../../../src/core/eventemittable');
   let sandbox;
 
   beforeEach(() => {

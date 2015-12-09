@@ -14,49 +14,81 @@
     "node": ">=0.10.0",
     "npm": ">=1.7.4"
   },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "files": [
+    "./lib/",
+    "./mocha.js",
+    "./mocha.min.js",
+    "./mocha.min.js.map"
+  ],
   "scripts": {
-    "test": "js-yaml .eslintrc && eslint *.js src/**/*.js test/**/*.js",
-    "build-joi": "browserify -r ./browser/shims/buffer.js:buffer -i net -i isemail -i moment -i crypto -i ./node_modules/joi/lib/binary.js ./node_modules/joi/lib/index.js > ./browser/joi.js",
-    "build": "browserify -d -p [ minifyify --map mocha.js.map --output mocha.js.map ] src/index.js -o mocha.js"
+    "test": "npm run lint",
+    "build": "npm run build-node && npm run build-browser",
+    "build-node": "babel src --out-dir lib",
+    "build-browser": "browserify --standalone mocha --debug src --outfile mocha.js && browserify --standalone mocha --debug --plugin [ minifyify --map mocha.min.js.map --output mocha.min.js.map ] src/index.js --outfile mocha.min.js",
+    "lint": "eslint src/ test/ .wallaby.js",
+    "prepublish": "npm run build",
+    "test-unit": "npm run test-node-unit test-browser-unit",
+    "test-node-unit": "babel-node node_modules/.bin/_mocha --require test/unit/fixture.js test/unit/*.spec.js",
+    "test-browser-unit": "karma start"
   },
   "keywords": [],
   "dependencies": {
     "babel-polyfill": "^6.2.0",
     "bluebird": "^3.0.5",
+    "continuation-local-storage": "^3.1.4",
     "debug": "^2.2.0",
     "dependency-graph": "^0.4.1",
-    "joi": "^7.0.0",
+    "errorist": "^0.1.4",
+    "joi": "^6.10.1",
     "lodash": "^3.10.1",
-    "stampit": "^2.1.1",
-    "uuid": "^2.0.1"
+    "stampit": "^2.1.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.3.13",
     "babel-core": "^6.1.2",
     "babel-eslint": "^4.1.5",
+    "babel-istanbul": "^0.5.9",
     "babel-preset-es2015": "^6.1.2",
     "babelify": "^7.2.0",
     "browserify": "^12.0.1",
+    "browserify-istanbul": "^0.2.1",
     "chai": "^3.4.0",
     "chai-as-promised": "^5.1.0",
-    "eslint": "^1.9.0",
+    "eslint": "^1.10.3",
     "eslint-config-semistandard": "^5.0.0",
     "eslint-config-standard": "^4.4.0",
-    "eslint-plugin-lodash3": "^0.1.15",
+    "eslint-plugin-lodash3": "^0.4.0",
     "eslint-plugin-mocha-only": "0.0.3",
     "eslint-plugin-no-class": "^0.1.0",
+    "eslint-plugin-prototype-chain": "^0.1.0",
     "eslint-plugin-standard": "^1.3.1",
-    "istanbul": "^0.4.0",
+    "istanbul": "^0.4.1",
     "js-yaml": "^3.4.3",
+    "karma": "^0.13.15",
+    "karma-cli": "^0.1.1",
+    "karma-coverage": "^0.5.3",
+    "karma-mocha": "^0.2.1",
+    "karma-mocha-reporter": "^1.1.3",
+    "karma-phantomjs2-launcher": "^0.3.2",
     "minifyify": "^7.1.0",
-    "precommit": "^1.1.7",
+    "mocha": "^2.3.4",
+    "mochify": "^2.14.2",
+    "phantomjs2-ext": "^0.1.0",
+    "pre-commit": "^1.1.2",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0"
   },
-  "semistandard": {
-    "parser": "babel-eslint"
-  },
   "browser": {
-    "joi": "./browser/joi.js"
+    "net": false,
+    "crypto": false,
+    "isemail": false,
+    "moment": false,
+    "lib/index.js": "mocha.js"
   },
   "browserify": {
     "transform": [

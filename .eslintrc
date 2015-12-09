@@ -3,7 +3,48 @@ extends: semistandard
 plugins:
   - lodash3
   - no-class
-  - mocha-only
+  - prototype-chain
+parser: babel-eslint
 
 rules:
   space-before-function-paren: 0
+  arrow-parens:
+    - 1
+    - as-needed
+  prototype-chain/prototype-chain:
+    - 1
+    - 2
+    - 2
+  no-class/no-class: 2
+  lodash3/prop-shorthand: 1
+  lodash3/matches-shorthand:
+    - 1
+    - 3
+  lodash3/matches-prop-shorthand: 1
+  lodash3/prefer-chain: 1
+  lodash3/preferred-alias: 1
+  lodash3/no-single-chain: 1
+  lodash3/prefer-reject:
+    - 1
+    - 3
+  lodash3/prefer-filter:
+    - 1
+    - 3
+  lodash3/no-unnecessary-bind: 1
+  lodash3/unwrap: 1
+  lodash3/prefer-compact: 1
+  lodash3/no-double-unwrap: 1
+  lodash3/prefer-map: 1
+  lodash3/prefer-wrapper-method: 1
+  lodash3/prefer-invoke: 1
+  lodash3/prefer-thru: 1
+  lodash3/prefer-lodash-chain: 1
+  lodash3/prefer-lodash-method: 1
+  lodash3/prefer-lodash-typecheck: 1
+  lodash3/no-commit: 1
+  lodash3/prefer-get:
+    - 1
+    - 3
+  lodash3/collection-return: 1
+  lodash3/prefer-matches: 1
+  lodash3/prefer-times: 1

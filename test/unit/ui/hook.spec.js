@@ -1,7 +1,7 @@
 'use strict';
 
 describe('ui/hook', () => {
-  const Hook = require('../../src/ui/hook');
+  const Hook = require('../../../src/ui/hook');
 
   describe(`Hook()`, () => {
     it('should be a function', () => {
