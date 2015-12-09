@@ -6,29 +6,38 @@ const Promise = require('bluebird');
 const ParamValidator = require('./param-validator');
 const errorist = require('errorist');
 const validator = ParamValidator.validator;
-const DepGraph = require('dependency-graph').DepGraph;
+const {DepGraph} = require('dependency-graph');
 const each = require('lodash/collection/each');
+const customError = require('../util/custom-error');
 
-const originalFuncProp = Symbol();
+const PluginError = customError('PluginError');
 
 const Plugin = ParamValidator
   .stampName('Plugin')
   .compose(Unique)
-  .refs({
-    name: null,
-    dependencies: [],
-    func: null
+  .static({
+    PluginError
   })
-  .static({originalFuncProp})
   .validate({
     init() {
-      this.originalFunc = this.func;
+      const originalFunc = this.func;
       this.func = Promise.method(this.func);
       const depGraph = this.depGraph = this.depGraph || new DepGraph();
       const name = this.name;
       depGraph.addNode(name);
-      each(this.dependencies,
-        dep => depGraph.addDependency(name, dep));
+      each([].concat(this.dependencies || []), dep => {
+        try {
+          depGraph.addDependency(name, dep);
+        } catch (ignored) {
+          throw PluginError(`Cannot find dependency "${dep}" needed by ` +
+            `plugin "${name}"`);
+        }
+      });
+      Object.defineProperty(this, 'originalFunc', {
+        value: originalFunc,
+        writable: false,
+        configurable: true
+      });
     }
   }, {
     init: [
@@ -52,13 +61,10 @@ const Plugin = ParamValidator
             .label('api')
             .description('API object which each plugin will have access to')
         })
-          .label('instance')
           .unknown(true)
-          .description('Stampit instance')
+          .label('context')
+          .description('Stampit init context')
       })
-        .unknown(true)
-        .label('context')
-        .description('Stampit init context')
     ]
   })
   .methods({

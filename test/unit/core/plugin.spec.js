@@ -2,6 +2,7 @@
 
 const noop = require('lodash/utility/noop');
 const Promise = require('bluebird');
+const {DepGraph} = require('dependency-graph');
 
 describe(`core/plugin`, () => {
   const Plugin = require('../../../src/core/plugin');
@@ -59,20 +60,27 @@ describe(`core/plugin`, () => {
       });
 
       it(`should not throw if "dependencies" is a string value`, () => {
+        const graph = new DepGraph();
+        graph.addNode('bar');
         expect(() => Plugin({
           name: 'foo',
           func: noop,
           dependencies: 'bar',
-          api: {}
+          api: {},
+          depGraph: graph
         })).not.to.throw();
       });
 
       it(`should not throw if "dependencies" is an Array value`, () => {
+        const graph = new DepGraph();
+        graph.addNode('bar');
+        graph.addNode('baz');
         expect(() => Plugin({
           name: 'foo',
           func: noop,
           dependencies: ['bar', 'baz'],
-          api: {}
+          api: {},
+          depGraph: graph
         })).not.to.throw();
       });
 
