@@ -44,7 +44,7 @@
     "debug": "^2.2.0",
     "dependency-graph": "^0.4.1",
     "errorist": "^0.1.4",
-    "joi": "^6.10.1",
+    "joi": "^7.0.1",
     "lodash": "^3.10.1",
     "stampit": "^2.1.1"
   },
