@@ -1,29 +1,76 @@
 'use strict';
 
-const PluginLoader = require('./plugin-loader');
-const partial = require('lodash/function/partial');
-const get = require('lodash/object/get');
-const stampit = require('stampit');
+const toMap = require('../util/to-map');
+const customError = require('../util/custom-error');
+const extend = require('lodash/object/extend');
+const ParamValidator = require('./param-validator');
+const Unique = require('./unique');
+const Plugin = require('./plugin');
+const APIError = customError('APIError');
+const Joi = require('joi');
 
-const API = stampit({
-  methods: {
-    use(plugin, opts) {
-      this.loader.set(plugin.attributes.name,
-        partial(plugin, this, opts),
-        get(plugin, 'attributes.dependencies'));
-      return this;
-    },
-    version() {
-      return this.__version || require('../../package.json').version;
-    },
-    load() {
-      return this.loader.load();
+const API = ParamValidator
+  .stampName('API')
+  .compose(Unique)
+  .static({
+    APIError
+  })
+  .validate({
+    methods: {
+      use(func, opts) {
+        const plugins = this.plugins;
+        const api = this;
+        const {name, dependencies} = func.attributes;
+        if (plugins.has(name)) {
+          throw APIError(`Plugin name collision: ${name} already registered`);
+        }
+        const depGraph = this.depGraph;
+        const plugin = Plugin(extend(opts || {}, {
+          name,
+          func,
+          dependencies,
+          api,
+          depGraph: depGraph
+        }));
+        this.depGraph = plugin.depGraph;
+        plugins.set(name, plugin);
+        return this;
+      }
     }
-  },
-  init() {
-    this.loader = new PluginLoader();
-  }
-});
+  }, {
+    methods: {
+      use: [
+        Joi.func()
+          .keys({
+            attributes: Joi
+              .object({
+                name: Joi.string()
+                  .label('name')
+                  .description('Plugin name')
+                  .required(),
+                dependencies: Joi.array()
+                  .single(true)
+                  .label('dependencies')
+                  .description('Plugin dependencies')
+              })
+              .label('attributes')
+              .description('Plugin function "attributes" property')
+              .required()
+          })
+          .unknown(true)
+          .label('func')
+          .description('Plugin function')
+          .required(),
+        Joi.object()
+          .label('options')
+          .description('Plugin function options')
+      ]
+    }
+  })
+  .init(function initAPI() {
+    this.plugins = toMap(this.plugins);
+    this.apis = toMap(this.apis);
+  });
 
 module.exports = API;
 

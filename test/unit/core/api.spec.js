@@ -1,5 +1,7 @@
 'use strict';
 
+const noop = require('lodash/utility/noop');
+
 describe(`core/api`, () => {
   const API = require('../../../src/core/api');
   let sandbox;
@@ -13,34 +15,38 @@ describe(`core/api`, () => {
   });
 
   describe(`API()`, () => {
-    it(`should be a function`, () => {
-      expect(API).to.be.a('function');
-    });
-
     describe(`init()`, () => {
       it(`should return an object`, () => {
         expect(API()).to.be.an('object');
       });
+
+      it(`should return an object with a "plugins" Map`, () => {
+        expect(API().plugins).to.be.a('Map');
+      });
     });
 
     describe(`method`, () => {
-      describe(`version()`, () => {
-        it(`should return the package version if none specified`, () => {
-          const pkg = require('../../../package.json');
-          expect(API().version()).to.equal(pkg.version);
-        });
+      let api;
 
-        it(`should return the version if specified`, () => {
-          expect(API({__version: '0.1.2'}).version()).to.equal('0.1.2');
-        });
+      beforeEach(() => {
+        api = API();
       });
 
-      describe(`load()`, () => {
-        it(`should defer to the PluginLoader`, () => {
-          const api = API();
-          sandbox.stub(api.loader, 'load');
-          api.load();
-          expect(api.loader.load).to.have.been.calledOnce;
+      describe(`use()`, () => {
+        it(`should throw if not passed a plugin func`, () => {
+          expect(() => api.use()).to.throw(Error, /"func"/);
+        });
+
+        it(`should throw if passed a non-object options`, () => {
+          function foo() {}
+          foo.attributes = {
+            name: 'foo'
+          };
+          expect(() => api.use(foo, 'bar')).to.throw(Error, /"options"/);
+        });
+
+        it(`should throw if an invalid plugin is passed`, () => {
+          expect(() => api.use(noop)).to.throw(Error, /"attributes"/);
         });
       });
     });
