@@ -9,7 +9,10 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'browserify'],
+    frameworks: [
+      'mocha',
+      'browserify'
+    ],
 
     // list of files / patterns to load in the browser
     files: [
@@ -43,17 +46,31 @@ module.exports = function (config) {
       ]
     },
 
-    concurrency: require('os').cpus().length,
+    concurrency: require('os')
+      .cpus().length,
 
     coverageReporter: {
       dir: 'coverage',
-      reporters: [{type: 'html'}, {type: 'text-summary'}, {type: 'lcov'}]
+      reporters: [
+        {
+          type: 'html'
+        },
+        {
+          type: 'text-summary'
+        },
+        {
+          type: 'lcov'
+        }
+      ]
     },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['mocha', 'coverage'],
+    reporters: [
+      'mocha',
+      'coverage'
+    ],
 
     // web server port
     port: 9876,
