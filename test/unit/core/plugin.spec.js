@@ -109,6 +109,26 @@ describe(`core/plugin`, () => {
           api: {}
         }).originalFunc).to.equal(noop);
       });
+
+      it(`should throw if a circular dependency is detected`, () => {
+        // this is unlikely to happen, but if it does, fail fast
+        const graph = new DepGraph();
+        graph.addNode('bar');
+        Plugin({
+          name: 'foo',
+          func: noop,
+          api: {},
+          depGraph: graph
+        });
+        graph.addDependency('foo', 'bar');
+        expect(() => Plugin({
+          name: 'bar',
+          func: noop,
+          api: {},
+          depGraph: graph,
+          dependencies: 'foo'
+        })).to.throw(Error, /cycle/i);
+      });
     });
 
     describe(`method`, () => {

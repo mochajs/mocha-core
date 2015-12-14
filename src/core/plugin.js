@@ -5,7 +5,7 @@ const Unique = require('./unique');
 const Promise = require('bluebird');
 const ParamValidator = require('./param-validator');
 const errorist = require('errorist');
-const validator = ParamValidator.validator;
+const Joi = require('joi');
 const {DepGraph} = require('dependency-graph');
 const each = require('lodash/collection/each');
 const customError = require('../util/custom-error');
@@ -21,11 +21,12 @@ const Plugin = ParamValidator
   .validate({
     init() {
       const originalFunc = this.func;
-      this.func = Promise.method(this.func);
+      const func = this.func = Promise.method(this.func);
       const depGraph = this.depGraph = this.depGraph || new DepGraph();
       const name = this.name;
+      const dependencies = this.dependencies;
       depGraph.addNode(name);
-      each([].concat(this.dependencies || []), dep => {
+      each([].concat(dependencies || []), dep => {
         try {
           depGraph.addDependency(name, dep);
         } catch (ignored) {
@@ -33,6 +34,13 @@ const Plugin = ParamValidator
             `plugin "${name}"`);
         }
       });
+      try {
+        depGraph.dependenciesOf(name);
+      } catch (err) {
+        throw PluginError(err.message, {
+          plugin: {name, func, dependencies, depGraph}
+        });
+      }
       Object.defineProperty(this, 'originalFunc', {
         value: originalFunc,
         writable: false,
@@ -41,22 +49,22 @@ const Plugin = ParamValidator
     }
   }, {
     init: [
-      validator.object({
-        instance: validator.object({
-          name: validator.string()
+      Joi.object({
+        instance: Joi.object({
+          name: Joi.string()
             .required()
             .label('name')
             .description('Plugin name'),
-          func: validator.func()
+          func: Joi.func()
             .required()
             .label('func')
             .description('Plugin function'),
-          dependencies: validator.array()
-            .items(validator.string())
+          dependencies: Joi.array()
+            .items(Joi.string())
             .single(true)
             .label('dependencies')
             .description('Plugin dependencies'),
-          api: validator.object()
+          api: Joi.object()
             .required()
             .label('api')
             .description('API object which each plugin will have access to')
