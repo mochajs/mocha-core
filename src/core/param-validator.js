@@ -8,27 +8,24 @@ const isEmpty = require('lodash/lang/isEmpty');
 const isFunction = require('lodash/lang/isFunction');
 const map = require('lodash/collection/map');
 const Reflectable = require('./reflectable');
-const debug = require('debug')('mocha:core:param-validator');
 const partial = require('lodash/function/partial');
-const dump = require('../util/dump');
+const get = require('lodash/object/get');
+const contains = require('lodash/collection/contains');
+const extend = require('lodash/object/extend');
 
 const paramSchema = Joi.alternatives()
   .try(Joi.object()
     .description('Joi schema')
-    .label('schema'),
-    Joi.array()
-      .items(Joi.object()
-        .label('schema')
-        .description('Joi schema'))
-      .description('Array of Joi schemas corresponding to method ' +
-        'parameters'))
+    .label('schema'), Joi.array()
+    .items(Joi.object()
+      .label('schema')
+      .description('Joi schema'))
+    .description('Array of Joi schemas corresponding to method ' +
+      'parameters'))
   .label('schemas');
 
-const isNotEmpty = negate(isEmpty);
-const makeSchema = partialRight(mapValues, () => paramSchema);
-
-function assertValidate(schemas, options) {
-  Joi.assert(options, Joi.object({
+const optionsSchema = Joi
+  .object({
     init: Joi.func()
       .label('init')
       .description('Stampit init function(s)'),
@@ -36,7 +33,7 @@ function assertValidate(schemas, options) {
       .pattern(/.+/, Joi.func())
       .label('methods')
       .description('Stampit instance methods'),
-    'static': Joi.object()
+    static: Joi.object()
       .label('static')
       .description('Stampit static methods/properties'),
     refs: Joi.object()
@@ -46,10 +43,17 @@ function assertValidate(schemas, options) {
       .label('props')
       .description('Stampit property reference key/value pairs')
   })
-    .unknown()
-    .label('options')
-    .description('Stampit options object; see API docs at' +
-      'https://github.com/stampit-org/stampit/blob/master/docs/API.md'));
+  .unknown()
+  .min(1)
+  .label('options')
+  .description('Stampit options object; see API docs at' +
+    'https://github.com/stampit-org/stampit/blob/master/docs/API.md');
+
+const isNotEmpty = negate(isEmpty);
+const makeSchema = partialRight(mapValues, () => paramSchema);
+
+function assertValidate(schemas, options) {
+  Joi.assert(options, optionsSchema);
 
   const schemaKeys = {};
 
@@ -65,7 +69,6 @@ function assertValidate(schemas, options) {
 
   Joi.assert(schemas, Joi.object(schemaKeys)
     .unknown(false)
-    .min(1)
     .required()
     .label('schemas')
     .description('Joi schemas; each key maching an "options" entry.  ' +
@@ -75,54 +78,53 @@ function assertValidate(schemas, options) {
 function attempt(schemas, args) {
   schemas = [].concat(schemas);
   return map(schemas,
-    (schema, position) => {
-      debug(`attempt(): Trying ${dump(args[position])} against ` +
-        `${dump(Joi.describe(schema))}`);
-      return Joi.attempt(args[position], schema);
-    });
+    (schema, position) => Joi.attempt(args[position], schema));
 }
 
-function createProxy(value, schema, debugId) {
-  if (isFunction(value)) {
-    debug(`createProxy(): Creating proxy on ${debugId} with schema ` +
-      `${dump(Joi.describe(schema))}`);
+function createProxy(value, schema, optionName) {
+  if (contains(createProxy.funcOptions, optionName) && isFunction(value)) {
     const attemptProxy = partial(attempt, schema);
-    return function validationProxy(...args) {
+    // extend here to copy over any props the function may have
+    return extend(function validationProxy(...args) {
       return value.apply(this, attemptProxy(args));
-    };
+    }, value);
   }
   return value;
 }
+createProxy.funcOptions = [
+  'init',
+  'methods',
+  'static',
+  'refs'
+];
 
-function createProxies(options, schemas, stamp) {
+function createProxies(options, schemas) {
   return mapValues(options, (option, optionName) => {
-    if (isFunction(option)) {
-      return createProxy(option,
-        schemas[optionName],
-        `${stamp.stampName()}.${optionName}`);
+    if (isFunction(option) && schemas[optionName]) {
+      return createProxy(option, schemas[optionName], optionName);
     }
-    return mapValues(schemas[optionName], (schema, keyName) => {
-      return createProxy(options[optionName][keyName],
-        schema,
-        `${stamp.stampName()}.${optionName}.${keyName}`);
+    return mapValues(option, (value, keyName) => {
+      const schema = get(schemas, `${optionName}.${keyName}`);
+      if (schema) {
+        return createProxy(value, schema, optionName);
+      }
+      return value;
     });
   });
 }
 
 const ParamValidator = Reflectable.stampName('ParamValidator')
   .static({
-    validate(options, schemas) {
-      debug(`ParamValidator.validate(): Validating schemas: ` +
-        `${Joi.describe(schemas)}`);
+    validate(options = {}, schemas = {}) {
       assertValidate(schemas, options);
-      const proxies = createProxies(options, schemas, this);
-      return this.props(proxies.props)
-        .refs(proxies.refs)
-        .methods(proxies.methods)
-        .static(proxies.static)
-        .init(proxies.init);
-    },
-    validator: Joi
+      const {props, refs, methods, static_, init} = createProxies(options,
+        schemas);
+      return this.props(props)
+        .refs(refs)
+        .methods(methods)
+        .static(static_)
+        .init(init);
+    }
   });
 
 module.exports = ParamValidator;
