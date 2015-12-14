@@ -15,7 +15,10 @@ module.exports = function wallabyConfig(wallaby) {
     ],
     env: {
       type: 'node',
-      runner: 'node'
+      runner: 'node',
+      params: {
+        env: 'DEBUG=mocha:core:*'
+      }
     },
     compilers: {
       '**/*.js': wallaby.compilers.babel({
