@@ -6,19 +6,11 @@ describe(`core/param-validator`, () => {
   const ParamValidator = require('../../../src/core/param-validator');
 
   describe(`ParamValidator()`, () => {
-    describe(`return value`, () => {
-      it(`should be an object`, () => {
-        expect(ParamValidator())
-          .to
-          .be
-          .an('object');
-      });
-
-      it(`should have a "stampName" property of "ParamValidator"`, () => {
-        expect(ParamValidator().stampName)
-          .to
-          .equal('ParamValidator');
-      });
+    it(`should return an object with a "stampName" property of ` +
+      `"ParamValidator"`, () => {
+      expect(ParamValidator().stampName)
+        .to
+        .equal('ParamValidator');
     });
 
     describe(`static method`, () => {

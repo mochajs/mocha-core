@@ -15,14 +15,18 @@ describe(`core/api`, () => {
   });
 
   describe(`API()`, () => {
-    describe(`init()`, () => {
-      it(`should return an object`, () => {
-        expect(API()).to.be.an('object');
-      });
+    it(`should return an object`, () => {
+      expect(API())
+        .to
+        .be
+        .an('object');
+    });
 
-      it(`should return an object with a "plugins" Map`, () => {
-        expect(API().plugins).to.be.a('Map');
-      });
+    it(`should return an object with a "plugins" Map`, () => {
+      expect(API().plugins)
+        .to
+        .be
+        .a('Map');
     });
 
     describe(`method`, () => {
@@ -34,19 +38,27 @@ describe(`core/api`, () => {
 
       describe(`use()`, () => {
         it(`should throw if not passed a plugin func`, () => {
-          expect(() => api.use()).to.throw(Error, /"func"/);
+          expect(() => api.use())
+            .to
+            .throw(Error, /"func"/);
         });
 
         it(`should throw if passed a non-object options`, () => {
-          function foo() {}
+          function foo() {
+          }
+
           foo.attributes = {
             name: 'foo'
           };
-          expect(() => api.use(foo, 'bar')).to.throw(Error, /"options"/);
+          expect(() => api.use(foo, 'bar'))
+            .to
+            .throw(Error, /"options"/);
         });
 
         it(`should throw if an invalid plugin is passed`, () => {
-          expect(() => api.use(noop)).to.throw(Error, /"attributes"/);
+          expect(() => api.use(noop))
+            .to
+            .throw(Error, /"attributes"/);
         });
       });
     });

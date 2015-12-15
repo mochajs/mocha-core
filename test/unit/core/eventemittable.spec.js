@@ -13,16 +13,17 @@ describe(`core/eventemittable`, () => {
   });
 
   describe(`EventEmittable`, () => {
-    describe(`init()`, () => {
-      it(`should return an object`, () => {
-        expect(EventEmittable()).to.be.an('object');
-      });
+    it(`should return an object`, () => {
+      expect(EventEmittable())
+        .to
+        .be
+        .an('object');
+    });
 
-      it(`should implement EventEmitter`, done => {
-        const ee = EventEmittable();
-        ee.on('event', done);
-        ee.emit('event');
-      });
+    it(`should implement EventEmitter`, done => {
+      const ee = EventEmittable();
+      ee.on('event', done);
+      ee.emit('event');
     });
 
     describe(`static method`, () => {
@@ -31,7 +32,9 @@ describe(`core/eventemittable`, () => {
           const stamp = EventEmittable.init(function () {
             this.foo = 'bar';
           });
-          expect(stamp().foo).to.equal('bar');
+          expect(stamp().foo)
+            .to
+            .equal('bar');
         });
       });
 
@@ -69,7 +72,11 @@ describe(`core/eventemittable`, () => {
           it(`should timeout`, () => {
             const thing = EventEmittable();
             const t = setTimeout(() => thing.emit('bar'), 20);
-            return expect(thing.waitOn('bar', 10)).to.eventually.be.rejected
+            return expect(thing.waitOn('bar', 10))
+              .to
+              .eventually
+              .be
+              .rejected
               .then(() => clearTimeout(t));
           });
         });
@@ -100,7 +107,10 @@ describe(`core/eventemittable`, () => {
             return expect(thing.waitOn('bar'))
               .to
               .eventually
-              .eql(['baz', 'quux']);
+              .eql([
+                'baz',
+                'quux'
+              ]);
           });
         });
 

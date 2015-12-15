@@ -18,117 +18,143 @@ describe(`core/plugin`, () => {
   });
 
   describe(`Plugin()`, () => {
-    describe(`init()`, () => {
-      it(`should throw if no "name" passed`, () => {
-        expect(Plugin).to.throw(Error, /"name"/);
-      });
+    it(`should throw if no "name" passed`, () => {
+      expect(Plugin)
+        .to
+        .throw(Error, /"name"/);
+    });
 
-      it(`should throw if no "func" passed`, () => {
-        expect(() => Plugin({
-          name: 'foo'
-        })).to.throw(Error, /"func"/);
-      });
+    it(`should throw if no "func" passed`, () => {
+      expect(() => Plugin({
+        name: 'foo'
+      }))
+        .to
+        .throw(Error, /"func"/);
+    });
 
-      it(`should throw if non-string "name" passed`, () => {
-        expect(() => Plugin({
-          name: []
-        })).to.throw(Error, /"name"/);
-      });
+    it(`should throw if non-string "name" passed`, () => {
+      expect(() => Plugin({
+        name: []
+      }))
+        .to
+        .throw(Error, /"name"/);
+    });
 
-      it(`should throw if non-function "func" passed`, () => {
-        expect(() => Plugin({
-          name: 'foo',
-          func: {}
-        })).to.throw(Error, /"func"/);
-      });
+    it(`should throw if non-function "func" passed`, () => {
+      expect(() => Plugin({
+        name: 'foo',
+        func: {}
+      }))
+        .to
+        .throw(Error, /"func"/);
+    });
 
-      it(`should throw if "dependencies" is a non-Array, non-string value`,
-        () => {
-          expect(() => Plugin({
-            name: 'foo',
-            func: noop,
-            dependencies: null
-          })).to.throw(Error, /"dependencies"/);
-        });
-
-      it(`should throw if "api" is a non-object`, () => {
-        expect(() => Plugin({
-          name: 'foo',
-          func: noop,
-          api: null
-        })).to.throw(Error, /"api"/);
-      });
-
-      it(`should not throw if "dependencies" is a string value`, () => {
-        const graph = new DepGraph();
-        graph.addNode('bar');
+    it(`should throw if "dependencies" is a non-Array, non-string value`,
+      () => {
         expect(() => Plugin({
           name: 'foo',
           func: noop,
-          dependencies: 'bar',
-          api: {},
-          depGraph: graph
-        })).not.to.throw();
+          dependencies: null
+        }))
+          .to
+          .throw(Error, /"dependencies"/);
       });
 
-      it(`should not throw if "dependencies" is an Array value`, () => {
-        const graph = new DepGraph();
-        graph.addNode('bar');
-        graph.addNode('baz');
-        expect(() => Plugin({
-          name: 'foo',
-          func: noop,
-          dependencies: ['bar', 'baz'],
-          api: {},
-          depGraph: graph
-        })).not.to.throw();
+    it(`should throw if "api" is a non-object`, () => {
+      expect(() => Plugin({
+        name: 'foo',
+        func: noop,
+        api: null
+      }))
+        .to
+        .throw(Error, /"api"/);
+    });
+
+    it(`should not throw if "dependencies" is a string value`, () => {
+      const graph = new DepGraph();
+      graph.addNode('bar');
+      expect(() => Plugin({
+        name: 'foo',
+        func: noop,
+        dependencies: 'bar',
+        api: {},
+        depGraph: graph
+      }))
+        .not
+        .to
+        .throw();
+    });
+
+    it(`should not throw if "dependencies" is an Array value`, () => {
+      const graph = new DepGraph();
+      graph.addNode('bar');
+      graph.addNode('baz');
+      expect(() => Plugin({
+        name: 'foo',
+        func: noop,
+        dependencies: [
+          'bar',
+          'baz'
+        ],
+        api: {},
+        depGraph: graph
+      }))
+        .not
+        .to
+        .throw();
+    });
+
+    it(`should not throw if no "dependencies" are passed`, () => {
+      expect(() => Plugin({
+        name: 'foo',
+        func: noop,
+        api: {}
+      }))
+        .not
+        .to
+        .throw();
+    });
+
+    it(`should ensure "func" returns a Promise`, () => {
+      const plugin = Plugin({
+        name: 'foo',
+        func: noop,
+        api: {}
       });
 
-      it(`should not throw if no "dependencies" are passed`, () => {
-        expect(() => Plugin({
-          name: 'foo',
-          func: noop,
-          api: {}
-        })).not.to.throw();
-      });
+      return expect(plugin.func()).to.eventually.be.resolved;
+    });
 
-      it(`should ensure "func" returns a Promise`, () => {
-        const plugin = Plugin({
-          name: 'foo',
-          func: noop,
-          api: {}
-        });
+    it(`should store the original "func"`, () => {
+      expect(Plugin({
+        name: 'foo',
+        func: noop,
+        api: {}
+      }).originalFunc)
+        .to
+        .equal(noop);
+    });
 
-        return expect(plugin.func()).to.eventually.be.resolved;
+    it(`should throw if a circular dependency is detected`, () => {
+      // this is unlikely to happen, but if it does, fail fast
+      const graph = new DepGraph();
+      graph.addNode('bar');
+      Plugin({
+        name: 'foo',
+        func: noop,
+        api: {},
+        depGraph: graph
       });
-
-      it(`should store the original "func"`, () => {
-        expect(Plugin({
-          name: 'foo',
-          func: noop,
-          api: {}
-        }).originalFunc).to.equal(noop);
-      });
-
-      it(`should throw if a circular dependency is detected`, () => {
-        // this is unlikely to happen, but if it does, fail fast
-        const graph = new DepGraph();
-        graph.addNode('bar');
-        Plugin({
-          name: 'foo',
-          func: noop,
-          api: {},
-          depGraph: graph
-        });
-        graph.addDependency('foo', 'bar');
-        expect(() => Plugin({
-          name: 'bar',
-          func: noop,
-          api: {},
-          depGraph: graph,
-          dependencies: 'foo'
-        })).to.throw(Error, /cycle/i);
-      });
+      graph.addDependency('foo', 'bar');
+      expect(() => Plugin({
+        name: 'bar',
+        func: noop,
+        api: {},
+        depGraph: graph,
+        dependencies: 'foo'
+      }))
+        .to
+        .throw(Error, /cycle/i);
     });
 
     describe(`method`, () => {
@@ -137,7 +163,9 @@ describe(`core/plugin`, () => {
       let api;
 
       beforeEach(() => {
-        func = sandbox.stub().returns(Promise.resolve());
+        func =
+          sandbox.stub()
+            .returns(Promise.resolve());
         api = {
           barf: noop
         };
@@ -158,13 +186,19 @@ describe(`core/plugin`, () => {
           it(`should call the plugin function`, () => {
             return plugin.load()
               .then(() => {
-                expect(plugin.func).to.have.been.calledWith(plugin.api);
+                expect(plugin.func)
+                  .to
+                  .have
+                  .been
+                  .calledWith(plugin.api);
               });
           });
 
           it(`should emit "loaded"`, done => {
             plugin.on('loaded', data => {
-              expect(data.name).to.equal('foo');
+              expect(data.name)
+                .to
+                .equal('foo');
               done();
             });
             plugin.load();
@@ -173,7 +207,9 @@ describe(`core/plugin`, () => {
 
         describe(`if the plugin fails to load`, () => {
           beforeEach(() => {
-            plugin.func = sandbox.stub().returns(Promise.reject());
+            plugin.func =
+              sandbox.stub()
+                .returns(Promise.reject());
           });
 
           it(`should reject`, () => {
