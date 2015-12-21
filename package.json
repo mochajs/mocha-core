@@ -2,7 +2,7 @@
   "name": "mocha3",
   "version": "0.0.0",
   "description": "next-gen Mocha",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": "https://github.com/boneskull/mocha3.git",
   "author": {
     "name": "Christopher Hiller",
