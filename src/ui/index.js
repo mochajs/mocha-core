@@ -1,33 +1,45 @@
 'use strict';
 
-const interfaces = new Map();
-const Joi = require('joi');
+const API = require('./../core/api');
+const Suite = require('./suite');
 
-const ui = {
-  interfaces,
-  add(name, func) {
-    Joi.assert(name, Joi.string()
-      .required()
-      .description('Name of UI to add'));
-    Joi.assert(func, Joi.func()
-      .required()
-      .description('Factory function of UI to add'));
-    if (interfaces.has(name)) {
-      throw new Error(`ui with name "${name}" already registered`);
-    }
-    interfaces.set(name, func);
-  },
-  get(name) {
-    if (!interfaces.has(name)) {
-      throw new Error(`Unknown interface "${name}"`);
-    }
-    return interfaces.get(name);
-  },
-  UI: require('./ui'),
-  Hook: require('./hook'),
-  Suite: require('./suite'),
-  Test: require('./test'),
-  Context: require('./context')
-};
+const UI = API
+  .methods({
+    createSuite(suiteDef) {
+      const suite = Suite(suiteDef);
+      this.emit('suite', suite);
+      return suite;
+    },
+    createTest() {
 
-module.exports = ui;
+    },
+    afterTests() {
+
+    },
+    beforeTests() {
+
+    },
+    afterEachTest() {
+
+    },
+    beforeEachTest() {
+
+    },
+    ignoreSuite() {
+
+    },
+    ignoreTest() {
+
+    },
+    onlySuite() {
+
+    },
+    onlyTest() {
+
+    },
+    expose(...args) {
+      return this.mocha.expose(...args);
+    }
+  });
+
+module.exports = UI;

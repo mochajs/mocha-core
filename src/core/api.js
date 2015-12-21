@@ -1,76 +1,72 @@
 'use strict';
 
-const toMap = require('../util/to-map');
-const customError = require('../util/custom-error');
-const extend = require('lodash/object/extend');
-const ParamValidator = require('./param-validator');
-const Unique = require('./unique');
 const Plugin = require('./plugin');
-const APIError = customError('APIError');
-const Joi = require('joi');
+const EventEmittable = require('./base/eventemittable');
+const _ = require('lodash');
+const stampit = require('stampit');
+const Graphable = require('./base/graphable');
+const PluginMap = require('./plugin-map');
+const APIError = require('../util/custom-error')('APIError');
 
-const API = ParamValidator
-  .stampName('API')
-  .compose(Unique)
-  .static({
-    APIError
-  })
-  .validate({
-    methods: {
-      use(func, opts) {
-        const plugins = this.plugins;
-        const api = this;
-        const {name, dependencies} = func.attributes;
-        if (plugins.has(name)) {
-          throw APIError(`Plugin name collision: ${name} already registered`);
-        }
-        const depGraph = this.depGraph;
-        const plugin = Plugin(extend(opts || {}, {
-          name,
-          func,
-          dependencies,
-          api,
-          depGraph: depGraph
-        }));
-        this.depGraph = plugin.depGraph;
-        plugins.set(name, plugin);
-        return this;
+const API = stampit({
+  refs: {
+    depGraph: Graphable()
+  },
+  init() {
+    this.plugins = PluginMap();
+  },
+  static: {
+    APIError,
+    normalizeAttributes(attrs) {
+      attrs = _.cloneDeep(attrs);
+      const pkg = attrs.pkg;
+      if (_.isObject(pkg)) {
+        _.defaults(attrs, {
+          name: pkg.name,
+          version: pkg.version,
+          description: pkg.description
+        });
       }
+      attrs.dependencies = [].concat(attrs.dependencies || []);
+      return attrs;
     }
-  }, {
-    methods: {
-      use: [
-        Joi.func()
-          .keys({
-            attributes: Joi
-              .object({
-                name: Joi.string()
-                  .label('name')
-                  .description('Plugin name')
-                  .required(),
-                dependencies: Joi.array()
-                  .single(true)
-                  .label('dependencies')
-                  .description('Plugin dependencies')
-              })
-              .label('attributes')
-              .description('Plugin function "attributes" property')
-              .required()
-          })
-          .unknown(true)
-          .label('func')
-          .description('Plugin function')
-          .required(),
-        Joi.object()
-          .label('options')
-          .description('Plugin function options')
-      ]
+  },
+  methods: {
+    spawn(api = API) {
+      return api.props({depGraph: this.depGraph});
+    },
+    use(func, opts = {}) {
+      const attrs = API.normalizeAttributes(func.attributes);
+      const {name} = attrs;
+      const plugins = this.plugins;
+
+      if (!plugins.isUsable(attrs)) {
+        throw APIError(`Plugin "${name}" cannot be used multiple times`);
+      }
+
+      const plugin = Plugin(_.assign({
+        func,
+        opts,
+        depGraph: this.depGraph,
+        api: this
+      }, attrs))
+        .once('did-install', () => this.emit(`did-install:${name}`));
+
+      plugins.set(name, plugin);
+
+      const missingDeps = _.reject(plugin.dependencies,
+        dep => plugins.isInstalled(dep));
+
+      if (missingDeps.length) {
+        plugin.installWhenReady(missingDeps);
+      } else {
+        plugin.install();
+      }
+
+      return this;
     }
-  })
-  .init(function initAPI() {
-    this.plugins = toMap(this.plugins);
-    this.apis = toMap(this.apis);
-  });
+  }
+})
+  .compose(EventEmittable);
 
 module.exports = API;
-

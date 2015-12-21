@@ -11,11 +11,7 @@ describe(`util/custom-error`, () => {
       errorFactoryFactory.errors = new Map();
     });
 
-    it(`should throw if not passed a name`, () => {
-      expect(errorFactoryFactory).to.throw(Error, /"name"/);
-    });
-
-    it(`should return a function if passed a name`, () => {
+    it(`should return a function`, () => {
       expect(errorFactoryFactory('Bob')).to.be.a('function');
     });
 

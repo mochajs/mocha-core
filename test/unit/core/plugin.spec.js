@@ -1,8 +1,8 @@
 'use strict';
 
-const noop = require('lodash/utility/noop');
 const Promise = require('bluebird');
 const {DepGraph} = require('dependency-graph');
+const _ = require('lodash');
 
 describe(`core/plugin`, () => {
   const Plugin = require('../../../src/core/plugin');
@@ -18,64 +18,12 @@ describe(`core/plugin`, () => {
   });
 
   describe(`Plugin()`, () => {
-    it(`should throw if no "name" passed`, () => {
-      expect(Plugin)
-        .to
-        .throw(Error, /"name"/);
-    });
-
-    it(`should throw if no "func" passed`, () => {
-      expect(() => Plugin({
-        name: 'foo'
-      }))
-        .to
-        .throw(Error, /"func"/);
-    });
-
-    it(`should throw if non-string "name" passed`, () => {
-      expect(() => Plugin({
-        name: []
-      }))
-        .to
-        .throw(Error, /"name"/);
-    });
-
-    it(`should throw if non-function "func" passed`, () => {
-      expect(() => Plugin({
-        name: 'foo',
-        func: {}
-      }))
-        .to
-        .throw(Error, /"func"/);
-    });
-
-    it(`should throw if "dependencies" is a non-Array, non-string value`,
-      () => {
-        expect(() => Plugin({
-          name: 'foo',
-          func: noop,
-          dependencies: null
-        }))
-          .to
-          .throw(Error, /"dependencies"/);
-      });
-
-    it(`should throw if "api" is a non-object`, () => {
-      expect(() => Plugin({
-        name: 'foo',
-        func: noop,
-        api: null
-      }))
-        .to
-        .throw(Error, /"api"/);
-    });
-
     it(`should not throw if "dependencies" is a string value`, () => {
       const graph = new DepGraph();
       graph.addNode('bar');
       expect(() => Plugin({
         name: 'foo',
-        func: noop,
+        func: _.noop,
         dependencies: 'bar',
         api: {},
         depGraph: graph
@@ -91,7 +39,7 @@ describe(`core/plugin`, () => {
       graph.addNode('baz');
       expect(() => Plugin({
         name: 'foo',
-        func: noop,
+        func: _.noop,
         dependencies: [
           'bar',
           'baz'
@@ -107,114 +55,110 @@ describe(`core/plugin`, () => {
     it(`should not throw if no "dependencies" are passed`, () => {
       expect(() => Plugin({
         name: 'foo',
-        func: noop,
-        api: {}
+        func: _.noop,
+        api: {},
+        depGraph: new DepGraph()
       }))
         .not
         .to
         .throw();
     });
 
-    it(`should ensure "func" returns a Promise`, () => {
-      const plugin = Plugin({
-        name: 'foo',
-        func: noop,
-        api: {}
-      });
-
-      return expect(plugin.func()).to.eventually.be.resolved;
-    });
-
-    it(`should store the original "func"`, () => {
-      expect(Plugin({
-        name: 'foo',
-        func: noop,
-        api: {}
-      }).originalFunc)
-        .to
-        .equal(noop);
-    });
-
     it(`should throw if a circular dependency is detected`, () => {
       // this is unlikely to happen, but if it does, fail fast
       const graph = new DepGraph();
-      graph.addNode('bar');
       Plugin({
         name: 'foo',
-        func: noop,
+        func: _.noop,
         api: {},
-        depGraph: graph
+        depGraph: graph,
+        dependencies: 'bar'
       });
-      graph.addDependency('foo', 'bar');
       expect(() => Plugin({
         name: 'bar',
-        func: noop,
+        func: _.noop,
         api: {},
         depGraph: graph,
         dependencies: 'foo'
       }))
         .to
-        .throw(Error, /cycle/i);
+        .throw(Error, /cyclic/i);
     });
 
-    describe(`method`, () => {
+    describe(`member`, () => {
       let plugin;
       let func;
       let api;
 
       beforeEach(() => {
-        func =
-          sandbox.stub()
-            .returns(Promise.resolve());
+        func = sandbox.stub()
+          .returns(Promise.resolve());
         api = {
-          barf: noop
+          barf: _.noop
         };
         plugin = Plugin({
           name: 'foo',
           func: func,
-          api: api
+          api: api,
+          depGraph: new DepGraph(),
+          version: '1.0.0'
         });
         plugin.func = func;
       });
 
-      describe(`load()`, () => {
-        it(`should return a Promise`, () => {
-          expect(plugin.load()).to.eventually.be.fulfilled;
+      describe(`property`, () => {
+        describe(`dependencies`, () => {
+          it(`should call DepGraph#dependenciesOf()`, () => {
+            sandbox.spy(plugin.depGraph, 'dependenciesOf');
+            plugin.dependencies;
+            expect(plugin.depGraph.dependenciesOf).to.have.been.calledOnce;
+          });
         });
 
-        describe(`if the plugin does not fail`, () => {
-          it(`should call the plugin function`, () => {
-            return plugin.load()
-              .then(() => {
-                expect(plugin.func)
-                  .to
-                  .have
-                  .been
-                  .calledWith(plugin.api);
-              });
-          });
-
-          it(`should emit "loaded"`, done => {
-            plugin.on('loaded', data => {
-              expect(data.name)
+        describe(`originalDependencies`, () => {
+          it(`should not be enumerable`, () => {
+            _.forEach(plugin, (value, key) => {
+              expect(key)
+                .not
                 .to
-                .equal('foo');
-              done();
+                .equal('originalDependencies');
             });
-            plugin.load();
+          });
+
+          it(`should not be writable`, () => {
+            expect(() => plugin.originalDependencies = 'foo')
+              .to
+              .throw(Error);
           });
         });
 
-        describe(`if the plugin fails to load`, () => {
-          beforeEach(() => {
-            plugin.func =
-              sandbox.stub()
-                .returns(Promise.reject());
+        describe(`depGraph`, () => {
+          it(`should not be enumerable`, () => {
+            _.forEach(plugin, (value, key) => {
+              expect(key)
+                .not
+                .to
+                .equal('depGraph');
+            });
           });
 
-          it(`should reject`, () => {
-            return expect(plugin.load()).to.eventually.be.rejected;
+          it(`should not be writable`, () => {
+            expect(() => plugin.depGraph = 'foo')
+              .to
+              .throw(Error);
           });
+        });
+      });
+
+      describe(`method`, () => {
+        describe(`toJSON()`, () => {
+          it(`should return an object with 'name', 'dependencies', and 'version' props`,
+            () => {
+              expect(plugin.toJSON())
+                .to
+                .have
+                .keys('name', 'dependencies', 'version');
+            });
         });
       });
     });

@@ -1,35 +1,43 @@
 'use strict';
 
-const core = require('./core');
 const stampit = require('stampit');
+const API = require('./core/api');
+const UI = require('./ui');
+const Reporter = require('./reporter');
+const debug = require('debug')('mocha:mocha');
 
 const Mocha = stampit({
   refs: {
-    ui: 'bdd',
-    reporter: 'spec'
-  },
-  props: {
-    lib: {
-      core: core,
-      ui: require('./ui'),
-      reporter: require('./reporter')
-    }
+    ui: require('mocha-ui-bdd')
   },
   methods: {
+    start() {
+
+    },
     run() {
-      return this.load()
-        .then(() => {
-          this.debug('Ready...');
-        });
+      this.emit('pre-run');
+      return this.loadPlugins()
+        .then(plugins => {
+          debug(`Loaded plugins ${plugins}`);
+          this.emit('ready');
+        })
+        .return(this);
+    },
+    createUI() {
+      return UI({mocha: this});
+    },
+    createReporter() {
+      return Reporter({mocha: this});
+    },
+    createAPI() {
+      return API({mocha: this});
     }
-  },
-  init() {
-    this.use(require('./plugins/mocha-ui-bdd'))
-      .use(require('./plugins/mocha-reporter-spec'));
   }
 })
-  .compose(core.API)
-  .compose(core.EventEmittable)
-  .compose(core.Debuggable);
+  .compose(API)
+  .init(function initMocha({stamp}) {
+    this.use(this.ui);
+    this.Mocha = stamp;
+  });
 
 module.exports = Mocha;

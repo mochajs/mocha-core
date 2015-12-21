@@ -1,92 +1,103 @@
 'use strict';
 
-const EventEmittable = require('./eventemittable');
-const Unique = require('./unique');
-const Promise = require('bluebird');
-const ParamValidator = require('./param-validator');
-const errorist = require('errorist');
-const Joi = require('joi');
-const {DepGraph} = require('dependency-graph');
-const each = require('lodash/collection/each');
+const EventEmittable = require('./base/eventemittable');
 const customError = require('../util/custom-error');
+const stampit = require('stampit');
+const makeArray = require('../util/make-array');
+const _ = require('lodash');
 
 const PluginError = customError('PluginError');
 
-const Plugin = ParamValidator
-  .stampName('Plugin')
-  .compose(Unique)
-  .static({
+const Plugin = stampit({
+  props: {
+    installed: false
+  },
+  static: {
     PluginError
-  })
-  .validate({
-    init() {
-      const originalFunc = this.func;
-      const func = this.func = Promise.method(this.func);
-      const depGraph = this.depGraph = this.depGraph || new DepGraph();
-      const name = this.name;
-      const dependencies = this.dependencies;
-      depGraph.addNode(name);
-      each([].concat(dependencies || []), dep => {
-        try {
-          depGraph.addDependency(name, dep);
-        } catch (ignored) {
-          throw PluginError(`Cannot find dependency "${dep}" needed by ` +
-            `plugin "${name}"`);
+  },
+  init() {
+    const depGraph = this.depGraph;
+    const name = this.name;
+    depGraph.addNode(name);
+    const deps = makeArray(this.dependencies);
+
+    _(deps)
+      .reject(dep => depGraph.hasNode(dep))
+      .forEach(dep => depGraph.addNode(dep))
+      .value();
+
+    _.forEach(deps, dep => depGraph.addDependency(name, dep));
+
+    try {
+      depGraph.dependenciesOf(name);
+    } catch (e) {
+      throw PluginError(`Cyclic dependency detected in "${name}": ${e.message}`);
+    }
+
+    delete this.depGraph;
+
+    Object.defineProperties(this, {
+      dependencies: {
+        get() {
+          return depGraph.dependenciesOf(name);
+        },
+        enumerable: true,
+        configurable: true
+      },
+      name: {
+        value: name,
+        enumerable: true,
+        configurable: true
+      },
+      version: {
+        value: name,
+        enumerable: true,
+        configurable: true
+      },
+      originalDependencies: {
+        value: deps,
+        configurable: true
+      },
+      depGraph: {
+        value: depGraph,
+        configurable: true
+      }
+    });
+
+    this.emit('did-use');
+  },
+  methods: {
+    toJSON() {
+      return _(this)
+        .pick('name', 'version')
+        .assign({dependencies: this.originalDependencies})
+        .value();
+    },
+    install() {
+      if (!this.installed) {
+        this.emit('will-install');
+        this.func(this.api, this.opts);
+        this.emit('did-install');
+      } else {
+        this.emit('already-installed');
+      }
+      return this;
+    },
+    installWhenReady(missingDeps) {
+      const dep = missingDeps.shift();
+      this.api.once(`did-install:${dep}`, () => {
+        if (!missingDeps.length) {
+          this.install();
+        } else {
+          this.installWhenReady(missingDeps);
         }
       });
-      try {
-        depGraph.dependenciesOf(name);
-      } catch (err) {
-        throw PluginError(err.message, {
-          plugin: {name, func, dependencies, depGraph}
-        });
-      }
-      Object.defineProperty(this, 'originalFunc', {
-        value: originalFunc,
-        writable: false,
-        configurable: true
-      });
     }
-  }, {
-    init: [
-      Joi.object({
-        instance: Joi.object({
-          name: Joi.string()
-            .required()
-            .label('name')
-            .description('Plugin name'),
-          func: Joi.func()
-            .required()
-            .label('func')
-            .description('Plugin function'),
-          dependencies: Joi.array()
-            .items(Joi.string())
-            .single(true)
-            .label('dependencies')
-            .description('Plugin dependencies'),
-          api: Joi.object()
-            .required()
-            .label('api')
-            .description('API object which each plugin will have access to')
-        })
-          .label('instance')
-          .unknown(true)
-          .description('Stampit instance')
-      })
-        .unknown(true)
-    ]
-  })
-  .methods({
-    load() {
-      return this.func(this.api)
-        .catch(err => {
-          throw errorist(err);
-        })
-        .tap(() => this.emit('loaded', {
-          name: this.name
-        }));
-    }
-  })
-  .compose(EventEmittable, Unique);
+  }
+})
+  .compose(EventEmittable)
+  .once('did-install', function onceLoad() {
+    this.installed = true;
+  });
 
 module.exports = Plugin;
