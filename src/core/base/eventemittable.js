@@ -1,19 +1,17 @@
 'use strict';
 
-const EventEmitter = require('events').EventEmitter;
+const {EventEmitter} = require('events');
 const stampit = require('stampit');
 const Promise = require('bluebird');
-const first = require('lodash/array/first');
-const isEmpty = require('lodash/lang/isEmpty');
-const isFinite = require('lodash/lang/isFinite');
+const _ = require('lodash');
 
 function wait(event) {
   return new Promise(resolve => {
     this.once(event, (...args) => {
-      if (isEmpty(args)) {
+      if (_.isEmpty(args)) {
         return resolve();
       } else if (args.length === 1) {
-        return resolve(first(args));
+        return resolve(_.first(args));
       }
       return resolve(args);
     });
@@ -35,12 +33,15 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
   })
   .methods({
     waitOn(event, timeout) {
-      return isFinite(timeout)
+      return _.isFinite(timeout)
         ? wait.call(this, event).timeout(timeout)
         : wait.call(this, event);
     }
+  })
+  .static({
+    init(...args) {
+      return this.enclose(...args);
+    }
   });
-
-EventEmittable.init = EventEmittable.enclose;
 
 module.exports = EventEmittable;

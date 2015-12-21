@@ -1,7 +1,7 @@
 'use strict';
 
 describe(`core/eventemittable`, () => {
-  const EventEmittable = require('../../../src/core/eventemittable');
+  const EventEmittable = require('../../../../src/core/base/eventemittable');
   let sandbox;
 
   beforeEach(() => {
@@ -20,16 +20,17 @@ describe(`core/eventemittable`, () => {
         .an('object');
     });
 
-    it(`should implement EventEmitter`, done => {
+    it(`should implement EventEmitter`, () => {
       const ee = EventEmittable();
-      ee.on('event', done);
-      ee.emit('event');
+      expect(() => ee.emit('event'))
+        .to
+        .emitFrom(ee, 'event');
     });
 
     describe(`static method`, () => {
       describe(`init()`, () => {
         it(`should allow a new stamp to be created`, () => {
-          const stamp = EventEmittable.init(function () {
+          const stamp = EventEmittable.init(function() {
             this.foo = 'bar';
           });
           expect(stamp().foo)
@@ -41,9 +42,9 @@ describe(`core/eventemittable`, () => {
       describe(`on()`, () => {
         it(`should register an on() listener upon instantiation`, () => {
           const stub = sandbox.stub();
-          const thing = EventEmittable.on('foo', stub)();
-          thing.emit('foo');
-          thing.emit('foo');
+          const ee = EventEmittable.on('foo', stub)();
+          ee.emit('foo');
+          ee.emit('foo');
           expect(stub).to.have.been.calledTwice;
         });
       });
@@ -51,28 +52,32 @@ describe(`core/eventemittable`, () => {
       describe(`once()`, () => {
         it(`should register an once() listener upon instantiation`, () => {
           const stub = sandbox.stub();
-          const thing = EventEmittable.once('foo', stub)();
-          thing.emit('foo');
-          thing.emit('foo');
+          const ee = EventEmittable.once('foo', stub)();
+          ee.emit('foo');
+          ee.emit('foo');
           expect(stub).to.have.been.calledOnce;
         });
       });
     });
 
     describe(`method`, () => {
+      let ee;
+
+      beforeEach(() => {
+        ee = EventEmittable();
+      });
+
       describe(`waitOn()`, () => {
         it(`should return a Promise which is resolved when an event is emitted`,
           () => {
-            const thing = EventEmittable();
-            setImmediate(() => thing.emit('bar'));
-            return expect(thing.waitOn('bar')).to.eventually.be.resolved;
+            setImmediate(() => ee.emit('bar'));
+            return expect(ee.waitOn('bar')).to.eventually.be.resolved;
           });
 
         describe(`if a finite "timeout" parameter is supplied`, () => {
           it(`should timeout`, () => {
-            const thing = EventEmittable();
-            const t = setTimeout(() => thing.emit('bar'), 20);
-            return expect(thing.waitOn('bar', 10))
+            const t = setTimeout(() => ee.emit('bar'), 20);
+            return expect(ee.waitOn('bar', 10))
               .to
               .eventually
               .be
@@ -83,17 +88,14 @@ describe(`core/eventemittable`, () => {
 
         describe(`if a non-finite "timeout" parameter is supplied`, () => {
           it(`should not timeout`, () => {
-            const thing = EventEmittable();
-            return expect(thing.waitOn('bar',
-              Infinity)).to.eventually.be.resolved;
+            return expect(ee.waitOn('bar', Infinity)).to.eventually.be.resolved;
           });
         });
 
         describe(`if the event emits a single parameter`, () => {
           it(`should return the parameter`, () => {
-            const thing = EventEmittable();
-            setImmediate(() => thing.emit('bar', 'baz'));
-            return expect(thing.waitOn('bar'))
+            setImmediate(() => ee.emit('bar', 'baz'));
+            return expect(ee.waitOn('bar'))
               .to
               .eventually
               .equal('baz');
@@ -102,9 +104,8 @@ describe(`core/eventemittable`, () => {
 
         describe(`if the event emits multiple parameters`, () => {
           it(`should return them as an array`, () => {
-            const thing = EventEmittable();
-            setImmediate(() => thing.emit('bar', 'baz', 'quux'));
-            return expect(thing.waitOn('bar'))
+            setImmediate(() => ee.emit('bar', 'baz', 'quux'));
+            return expect(ee.waitOn('bar'))
               .to
               .eventually
               .eql([
@@ -116,9 +117,8 @@ describe(`core/eventemittable`, () => {
 
         describe(`if the event emits no parameters`, () => {
           it(`should return nothing`, () => {
-            const thing = EventEmittable();
-            setImmediate(() => thing.emit('bar'));
-            return expect(thing.waitOn('bar')).to.eventually.be.undefined;
+            setImmediate(() => ee.emit('bar'));
+            return expect(ee.waitOn('bar')).to.eventually.be.undefined;
           });
         });
       });
