@@ -1,21 +1,11 @@
 'use strict';
 
-const errors = new Map();
 const extend = require('lodash/object/extend');
 const isString = require('lodash/lang/isString');
 const isUndefined = require('lodash/lang/isUndefined');
-const Joi = require('joi');
 
-const nameSchema = Joi.string()
-  .required()
-  .label('name')
-  .description('New error "subclass" name');
+const errors = new Map();
 
-const protosSchema = Joi.array()
-  .items(Joi.object())
-  .label('prototypes')
-  .description(
-    'Zero or more "prototype" objects to mix in to the resulting Error');
 /**
  * Creates an `Error` "subclass".  Given a name and one or more objects to mix
  * in create a factory function which returns a new instance of `Error` with
@@ -61,10 +51,8 @@ const protosSchema = Joi.array()
  * }
  */
 function errorFactoryFactory(name, ...protos) {
-  Joi.assert(name, nameSchema);
-  Joi.assert(protos, protosSchema);
   if (!errors.has(name)) {
-    errors.set(name, function errorFactory(msg, ...extra) {
+    errors.set(name, function(msg, ...extra) {
       let err;
       if (isString(msg)) {
         err = new Error(msg);
