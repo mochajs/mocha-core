@@ -4,17 +4,13 @@ const stampit = require('stampit');
 const _ = require('lodash');
 
 const Mappable = stampit({
-  init() {
-    return new Map();
-  },
-  static: {
-    methods(obj) {
-      return this.init(function mappableInit() {
-        return _.mixin(this, obj, {
-          chain: false
-        });
-      });
-    }
+  init({stamp, instance}) {
+    return _(new Map())
+      .assign(instance)
+      .mixin(stamp.fixed.methods, {chain: false})
+      .defaults(stamp.fixed.refs)
+      .assign(stamp.fixed.props)
+      .value();
   }
 });
 
