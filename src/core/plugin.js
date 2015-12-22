@@ -37,13 +37,6 @@ const Plugin = stampit({
     delete this.depGraph;
 
     Object.defineProperties(this, {
-      dependencies: {
-        get() {
-          return depGraph.dependenciesOf(name);
-        },
-        enumerable: true,
-        configurable: true
-      },
       name: {
         value: name,
         enumerable: true,
@@ -54,8 +47,9 @@ const Plugin = stampit({
         enumerable: true,
         configurable: true
       },
-      originalDependencies: {
+      dependencies: {
         value: deps,
+        enumerable: true,
         configurable: true
       },
       depGraph: {
@@ -64,15 +58,9 @@ const Plugin = stampit({
       }
     });
 
-    this.emit('did-use');
+    this.once('did-install', () => this.installed = true);
   },
   methods: {
-    toJSON() {
-      return _(this)
-        .pick('name', 'version')
-        .assign({dependencies: this.originalDependencies})
-        .value();
-    },
     install() {
       if (!this.installed) {
         this.emit('will-install');
@@ -84,20 +72,23 @@ const Plugin = stampit({
       return this;
     },
     installWhenReady(missingDeps) {
-      const dep = missingDeps.shift();
-      this.api.once(`did-install:${dep}`, () => {
-        if (!missingDeps.length) {
-          this.install();
-        } else {
-          this.installWhenReady(missingDeps);
-        }
+      if (_.isEmpty(missingDeps)) {
+        return this.install();
+      }
+
+      let remaining = _.size(missingDeps);
+      _.forEach(missingDeps, dep => {
+        this.api.once(`did-install:${dep}`, () => {
+          if (!--remaining) {
+            this.install();
+          }
+        });
       });
+
+      return this;
     }
   }
 })
-  .compose(EventEmittable)
-  .once('did-install', function onceLoad() {
-    this.installed = true;
-  });
+  .compose(EventEmittable);
 
 module.exports = Plugin;

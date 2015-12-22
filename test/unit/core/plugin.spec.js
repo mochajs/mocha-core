@@ -1,8 +1,9 @@
 'use strict';
 
 const Promise = require('bluebird');
-const {DepGraph} = require('dependency-graph');
 const _ = require('lodash');
+const EventEmittable = require('../../../src/core/base/eventemittable');
+const Graphable = require('../../../src/core/base/graphable');
 
 describe(`core/plugin`, () => {
   const Plugin = require('../../../src/core/plugin');
@@ -19,13 +20,13 @@ describe(`core/plugin`, () => {
 
   describe(`Plugin()`, () => {
     it(`should not throw if "dependencies" is a string value`, () => {
-      const graph = new DepGraph();
+      const graph = Graphable();
       graph.addNode('bar');
       expect(() => Plugin({
         name: 'foo',
         func: _.noop,
         dependencies: 'bar',
-        api: {},
+        api: EventEmittable(),
         depGraph: graph
       }))
         .not
@@ -34,7 +35,7 @@ describe(`core/plugin`, () => {
     });
 
     it(`should not throw if "dependencies" is an Array value`, () => {
-      const graph = new DepGraph();
+      const graph = Graphable();
       graph.addNode('bar');
       graph.addNode('baz');
       expect(() => Plugin({
@@ -44,7 +45,7 @@ describe(`core/plugin`, () => {
           'bar',
           'baz'
         ],
-        api: {},
+        api: EventEmittable(),
         depGraph: graph
       }))
         .not
@@ -56,8 +57,8 @@ describe(`core/plugin`, () => {
       expect(() => Plugin({
         name: 'foo',
         func: _.noop,
-        api: {},
-        depGraph: new DepGraph()
+        api: EventEmittable(),
+        depGraph: Graphable()
       }))
         .not
         .to
@@ -66,18 +67,18 @@ describe(`core/plugin`, () => {
 
     it(`should throw if a circular dependency is detected`, () => {
       // this is unlikely to happen, but if it does, fail fast
-      const graph = new DepGraph();
+      const graph = Graphable();
       Plugin({
         name: 'foo',
         func: _.noop,
-        api: {},
+        api: EventEmittable(),
         depGraph: graph,
         dependencies: 'bar'
       });
       expect(() => Plugin({
         name: 'bar',
         func: _.noop,
-        api: {},
+        api: EventEmittable(),
         depGraph: graph,
         dependencies: 'foo'
       }))
@@ -93,45 +94,18 @@ describe(`core/plugin`, () => {
       beforeEach(() => {
         func = sandbox.stub()
           .returns(Promise.resolve());
-        api = {
-          barf: _.noop
-        };
+        api = EventEmittable();
         plugin = Plugin({
           name: 'foo',
           func: func,
           api: api,
-          depGraph: new DepGraph(),
+          depGraph: Graphable(),
           version: '1.0.0'
         });
         plugin.func = func;
       });
 
       describe(`property`, () => {
-        describe(`dependencies`, () => {
-          it(`should call DepGraph#dependenciesOf()`, () => {
-            sandbox.spy(plugin.depGraph, 'dependenciesOf');
-            plugin.dependencies;
-            expect(plugin.depGraph.dependenciesOf).to.have.been.calledOnce;
-          });
-        });
-
-        describe(`originalDependencies`, () => {
-          it(`should not be enumerable`, () => {
-            _.forEach(plugin, (value, key) => {
-              expect(key)
-                .not
-                .to
-                .equal('originalDependencies');
-            });
-          });
-
-          it(`should not be writable`, () => {
-            expect(() => plugin.originalDependencies = 'foo')
-              .to
-              .throw(Error);
-          });
-        });
-
         describe(`depGraph`, () => {
           it(`should not be enumerable`, () => {
             _.forEach(plugin, (value, key) => {
@@ -151,14 +125,158 @@ describe(`core/plugin`, () => {
       });
 
       describe(`method`, () => {
-        describe(`toJSON()`, () => {
-          it(`should return an object with 'name', 'dependencies', and 'version' props`,
-            () => {
-              expect(plugin.toJSON())
+        describe(`install()`, () => {
+          it(`should return the Plugin instance`, () => {
+            expect(plugin.install())
+              .to
+              .equal(plugin);
+          });
+
+          describe(`if not installed`, () => {
+            beforeEach(() => {
+              plugin.installed = false;
+            });
+
+            it(`should install`, () => {
+              plugin.func = sandbox.stub();
+              plugin.install();
+              expect(plugin.func)
                 .to
                 .have
-                .keys('name', 'dependencies', 'version');
+                .been
+                .calledWithExactly(plugin.api, plugin.opts);
             });
+
+            it(`should emit "will-install"`, () => {
+              expect(() => plugin.install())
+                .to
+                .emitFrom(plugin, 'will-install');
+            });
+
+            it(`should emit "did install"`, () => {
+              expect(() => plugin.install())
+                .to
+                .emitFrom(plugin, 'did-install');
+            });
+          });
+
+          describe(`if already installed`, () => {
+            beforeEach(() => {
+              plugin.installed = true;
+            });
+
+            it(`should not install`, () => {
+              plugin.func = sandbox.stub();
+              plugin.install();
+              expect(plugin.func).not.to.have.been.called;
+            });
+
+            it(`should emit "already-installed"`, () => {
+              expect(() => plugin.install())
+                .to
+                .emitFrom(plugin, 'already-installed');
+            });
+
+            it(`should not emit "will-install"`, () => {
+              expect(() => plugin.install())
+                .not
+                .to
+                .emitFrom(plugin, 'will-install');
+            });
+
+            it(`should not emit "did install"`, () => {
+              expect(() => plugin.install())
+                .not
+                .to
+                .emitFrom(plugin, 'did-install');
+            });
+          });
+        });
+
+        describe(`installWhenReady()`, () => {
+          describe(`if called without parameters`, () => {
+            it(`should install`, () => {
+              sandbox.stub(plugin, 'install');
+              plugin.installWhenReady();
+              expect(plugin.install).to.have.been.calledOnce;
+            });
+          });
+
+          it(`should return the plugin instance`, () => {
+            expect(plugin.installWhenReady())
+              .to
+              .equal(plugin);
+          });
+
+          describe(`when passed an array of missing deps`, () => {
+            let deps;
+
+            beforeEach(() => {
+              sandbox.spy(plugin.api, 'once');
+              sandbox.stub(plugin, 'install');
+              deps = [
+                'foo',
+                'bar',
+                'baz',
+                'quux'
+              ];
+            });
+
+            it(`should subscribe to the API's "did-install" event for each dep`,
+              () => {
+                plugin.installWhenReady(deps);
+
+                _.forEach(deps, dep => {
+                  expect(plugin.api.once)
+                    .to
+                    .have
+                    .been
+                    .calledWith(`did-install:${dep}`);
+                });
+              });
+
+            describe(`once all did-install:<plugin-name> events are emitted`,
+              () => {
+                describe(`in ascending order`, () => {
+                  it(`should install`, () => {
+                    plugin.installWhenReady(deps);
+
+                    _.forEach(deps, dep => {
+                      plugin.api.emit(`did-install:${dep}`);
+                    });
+
+                    expect(plugin.install).to.have.been.calledOnce;
+                  });
+                });
+
+                describe(`in descending order`, () => {
+                  it(`should install`, () => {
+                    plugin.installWhenReady(deps);
+
+                    _.forEach(deps.reverse(), dep => {
+                      plugin.api.emit(`did-install:${dep}`);
+                    });
+
+                    expect(plugin.install).to.have.been.calledOnce;
+                  });
+                });
+
+                describe(`in random order`, () => {
+                  it(`should install`, () => {
+                    plugin.installWhenReady(deps);
+
+                    _(deps)
+                      .shuffle()
+                      .forEach(dep => {
+                        plugin.api.emit(`did-install:${dep}`);
+                      })
+                      .value();
+
+                    expect(plugin.install).to.have.been.calledOnce;
+                  });
+                });
+              });
+          });
         });
       });
     });
