@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = {
-  API: require('./api'),
+  PluginMap: require('./plugin-map'),
   Plugin: require('./plugin'),
-  Suite: require('./../ui/suite'),
+  Pluggable: require('./pluggable'),
   base: require('./base')
 };
