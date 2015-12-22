@@ -1,10 +1,11 @@
 'use strict';
 
-const API = require('./../core/api');
+const stampit = require('stampit');
 const Suite = require('./suite');
+const EventEmittable = require('../core/base/eventemittable');
 
-const UI = API
-  .methods({
+const UI = stampit({
+  methods: {
     createSuite(suiteDef) {
       const suite = Suite(suiteDef);
       this.emit('suite', suite);
@@ -36,10 +37,9 @@ const UI = API
     },
     onlyTest() {
 
-    },
-    expose(...args) {
-      return this.mocha.expose(...args);
     }
-  });
+  }
+})
+  .compose(EventEmittable);
 
 module.exports = UI;

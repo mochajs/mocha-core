@@ -1,8 +1,8 @@
 'use strict';
-const noop = require('lodash/utility/noop');
+const _ = require('lodash');
 
 describe(`ui`, () => {
-  const UI = require('../../src/ui');
+  const UI = require('../../../src/ui/index');
 
   describe(`UI()`, () => {
     describe(`method`, () => {
@@ -16,8 +16,11 @@ describe(`ui`, () => {
         it(`should return a Suite`, () => {
           expect(ui.createSuite({
             title: 'my suite',
-            func: noop
-          })).to.be.an('object');
+            func: _.noop
+          }))
+            .to
+            .be
+            .an('object');
         });
       });
     });
