@@ -1,19 +1,13 @@
 'use strict';
 
 const EventEmittable = require('./base/eventemittable');
-const customError = require('../util/custom-error');
 const stampit = require('stampit');
 const makeArray = require('../util/make-array');
 const _ = require('lodash');
 
-const PluginError = customError('PluginError');
-
 const Plugin = stampit({
   props: {
     installed: false
-  },
-  static: {
-    PluginError
   },
   init() {
     const depGraph = this.depGraph;
@@ -31,7 +25,7 @@ const Plugin = stampit({
     try {
       depGraph.dependenciesOf(name);
     } catch (e) {
-      throw PluginError(`Cyclic dependency detected in "${name}": ${e.message}`);
+      throw new Error(`Cyclic dependency detected in "${name}": ${e.message}`);
     }
 
     delete this.depGraph;
