@@ -1,22 +1,21 @@
 'use strict';
 
-const Plugin = require('./plugin');
-const EventEmittable = require('./base/eventemittable');
-const _ = require('lodash');
 const stampit = require('stampit');
-const Graphable = require('./base/graphable');
 const PluginMap = require('./plugin-map');
-const APIError = require('../util/custom-error')('APIError');
+const Graphable = require('./base/graphable');
+const EventEmittable = require('./base/eventemittable');
+const Plugin = require('./plugin');
 
-const API = stampit({
-  refs: {
-    depGraph: Graphable()
-  },
+const _ = require('lodash');
+
+const Pluggable = stampit({
   init() {
-    this.plugins = PluginMap();
+    _.defaults(this, {
+      depGraph: Graphable(),
+      plugins: PluginMap()
+    });
   },
   static: {
-    APIError,
     normalizeAttributes(attrs) {
       attrs = _.cloneDeep(attrs);
       const pkg = attrs.pkg;
@@ -32,16 +31,13 @@ const API = stampit({
     }
   },
   methods: {
-    spawn(api = API) {
-      return api.props({depGraph: this.depGraph});
-    },
     use(func, opts = {}) {
-      const attrs = API.normalizeAttributes(func.attributes);
+      const attrs = Pluggable.normalizeAttributes(func.attributes);
       const {name} = attrs;
       const plugins = this.plugins;
 
       if (!plugins.isUsable(attrs)) {
-        throw APIError(`Plugin "${name}" cannot be used multiple times`);
+        throw new Error(`Plugin "${name}" cannot be used multiple times`);
       }
 
       const plugin = Plugin(_.assign({
@@ -57,10 +53,10 @@ const API = stampit({
       const missingDeps = _.reject(plugin.dependencies,
         dep => plugins.isInstalled(dep));
 
-      if (missingDeps.length) {
-        plugin.installWhenReady(missingDeps);
-      } else {
+      if (_.isEmpty(missingDeps)) {
         plugin.install();
+      } else {
+        plugin.installWhenReady(missingDeps);
       }
 
       return this;
@@ -69,4 +65,4 @@ const API = stampit({
 })
   .compose(EventEmittable);
 
-module.exports = API;
+module.exports = Pluggable;
