@@ -22,13 +22,6 @@ describe(`core/pluggable`, () => {
         .an('object');
     });
 
-    it(`should return an object with a "plugins" Map`, () => {
-      expect(Pluggable().plugins)
-        .to
-        .be
-        .a('Map');
-    });
-
     describe(`method`, () => {
       let pluggable;
       let plugin;
@@ -58,7 +51,7 @@ describe(`core/pluggable`, () => {
 
         it(`should keep the plugin in its "plugins" Map`, () => {
           pluggable.use(plugin);
-          expect(pluggable.plugins.get(attributes.name))
+          expect(pluggable.pluginMap.get(attributes.name))
             .to
             .be
             .an('object');
@@ -132,7 +125,7 @@ describe(`core/pluggable`, () => {
 
         describe(`if the plugin is not usable`, () => {
           beforeEach(() => {
-            sandbox.stub(pluggable.plugins, 'isUsable')
+            sandbox.stub(pluggable.pluginMap, 'isUsable')
               .returns(false);
           });
 

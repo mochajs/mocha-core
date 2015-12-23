@@ -12,7 +12,7 @@ const Pluggable = stampit({
   init() {
     _.defaults(this, {
       depGraph: Graphable(),
-      plugins: PluginMap()
+      pluginMap: PluginMap()
     });
   },
   static: {
@@ -34,29 +34,28 @@ const Pluggable = stampit({
     use(func, opts = {}) {
       const attrs = Pluggable.normalizeAttributes(func.attributes);
       const {name} = attrs;
-      const plugins = this.plugins;
+      const pluginMap = this.pluginMap;
+      const depGraph = this.depGraph;
+      const api = this;
 
-      if (!plugins.isUsable(attrs)) {
+      if (!pluginMap.isUsable(attrs)) {
         throw new Error(`Plugin "${name}" cannot be used multiple times`);
       }
 
       const plugin = Plugin(_.assign({
         func,
         opts,
-        depGraph: this.depGraph,
-        api: this
+        depGraph,
+        api
       }, attrs))
         .once('did-install', () => this.emit(`did-install:${name}`));
 
-      plugins.set(name, plugin);
+      pluginMap.set(name, plugin);
 
-      const missingDeps = _.reject(plugin.dependencies,
-        dep => plugins.isInstalled(dep));
-
-      if (_.isEmpty(missingDeps)) {
+      if (pluginMap.isInstallable(name)) {
         plugin.install();
       } else {
-        plugin.installWhenReady(missingDeps);
+        plugin.installWhenReady(pluginMap.missingDeps(name));
       }
 
       return this;
