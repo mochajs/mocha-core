@@ -8,8 +8,11 @@ const PluginMap = Mappable.methods({
     return this.has(name) && this.get(name).installed;
   },
   isInstallable(name) {
-    return this.isInstalled(name) &&
+    return !this.isInstalled(name) &&
       _.every(this.get(name).dependencies, dep => this.isInstalled(dep));
+  },
+  missingDeps(name) {
+    return _.reject(this.get(name).dependencies, dep => this.isInstalled(dep));
   },
   isUsable({name, version}) {
     const existingPlugin = this.get(name);
