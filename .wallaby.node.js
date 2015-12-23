@@ -25,7 +25,6 @@ module.exports = function wallabyConfig(wallaby) {
       })
     },
     testFramework: 'mocha',
-    debug: true,
     bootstrap: function bootstrap(wallaby) {
       // set NODE_PATH here once we start forking things
       require(require('path')
