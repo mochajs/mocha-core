@@ -17,7 +17,6 @@ const Pluggable = stampit({
   },
   static: {
     normalizeAttributes(attrs) {
-      attrs = _.cloneDeep(attrs);
       const pkg = attrs.pkg;
       if (_.isObject(pkg)) {
         _.defaults(attrs, {

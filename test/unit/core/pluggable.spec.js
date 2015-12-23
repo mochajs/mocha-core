@@ -141,10 +141,9 @@ describe(`core/pluggable`, () => {
     describe(`static`, () => {
       describe(`method`, () => {
         describe(`normalizeAttributes()`, () => {
-          it(`should return a clone of the object`, () => {
+          it(`should not return a clone of the object`, () => {
             const attrs = {};
             expect(Pluggable.normalizeAttributes(attrs))
-              .not
               .to
               .eql(attrs);
           });
