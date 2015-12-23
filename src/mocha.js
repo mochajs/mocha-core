@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const stampit = require('stampit');
 const Pluggable = require('./core/pluggable');
 const UI = require('./ui');
@@ -17,13 +18,19 @@ const Mocha = stampit({
     },
     createReporter() {
       return Reporter({mocha: this});
+    },
+    expose(...prototypes) {
+      _.forEach(prototypes, prototype => {
+        _.mixin(this, prototype, {chain: false});
+      });
+
+      return this;
     }
   }
 })
   .compose(Pluggable)
-  .init(function initMocha({stamp}) {
+  .init(function initMocha() {
     this.use(this.ui);
-    this.Mocha = stamp;
   });
 
 module.exports = Mocha;
