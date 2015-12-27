@@ -3,6 +3,7 @@
 const stampit = require('stampit');
 const Suite = require('./suite');
 const EventEmittable = require('../core/base/eventemittable');
+const Decoratable = require('../core/base/decoratable');
 
 const UI = stampit({
   methods: {
@@ -40,6 +41,6 @@ const UI = stampit({
     }
   }
 })
-  .compose(EventEmittable);
+  .compose(EventEmittable, Decoratable);
 
 module.exports = UI;
