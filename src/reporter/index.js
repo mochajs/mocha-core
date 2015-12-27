@@ -1,3 +1,5 @@
 'use strict';
 
-module.exports = {};
+const stampit = require('stampit');
+
+module.exports = stampit();
