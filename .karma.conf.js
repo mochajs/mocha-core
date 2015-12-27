@@ -39,9 +39,7 @@ module.exports = function (config) {
         [
           'babelify',
           {
-            presets: ['es2015'],
-            global: true,
-            ignore: /\/node_modules\/(?!joi)/
+            presets: ['es2015']
           }
         ],
         require('browserify-istanbul')
