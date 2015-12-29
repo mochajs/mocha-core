@@ -40,14 +40,6 @@ module.exports = function(config) {
           {
             presets: ['es2015']
           }
-        ],
-        [
-          'browserify-istanbul',
-          {
-            instrumenterConfig: {
-              embedSource: true
-            }
-          }
         ]
       ]
     },
@@ -55,29 +47,11 @@ module.exports = function(config) {
     concurrency: require('os')
       .cpus().length,
 
-    coverageReporter: {
-      dir: 'coverage',
-      reporters: [
-        {
-          type: 'html',
-          subdir: '.'
-        },
-        {
-          type: 'text-summary'
-        },
-        {
-          type: 'lcovonly',
-          subdir: '.'
-        }
-      ]
-    },
-
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: [
-      'mocha',
-      'coverage'
+      'mocha'
     ],
 
     // web server port
