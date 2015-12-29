@@ -36,4 +36,4 @@ const Mocha = stampit({
     this.use(this.ui);
   });
 
-module.exports = Mocha;
+module.exports = Mocha.refs({Mocha});
