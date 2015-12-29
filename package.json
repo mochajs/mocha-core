@@ -15,31 +15,36 @@
     "npm": ">=1.7.4"
   },
   "files": [
-    "lib/"
+    "lib/",
+    "dist/"
   ],
   "scripts": {
-    "test": "npm run lint",
-    "build": "npm run build-node; npm run build-browser",
-    "build-node": "rimraf lib; babel src --out-dir lib",
-    "build-browser": "npm run build-browser-main; npm run build-browser-min",
-    "build-browser-main": "browserify --standalone mocha src --outfile mocha.js",
-    "build-browser-min": "browserify --standalone mocha --global-transform uglifyify src --outfile mocha.min.js",
+    "build": "npm run build:node && npm run build:browser",
+    "build:browser": "mkdirp dist && npm run build:browser:main && npm run build:browser:min",
+    "build:browser:main": "browserify --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] src --outfile dist/mocha.js",
+    "build:browser:min": "browserify --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] --global-transform uglifyify src --outfile dist/mocha.min.js",
+    "build:node": "rimraf lib && babel src --out-dir lib",
+    "check": "nsp check && npm run deps",
+    "deps": "npm run deps:missing && npm run deps:extra",
+    "deps:extra": "dependency-check package.json --extra --no-dev --ignore-module rimraf --ignore-module mkdirp",
+    "deps:missing": "dependency-check package.json",
     "lint": "eslint src/ test/ .*.js",
-    "test-unit": "npm run test-node-unit; npm run test-browser-unit",
-    "test-node-unit": "babel-node node_modules/.bin/_mocha --require test/unit/fixture.js --recursive test/unit/",
-    "test-browser-unit": "karma start .karma.conf.js"
+    "prepublish": "npm run check && npm run build",
+    "publish-please": "publish-please",
+    "test": "npm run lint && npm run test:unit",
+    "test:unit": "npm run test:unit:node && npm run test:unit:browser",
+    "test:unit:browser": "karma start .karma.conf.js --single-run",
+    "test:unit:node": "babel-node node_modules/.bin/_mocha --require test/unit/fixture.js --recursive test/unit/"
   },
   "keywords": [],
   "dependencies": {
-    "babel-polyfill": "^6.2.0",
     "bluebird": "^3.0.5",
-    "continuation-local-storage": "^3.1.4",
-    "core-js": "^1.2.6",
-    "debug": "^2.2.0",
+    "core-js": "^2.0.0",
     "dependency-graph": "^0.4.1",
-    "errorist": "^0.1.4",
     "lodash": "^3.10.1",
+    "mkdirp": "^0.5.1",
     "mocha-ui-bdd": "file:../mocha-ui-bdd",
+    "rimraf": "^2.4.4",
     "stampit": "^2.1.1"
   },
   "devDependencies": {
@@ -47,13 +52,15 @@
     "babel-core": "^6.1.2",
     "babel-eslint": "^4.1.5",
     "babel-istanbul": "^0.5.9",
-    "babel-preset-es2015": "^6.1.2",
+    "babel-preset-es2015": "^6.3.13",
     "babelify": "^7.2.0",
+    "bannerify": "vekat/bannerify#feature-option",
     "browserify": "^12.0.1",
     "browserify-istanbul": "^0.2.1",
     "chai": "^3.4.0",
     "chai-as-promised": "^5.1.0",
     "chai-eventemitter": "^1.1.0",
+    "dependency-check": "^2.5.1",
     "eslint": "^1.10.3",
     "eslint-config-semistandard": "^5.0.0",
     "eslint-config-standard": "^4.4.0",
@@ -70,18 +77,16 @@
     "karma-coverage": "^0.5.3",
     "karma-mocha": "^0.2.1",
     "karma-mocha-reporter": "^1.1.3",
-    "karma-phantomjs2-launcher": "^0.3.2",
+    "karma-phantomjs-launcher": "^0.2.2",
     "mocha": "^2.3.4",
-    "phantomjs2-ext": "^0.1.0",
+    "nsp": "^2.2.0",
+    "phantomjs": "^1.9.19",
+    "phantomjs-polyfill": "0.0.1",
     "pre-commit": "^1.1.2",
     "publish-please": "^1.1.0",
-    "rimraf": "^2.4.4",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
     "uglifyify": "^3.0.1"
-  },
-  "browser": {
-    "lib/index.js": "mocha.js"
   },
   "browserify": {
     "transform": [

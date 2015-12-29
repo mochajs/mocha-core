@@ -19,6 +19,7 @@ rules:
   lodash3/prop-shorthand: 1
   lodash3/matches-shorthand:
     - 1
+    - always
     - 3
   lodash3/matches-prop-shorthand: 1
   lodash3/prefer-chain: 1
