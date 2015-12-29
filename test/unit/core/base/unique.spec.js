@@ -1,5 +1,7 @@
 'use strict';
 
+const SYMBOL = global.Symbol ? 'Symbol' : 'Object';
+
 describe(`core/unique`, () => {
   const Unique = require('../../../../src/core/base/unique');
 
@@ -8,7 +10,7 @@ describe(`core/unique`, () => {
       expect(Unique().id)
         .to
         .be
-        .a('symbol');
+        .a(SYMBOL);
     });
   });
 });

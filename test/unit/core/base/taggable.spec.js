@@ -1,5 +1,7 @@
 'use strict';
 
+const SET = global.Set ? 'Set' : 'Object';
+
 describe(`core/base/taggable`, () => {
   const Taggable = require('../../../../src/core/base/taggable');
 
@@ -12,7 +14,7 @@ describe(`core/base/taggable`, () => {
             expect(obj.tags)
               .to
               .be
-              .a('Set');
+              .a(SET);
           });
 
         it(`should each each argument to the instantiated object's "tags" prop`,

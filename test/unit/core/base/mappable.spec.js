@@ -1,14 +1,9 @@
 'use strict';
 
+const MAP = global.Map ? 'Map' : 'Object';
+
 describe(`core/base/mappable`, () => {
   const Mappable = require('../../../../src/core/base/mappable');
-
-  it(`should return a Map`, () => {
-    expect(Mappable())
-      .to
-      .be
-      .a('Map');
-  });
 
   describe(`Mappable()`, () => {
     let map;
@@ -17,7 +12,7 @@ describe(`core/base/mappable`, () => {
       expect(map)
         .to
         .be
-        .a('Map');
+        .a(MAP);
     });
 
     it(`should support custom methods`, () => {
@@ -33,17 +28,23 @@ describe(`core/base/mappable`, () => {
 
     it(`should support instance props`, () => {
       map = Mappable({foo: 'bar'});
-      expect(map.foo).to.equal('bar');
+      expect(map.foo)
+        .to
+        .equal('bar');
     });
 
     it(`should support defaults`, () => {
       map = Mappable.refs({foo: 'bar'})({foo: 'baz'});
-      expect(map.foo).to.equal('baz');
+      expect(map.foo)
+        .to
+        .equal('baz');
     });
 
     it(`should support fixed properties`, () => {
       map = Mappable.props({foo: 'bar'})({foo: 'baz'});
-      expect(map.foo).to.equal('bar');
+      expect(map.foo)
+        .to
+        .equal('bar');
     });
   });
 });

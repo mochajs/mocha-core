@@ -1,11 +1,11 @@
 'use strict';
 
-describe(`core/eventemittable`, () => {
+describe(`core/base/eventemittable`, () => {
   const EventEmittable = require('../../../../src/core/base/eventemittable');
   let sandbox;
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create('core/eventemittable');
+    sandbox = sinon.sandbox.create('core/base/eventemittable');
   });
 
   afterEach(() => {
@@ -70,19 +70,18 @@ describe(`core/eventemittable`, () => {
       describe(`waitOn()`, () => {
         it(`should return a Promise which is resolved when an event is emitted`,
           () => {
-            setImmediate(() => ee.emit('bar'));
-            return expect(ee.waitOn('bar')).to.eventually.be.resolved;
+            const t = setTimeout(() => ee.emit('bar'));
+            return expect(ee.waitOn('bar'))
+              .to
+              .eventually
+              .be
+              .undefined
+              .then(() => clearTimeout(t));
           });
 
         describe(`if a finite "timeout" parameter is supplied`, () => {
           it(`should timeout`, () => {
-            const t = setTimeout(() => ee.emit('bar'), 20);
-            return expect(ee.waitOn('bar', 10))
-              .to
-              .eventually
-              .be
-              .rejected
-              .then(() => clearTimeout(t));
+            return expect(ee.waitOn('bar', 10)).to.eventually.be.rejected;
           });
         });
 
@@ -94,31 +93,38 @@ describe(`core/eventemittable`, () => {
 
         describe(`if the event emits a single parameter`, () => {
           it(`should return the parameter`, () => {
-            setImmediate(() => ee.emit('bar', 'baz'));
+            const t = setTimeout(() => ee.emit('bar', 'baz'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
-              .equal('baz');
+              .equal('baz')
+              .then(() => clearTimeout(t));
           });
         });
 
         describe(`if the event emits multiple parameters`, () => {
           it(`should return them as an array`, () => {
-            setImmediate(() => ee.emit('bar', 'baz', 'quux'));
+            const t = setTimeout(() => ee.emit('bar', 'baz', 'quux'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
               .eql([
                 'baz',
                 'quux'
-              ]);
+              ])
+              .then(() => clearTimeout(t));
           });
         });
 
         describe(`if the event emits no parameters`, () => {
           it(`should return nothing`, () => {
-            setImmediate(() => ee.emit('bar'));
-            return expect(ee.waitOn('bar')).to.eventually.be.undefined;
+            const t = setTimeout(() => ee.emit('bar'));
+            return expect(ee.waitOn('bar'))
+              .to
+              .eventually
+              .be
+              .undefined
+              .then(() => clearTimeout(t));
           });
         });
       });
