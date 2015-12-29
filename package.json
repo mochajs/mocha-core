@@ -92,10 +92,5 @@
     "transform": [
       "babelify"
     ]
-  },
-  "babel": {
-    "presets": [
-      "es2015"
-    ]
   }
 }
