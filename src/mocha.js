@@ -5,11 +5,13 @@ const Pluggable = require('./core/pluggable');
 const UI = require('./ui');
 const Reporter = require('./reporter');
 const Runner = null;
+const Suite = require('./ui/suite');
 const _ = require('lodash');
 
 const Mocha = stampit({
   refs: {
-    ui: require('mocha-ui-bdd')
+    ui: require('mocha-ui-bdd'),
+    rootSuite: Suite()
   },
   methods: {
     run() {
@@ -21,6 +23,9 @@ const Mocha = stampit({
       return API(opts);
     },
     createUI(opts = {}) {
+      _.defaults(opts, {
+        rootSuite: this.rootSuite
+      });
       return this.createAPI(UI, opts);
     },
     createReporter(opts = {}) {

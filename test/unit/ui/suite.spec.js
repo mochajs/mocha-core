@@ -20,21 +20,68 @@ describe('ui/suite', () => {
     });
 
     it(`should return an object with a null "parent" prop`, () => {
-      expect(Suite({func}).parent).to.be.null;
+      expect(Suite().parent).to.be.null;
+    });
+
+    it(`should return an object with a false "pending" prop`, () => {
+      expect(Suite().pending).to.be.false;
+    });
+
+    it(`should return an object with an empty "children" prop`, () => {
+      const suite = Suite();
+      expect(suite.children).to.be.an('array');
+      expect(suite.children).to.be.empty;
+    });
+
+    describe(`when given a non-falsy "parent" prop`, () => {
+      let parent;
+
+      beforeEach(() => {
+        parent = Suite();
+        sandbox.stub(parent, 'addChild').returns(parent);
+      });
+
+      it(`should add the suite as a child of the parent`, () => {
+        const suite = Suite({parent});
+        expect(parent.addChild).to.have.been.calledWithExactly(suite);
+      });
+
+      describe(`if parent's "pending" prop is true`, () => {
+        beforeEach(() => {
+          parent.pending = true;
+        });
+
+        it(`should inherit the "pending" prop`, () => {
+          expect(Suite({parent}).pending).to.be.true;
+        });
+      });
+
+      describe(`if parent's "pending" prop is false`, () => {
+        it(`should inherit the "pending" prop`, () => {
+          expect(Suite({parent}).pending).not.to.be.true;
+        });
+      });
     });
 
     describe(`method`, () => {
-      describe(`run()`, () => {
+      describe(`addChild()`, () => {
+        it(`should add a suite to the "children" Array`, () => {
+          const parent = Suite();
+          const child = Suite();
+          parent.addChild(child);
+          expect(parent.children[0]).to.equal(child);
+        });
+      });
+
+      describe(`execute()`, () => {
         it(`should execute the "func" property`, () => {
           const suite = Suite({func});
-          return suite.run()
-            .then(() => {
-              expect(func)
-                .to
-                .have
-                .been
-                .calledWithExactly(suite);
-            });
+          suite.execute();
+          expect(func)
+            .to
+            .have
+            .been
+            .calledOn(suite);
         });
       });
     });

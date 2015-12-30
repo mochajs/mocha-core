@@ -2,17 +2,26 @@
 
 const stampit = require('stampit');
 const Unique = require('./../core/base/unique');
-const Promise = require('bluebird');
 
 const Suite = stampit({
   refs: {
     parent: null,
+    pending: false,
     children: []
   },
   methods: {
-    run() {
-      return Promise.try(this.func, [this], this)
-        .return(this);
+    addChild(suite) {
+      this.children.push(suite);
+      return this;
+    },
+    execute() {
+      this.func();
+    }
+  },
+  init() {
+    if (this.parent) {
+      this.pending = this.parent.pending || this.pending;
+      this.parent.addChild(this);
     }
   }
 })
