@@ -47,7 +47,6 @@ describe(`ui`, () => {
 
       beforeEach(() => {
         ui = UI();
-        sandbox.stub(ui, 'emit');
       });
 
       describe(`setSuiteContext()`, () => {
@@ -63,7 +62,6 @@ describe(`ui`, () => {
 
       describe(`createSuite()`, () => {
         let suiteDef;
-        let suite;
 
         beforeEach(() => {
           suiteDef = {
@@ -74,7 +72,8 @@ describe(`ui`, () => {
             execute: sandbox.stub()
           });
           sandbox.spy(ui, 'Suite');
-          suite = ui.createSuite(suiteDef);
+          sandbox.stub(ui, 'setSuiteContext');
+          sandbox.spy(ui, 'createSuite');
         });
 
         it(`should return a Suite`, () => {
@@ -85,6 +84,7 @@ describe(`ui`, () => {
         });
 
         it(`should instantiate a Suite`, () => {
+          ui.createSuite(suiteDef);
           expect(ui.Suite)
             .to
             .have
@@ -93,14 +93,13 @@ describe(`ui`, () => {
         });
 
         it(`should emit 'will-execute-suite'`, () => {
-          expect(ui.emit)
+          expect(() => ui.createSuite(suiteDef))
             .to
-            .have
-            .been
-            .calledWithExactly('will-execute-suite', suite);
+            .emitFrom(ui, 'will-execute-suite');
         });
 
         it(`should call suite.execute()`, () => {
+          const suite = ui.createSuite(suiteDef);
           expect(suite.execute)
             .to
             .have
@@ -109,11 +108,9 @@ describe(`ui`, () => {
         });
 
         it(`should emit 'did-execute-suite'`, () => {
-          expect(ui.emit)
+          expect(() => ui.createSuite(suiteDef))
             .to
-            .have
-            .been
-            .calledWithExactly('did-execute-suite', suite);
+            .emitFrom(ui, 'did-execute-suite');
         });
       });
     });
