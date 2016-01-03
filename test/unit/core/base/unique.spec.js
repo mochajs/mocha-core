@@ -12,5 +12,16 @@ describe(`core/unique`, () => {
         .be
         .a(SYMBOL);
     });
+
+    it(`should assign an id to objects created by stamps composed from this stamp`,
+      () => {
+        expect(Unique.methods({
+          foo() {
+          }
+        })().id)
+          .to
+          .be
+          .a(SYMBOL);
+      });
   });
 });
