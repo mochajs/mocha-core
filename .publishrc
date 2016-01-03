@@ -1,0 +1,5 @@
+{
+  "prepublishScript": "npm run test",
+  "tag": "canary",
+  "confirm": false
+}
