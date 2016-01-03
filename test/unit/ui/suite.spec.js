@@ -29,7 +29,10 @@ describe('ui/suite', () => {
 
     it(`should return an object with an empty "children" prop`, () => {
       const suite = Suite();
-      expect(suite.children).to.be.an('array');
+      expect(suite.children)
+        .to
+        .be
+        .an('array');
       expect(suite.children).to.be.empty;
     });
 
@@ -38,12 +41,17 @@ describe('ui/suite', () => {
 
       beforeEach(() => {
         parent = Suite();
-        sandbox.stub(parent, 'addChild').returns(parent);
+        sandbox.stub(parent, 'addChild')
+          .returns(parent);
       });
 
       it(`should add the suite as a child of the parent`, () => {
         const suite = Suite({parent});
-        expect(parent.addChild).to.have.been.calledWithExactly(suite);
+        expect(parent.addChild)
+          .to
+          .have
+          .been
+          .calledWithExactly(suite);
       });
 
       describe(`if parent's "pending" prop is true`, () => {
@@ -51,14 +59,42 @@ describe('ui/suite', () => {
           parent.pending = true;
         });
 
-        it(`should inherit the "pending" prop`, () => {
-          expect(Suite({parent}).pending).to.be.true;
+        describe(`and function is not passed`, () => {
+          it(`should inherit the "pending" prop`, () => {
+            expect(Suite({parent}).pending).to.be.true;
+          });
+        });
+
+        describe(`and function is passed`, () => {
+          function func() {
+          }
+
+          it(`should inherit the "pending" prop`, () => {
+            expect(Suite({
+              parent,
+              func
+            }).pending).to.be.true;
+          });
         });
       });
 
       describe(`if parent's "pending" prop is false`, () => {
-        it(`should inherit the "pending" prop`, () => {
-          expect(Suite({parent}).pending).not.to.be.true;
+        describe(`and function is not passed`, () => {
+          it(`should be pending`, () => {
+            expect(Suite({parent}).pending).to.be.true;
+          });
+        });
+
+        describe(`and function is passed`, () => {
+          function func() {
+          }
+
+          it(`should inherit the "pending" prop`, () => {
+            expect(Suite({
+              parent,
+              func
+            }).pending).not.to.be.true;
+          });
         });
       });
     });
@@ -69,7 +105,9 @@ describe('ui/suite', () => {
           const parent = Suite();
           const child = Suite();
           parent.addChild(child);
-          expect(parent.children[0]).to.equal(child);
+          expect(parent.children[0])
+            .to
+            .equal(child);
         });
       });
 
