@@ -4,14 +4,14 @@ const stampit = require('stampit');
 const Pluggable = require('./core/pluggable');
 const UI = require('./ui');
 const Reporter = require('./reporter');
-const Runner = null;
+const Runner = require('./runner');
 const Suite = require('./ui/suite');
 const _ = require('lodash');
 
 const Mocha = stampit({
   refs: {
     ui: require('mocha-ui-bdd'),
-    rootSuite: Suite()
+    //runner: require('mocha-runner-serial')
   },
   methods: {
     run() {
@@ -32,8 +32,14 @@ const Mocha = stampit({
       return this.createAPI(Reporter, opts);
     },
     createRunner(opts = {}) {
+      _.defaults(opts, {
+        rootSuite: this.rootSuite
+      });
       return this.createAPI(Runner, opts);
     }
+  },
+  init() {
+    this.rootSuite = Suite();
   }
 })
   .compose(Pluggable)
