@@ -112,7 +112,7 @@ describe('ui/suite', () => {
       });
 
       describe(`execute()`, () => {
-        it(`should execute the "func" property`, () => {
+        it(`should execute the "func" property in the suite's context`, () => {
           const suite = Suite({func});
           suite.execute();
           expect(func)
