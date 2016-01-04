@@ -1,18 +1,20 @@
 'use strict';
 
-const MAP = global.Map ? 'Map' : 'Object';
-
 describe(`core/base/mappable`, () => {
   const Mappable = require('../../../../src/core/base/mappable');
 
   describe(`Mappable()`, () => {
     let map;
 
-    afterEach(() => {
-      expect(map)
+    it(`should return a Map`, () => {
+      expect(Mappable()).to.be.a(global.Map ? 'Map' : 'Object');
+    });
+
+    it(`should instantiate the Map with the instance object`, () => {
+      map = Mappable({foo: 'bar'});
+      expect(map.get('foo'))
         .to
-        .be
-        .a(MAP);
+        .equal('bar');
     });
 
     it(`should support custom methods`, () => {
@@ -26,18 +28,11 @@ describe(`core/base/mappable`, () => {
         .a('function');
     });
 
-    it(`should support instance props`, () => {
-      map = Mappable({foo: 'bar'});
+    it(`should support defaults`, () => {
+      map = Mappable.refs({foo: 'bar'})();
       expect(map.foo)
         .to
         .equal('bar');
-    });
-
-    it(`should support defaults`, () => {
-      map = Mappable.refs({foo: 'bar'})({foo: 'baz'});
-      expect(map.foo)
-        .to
-        .equal('baz');
     });
 
     it(`should support fixed properties`, () => {
@@ -45,6 +40,9 @@ describe(`core/base/mappable`, () => {
       expect(map.foo)
         .to
         .equal('bar');
+      expect(map.get('foo'))
+        .to
+        .equal('baz');
     });
   });
 });
