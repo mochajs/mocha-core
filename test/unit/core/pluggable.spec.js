@@ -42,12 +42,31 @@ describe(`core/pluggable`, () => {
       });
 
       describe(`use()`, () => {
+        beforeEach(() => {
+          sandbox.spy(pluggable, 'Plugin');
+        });
+
         function stubInstall() {
           sandbox.stub(Plugin.fixed.methods, 'install', function() {
-            this.emit('did-install');
+            this.emit('installed');
           });
-          sandbox.stub(Plugin.fixed.methods, 'installWhenReady');
         }
+
+        it(`should instantiate a Plugin`, () => {
+          pluggable.use(plugin);
+          expect(pluggable.Plugin)
+            .to
+            .have
+            .been
+            .calledWithExactly({
+              func: plugin,
+              opts: {},
+              depGraph: pluggable.depGraph,
+              api: pluggable,
+              name: 'foo',
+              dependencies: []
+            });
+        });
 
         it(`should keep the plugin in its "plugins" Map`, () => {
           pluggable.use(plugin);
@@ -73,53 +92,32 @@ describe(`core/pluggable`, () => {
             .equal(pluggable);
         });
 
-        describe(`if the plugin has no dependencies`, () => {
-          beforeEach(stubInstall);
-          it(`should install`, () => {
-            pluggable.use(plugin);
-            expect(Plugin.fixed.methods.install).to.have.been.calledOnce;
-          });
+        it(`should install the plugin`, () => {
+          stubInstall();
+          pluggable.use(plugin);
+          expect(Plugin.fixed.methods.install).to.have.been.calledOnce;
+        });
 
-          it(`should emit "did-install"`, () => {
+        describe(`if the plugin is ready to be installed`, () => {
+          beforeEach(stubInstall);
+
+          it(`should emit "did-install:<name>"`, () => {
             expect(() => pluggable.use(plugin))
               .to
               .emitFrom(pluggable, `did-install:${attributes.name}`);
           });
         });
 
-        describe(`if a plugin's dependencies are installed`, () => {
+        describe(`if a is not ready to be installed`, () => {
           beforeEach(() => {
-            const dep = makePlugin({name: 'dep'});
-
-            pluggable.use(dep);
-            attributes.dependencies =
-              ['dep'].concat(attributes.dependencies || []);
-
-            stubInstall();
+            sandbox.stub(Plugin.fixed.methods, 'install');
           });
 
-          it(`should install`, () => {
-            pluggable.use(plugin);
-            expect(Plugin.fixed.methods.install).to.have.been.calledOnce;
-          });
-        });
-
-        describe(`if a plugin's dependencies are not installed`, () => {
-          beforeEach(() => {
-            attributes.dependencies =
-              ['dep'].concat(attributes.dependencies || []);
-
-            stubInstall();
-          });
-
-          it(`should install when ready`, () => {
-            pluggable.use(plugin);
-            expect(Plugin.fixed.methods.install).not.to.have.been.called;
-            expect(Plugin.fixed.methods.installWhenReady)
+          it(`should not emit "did-install"`, () => {
+            expect(() => pluggable.use(plugin))
+              .not
               .to
-              .have
-              .been
-              .calledWithExactly(['dep']);
+              .emitFrom(pluggable, `did-install:${attributes.name}`);
           });
         });
 
@@ -132,7 +130,7 @@ describe(`core/pluggable`, () => {
           it(`should throw`, () => {
             expect(() => pluggable.use(plugin))
               .to
-              .throw(Error, /multiple/i);
+              .throw(Error, /already/);
           });
         });
       });

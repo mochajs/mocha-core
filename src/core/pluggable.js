@@ -9,6 +9,7 @@ const Plugin = require('./plugin');
 const _ = require('lodash');
 
 const Pluggable = stampit({
+  refs: {Plugin},
   init() {
     _.defaults(this, {
       depGraph: Graphable(),
@@ -16,7 +17,7 @@ const Pluggable = stampit({
     });
   },
   static: {
-    normalizeAttributes(attrs) {
+    normalizeAttributes(attrs = {}) {
       const pkg = attrs.pkg;
       if (_.isObject(pkg)) {
         _.defaults(attrs, {
@@ -34,28 +35,25 @@ const Pluggable = stampit({
       const attrs = Pluggable.normalizeAttributes(func.attributes);
       const {name} = attrs;
       const pluginMap = this.pluginMap;
-      const depGraph = this.depGraph;
-      const api = this;
 
-      if (!pluginMap.isUsable(attrs)) {
-        throw new Error(`Plugin "${name}" cannot be used multiple times`);
+      if (!pluginMap.isUsable(name)) {
+        throw new Error(`Plugin "${name}" is already loaded`);
       }
 
-      const plugin = Plugin(_.assign({
+      const depGraph = this.depGraph;
+      const api = this;
+      const instance = _.assign({}, attrs, {
         func,
         opts,
         depGraph,
         api
-      }, attrs))
-        .once('did-install', () => this.emit(`did-install:${name}`));
+      });
+
+      const plugin = this.Plugin(instance)
+        .once('installed', () => this.emit(`did-install:${name}`));
 
       pluginMap.set(name, plugin);
-
-      if (pluginMap.isInstallable(name)) {
-        plugin.install();
-      } else {
-        plugin.installWhenReady(pluginMap.missingDeps(name));
-      }
+      plugin.install(pluginMap.missingDeps(name));
 
       return this;
     }

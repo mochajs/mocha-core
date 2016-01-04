@@ -4,6 +4,7 @@ const EventEmittable = require('./base/eventemittable');
 const stampit = require('stampit');
 const makeArray = require('../util/make-array');
 const _ = require('lodash');
+const FSM = require('./fsm');
 
 const Plugin = stampit({
   props: {
@@ -28,61 +29,55 @@ const Plugin = stampit({
       throw new Error(`Cyclic dependency detected in "${name}": ${e.message}`);
     }
 
-    delete this.depGraph;
-
-    Object.defineProperties(this, {
-      name: {
-        value: name,
-        enumerable: true,
-        configurable: true
-      },
-      version: {
-        value: name,
-        enumerable: true,
-        configurable: true
-      },
-      dependencies: {
-        value: deps,
-        enumerable: true,
-        configurable: true
-      },
-      depGraph: {
-        value: depGraph,
-        configurable: true
+    Object.defineProperty(this, 'installed', {
+      get() {
+        return this.state === 'installed';
       }
     });
-
-    this.once('did-install', () => this.installed = true);
   },
   methods: {
-    install() {
-      if (!this.installed) {
-        this.emit('will-install');
-        this.func(this.api, this.opts);
-        this.emit('did-install');
-      } else {
-        this.emit('already-installed');
-      }
-      return this;
-    },
-    installWhenReady(missingDeps) {
-      if (_.isEmpty(missingDeps)) {
-        return this.install();
+    install(missingDeps = []) {
+      if (this.state !== 'idle') {
+        return this;
       }
 
-      let remaining = _.size(missingDeps);
-      _.forEach(missingDeps, dep => {
-        this.api.once(`did-install:${dep}`, () => {
-          if (!--remaining) {
-            this.install();
-          }
-        });
-      });
+      this.emit('install', missingDeps);
 
       return this;
     }
   }
 })
-  .compose(EventEmittable);
+  .compose(FSM)
+  .initialState('idle')
+  .states({
+    idle: {
+      install: 'waiting'
+    },
+    waiting: {
+      ready: 'installing'
+    },
+    installing: {
+      done: 'installed'
+    },
+    installed: {}
+  })
+  .once('waiting', function(missingDeps) {
+    if (_.isEmpty(missingDeps)) {
+      return this.emit('ready');
+    }
+
+    let remaining = _.size(missingDeps);
+    _.forEach(missingDeps, dep => {
+      this.api.once(`did-install:${dep}`, () => {
+        if (!--remaining) {
+          this.emit('ready');
+        }
+      });
+    });
+  })
+  .once('installing', function() {
+    this.func(this.api, this.opts);
+    this.emit('done');
+  });
 
 module.exports = Plugin;
