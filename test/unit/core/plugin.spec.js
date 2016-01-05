@@ -154,10 +154,9 @@ describe(`core/plugin`, () => {
               plugin.state = 'installed';
             });
 
-            it(`should not install`, () => {
+            it(`should throw`, () => {
               plugin.func = sandbox.stub();
-              plugin.install();
-              expect(plugin.func).not.to.have.been.called;
+              expect(plugin.install).to.throw(Error, /invalid/i);
             });
           });
         });

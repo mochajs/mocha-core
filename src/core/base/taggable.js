@@ -2,7 +2,7 @@
 
 const stampit = require('stampit');
 const _ = require('lodash');
-const Set = global.Set || require('core-js/library/fn/set');
+const Set = require('es6-set');
 
 function tag(...tags) {
   const tagSet = new Set();

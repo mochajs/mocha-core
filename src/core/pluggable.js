@@ -2,8 +2,7 @@
 
 const stampit = require('stampit');
 const PluginMap = require('./plugin-map');
-const Graphable = require('./base/graphable');
-const EventEmittable = require('./base/eventemittable');
+const base = require('./base');
 const Plugin = require('./plugin');
 
 const _ = require('lodash');
@@ -12,7 +11,7 @@ const Pluggable = stampit({
   refs: {Plugin},
   init() {
     _.defaults(this, {
-      depGraph: Graphable(),
+      depGraph: base.Graphable(),
       pluginMap: PluginMap()
     });
   },
@@ -59,6 +58,6 @@ const Pluggable = stampit({
     }
   }
 })
-  .compose(EventEmittable);
+  .compose(base.EventEmittable);
 
 module.exports = Pluggable;

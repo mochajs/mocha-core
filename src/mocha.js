@@ -10,8 +10,7 @@ const _ = require('lodash');
 
 const Mocha = stampit({
   refs: {
-    ui: require('mocha-ui-bdd'),
-    //runner: require('mocha-runner-serial')
+    ui: require('mocha-ui-bdd')
   },
   methods: {
     run() {

@@ -1,7 +1,7 @@
 'use strict';
 
 const stampit = require('stampit');
-const Symbol = global.Symbol || require('core-js/library/fn/symbol');
+const Symbol = require('es6-symbol');
 
 const Unique = stampit({
   init() {

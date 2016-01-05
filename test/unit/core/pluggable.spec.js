@@ -2,7 +2,6 @@
 
 describe(`core/pluggable`, () => {
   const Pluggable = require('../../../src/core/pluggable');
-  const Plugin = require('../../../src/core/plugin');
 
   let sandbox;
 
@@ -46,12 +45,6 @@ describe(`core/pluggable`, () => {
           sandbox.spy(pluggable, 'Plugin');
         });
 
-        function stubInstall() {
-          sandbox.stub(Plugin.fixed.methods, 'install', function() {
-            this.emit('installed');
-          });
-        }
-
         it(`should instantiate a Plugin`, () => {
           pluggable.use(plugin);
           expect(pluggable.Plugin)
@@ -93,14 +86,15 @@ describe(`core/pluggable`, () => {
         });
 
         it(`should install the plugin`, () => {
-          stubInstall();
+          pluggable.Plugin = pluggable.Plugin.init(function() {
+            this.install = sandbox.stub();
+          });
+          sandbox.spy(pluggable, 'Plugin');
           pluggable.use(plugin);
-          expect(Plugin.fixed.methods.install).to.have.been.calledOnce;
+          expect(pluggable.Plugin.firstCall.returnValue.install).to.have.been.calledOnce;
         });
 
         describe(`if the plugin is ready to be installed`, () => {
-          beforeEach(stubInstall);
-
           it(`should emit "did-install:<name>"`, () => {
             expect(() => pluggable.use(plugin))
               .to
@@ -108,9 +102,11 @@ describe(`core/pluggable`, () => {
           });
         });
 
-        describe(`if a is not ready to be installed`, () => {
+        describe(`if a plugin is not ready to be installed`, () => {
           beforeEach(() => {
-            sandbox.stub(Plugin.fixed.methods, 'install');
+            pluggable.Plugin = pluggable.Plugin.init(function() {
+              this.done = sandbox.stub();
+            });
           });
 
           it(`should not emit "did-install"`, () => {

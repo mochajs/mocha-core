@@ -1,6 +1,5 @@
 'use strict';
 
-const EventEmittable = require('./base/eventemittable');
 const stampit = require('stampit');
 const makeArray = require('../util/make-array');
 const _ = require('lodash');
@@ -34,17 +33,6 @@ const Plugin = stampit({
         return this.state === 'installed';
       }
     });
-  },
-  methods: {
-    install(missingDeps = []) {
-      if (this.state !== 'idle') {
-        return this;
-      }
-
-      this.emit('install', missingDeps);
-
-      return this;
-    }
   }
 })
   .compose(FSM)
@@ -63,21 +51,21 @@ const Plugin = stampit({
   })
   .once('waiting', function(missingDeps) {
     if (_.isEmpty(missingDeps)) {
-      return this.emit('ready');
+      return this.ready();
     }
 
     let remaining = _.size(missingDeps);
     _.forEach(missingDeps, dep => {
       this.api.once(`did-install:${dep}`, () => {
         if (!--remaining) {
-          this.emit('ready');
+          this.ready();
         }
       });
     });
   })
   .once('installing', function() {
     this.func(this.api, this.opts);
-    this.emit('done');
+    this.done();
   });
 
 module.exports = Plugin;

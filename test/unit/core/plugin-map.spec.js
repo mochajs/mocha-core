@@ -98,7 +98,6 @@ describe(`core/plugin-map`, () => {
             });
           });
         });
-
       });
 
       describe(`isUsable()`, () => {

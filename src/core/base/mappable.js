@@ -2,7 +2,7 @@
 
 const stampit = require('stampit');
 const _ = require('lodash');
-const Map = global.Map || require('core-js/library/fn/map');
+const Map = require('es6-map');
 
 const Mappable = stampit({
   init({stamp, instance}) {

@@ -7,7 +7,9 @@ describe(`core/base/fsm`, () => {
 
   describe(`FSM()`, () => {
     it(`should throw if no initial state declared`, () => {
-      expect(FSM).to.throw(Error, /initial/);
+      expect(FSM)
+        .to
+        .throw(Error, /initial/);
     });
 
     it(`should return an object`, () => {
@@ -69,11 +71,16 @@ describe(`core/base/fsm`, () => {
         it(`should add all states to the state map`, () => {
           _.forEach(states, (value, key) => {
             expect(stamp.fixed.refs.states.has(key)).to.be.true;
-            for (let transition of stamp.fixed.refs.states.get(key)) {
-              expect(transition)
-                .to
-                .eql(_.pairs(value)[0]);
-            }
+            /* eslint lodash3/prefer-lodash-method:0 */
+            stamp.fixed.refs.states.get(key)
+              .forEach((toState, action) => {
+                expect([
+                  action,
+                  toState
+                ])
+                  .to
+                  .eql(_.pairs(value)[0]);
+              });
           });
         });
 
@@ -113,18 +120,24 @@ describe(`core/base/fsm`, () => {
           });
 
           it(`should leave the state the same`, () => {
-            expect(fsm.state).to.equal('start');
+            expect(fsm.state)
+              .to
+              .equal('start');
           });
         });
 
-        describe(`when an action is emitted`, () => {
+        describe(`when an action is executed`, () => {
           it(`should emit the next state`, () => {
-            expect(() => fsm.emit('go')).to.emitFrom(fsm, 'done');
+            expect(() => fsm.go())
+              .to
+              .emitFrom(fsm, 'done');
           });
 
           it(`should set the next state`, () => {
-            fsm.emit('go');
-            expect(fsm.state).to.equal('done');
+            fsm.go();
+            expect(fsm.state)
+              .to
+              .equal('done');
           });
         });
       });
