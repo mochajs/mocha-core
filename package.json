@@ -32,12 +32,12 @@
     "deps:extra": "dependency-check package.json --extra --no-dev",
     "deps:missing": "dependency-check package.json --missing",
     "deps:update": "updtr",
-    "lint": "eslint src/ test/ .*.js",
+    "lint": "eslint src/ test/ scripts/ .*.js",
     "nsp": "nsp check",
     "prepublish": "npm run build",
     "preversion": "npm run test",
     "publish-please": "publish-please",
-    "test": "parallel check lint test:unit",
+    "test": "node scripts/slink.js && parallel check lint test:unit",
     "test:unit": "parallel test:unit:node test:unit:browser",
     "test:unit:browser": "karma start .karma.conf.js --single-run",
     "test:unit:node": "babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- --require test/unit/fixture.js --recursive test/unit/"
@@ -97,6 +97,7 @@
     "rimraf": "^2.4.4",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
+    "slinker": "^1.1.0",
     "uglifyify": "^3.0.1",
     "updtr": "^0.1.6"
   },

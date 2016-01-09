@@ -3,9 +3,13 @@
 module.exports = function wallabyConfig(wallaby) {
   return {
     files: [
-      'src/**/*.js',
+      'node_modules/$src/**/*.js',
       'test/unit/fixture.js',
-      'package.json'
+      'package.json',
+      {
+        pattern: 'test/unit/**/*.spec.js',
+        ignore: true
+      }
     ],
     tests: [
       'test/unit/**/*.spec.js'
@@ -19,7 +23,6 @@ module.exports = function wallabyConfig(wallaby) {
     },
     compilers: {
       '**/*.js': wallaby.compilers.babel({
-        babel: require('babel-core'),
         sourceMap: true,
         presets: ['es2015']
       })
@@ -29,6 +32,7 @@ module.exports = function wallabyConfig(wallaby) {
       // set NODE_PATH here once we start forking things
       require(require('path')
         .join(wallaby.projectCacheDir, 'test', 'unit', 'fixture'));
-    }
+    },
+    debug: true
   };
 };
