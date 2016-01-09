@@ -32,7 +32,7 @@ const Mocha = stampit({
       _.defaults(opts, {
         rootSuite: this.rootSuite
       });
-      //return this.createAPI(Runner, opts);
+      // return this.createAPI(Runner, opts);
     },
     run() {
       this.emit('pre-run', this);

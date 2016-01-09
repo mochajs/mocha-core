@@ -1,7 +1,8 @@
 'use strict';
 
 import stampit from 'stampit';
-import {Plugin, PluginMap} from './index';
+import Plugin from './plugin';
+import PluginMap from './plugin-map';
 import {Graphable, EventEmittable} from './base';
 import _ from 'lodash';
 
