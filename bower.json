@@ -1,0 +1,23 @@
+{
+  "name": "mocha",
+  "description": "next-gen Mocha",
+  "main": "dist/mocha.js",
+  "authors": [
+    "Christopher Hiller <boneskull@boneskull.com>"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/boneskull/mocha3",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "test/",
+    "src/",
+    "scripts/",
+    "package.json"
+  ]
+}
