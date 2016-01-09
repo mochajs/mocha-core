@@ -1,8 +1,8 @@
 'use strict';
 
-describe('ui/hook', () => {
-  const Hook = require('../../../src/ui/hook');
+import Hook from '$src/ui/hook';
 
+describe('ui/hook', () => {
   describe(`Hook()`, () => {
     it('should be a function', () => {
       expect(Hook).to.be.a('function');

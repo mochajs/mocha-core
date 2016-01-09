@@ -4,4 +4,4 @@ function makeArray(value) {
   return [].concat(value || []);
 }
 
-module.exports = makeArray;
+export default makeArray;

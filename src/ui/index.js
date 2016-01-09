@@ -1,9 +1,9 @@
 'use strict';
 
-const stampit = require('stampit');
-const Suite = require('./suite');
-const EventEmittable = require('../core/base/eventemittable');
-const Decoratable = require('../core/base/decoratable');
+import stampit from 'stampit';
+import Suite from './suite';
+import Test from './test';
+import {Decoratable, EventEmittable} from '../core/base';
 
 const UI = stampit({
   methods: {
@@ -14,8 +14,8 @@ const UI = stampit({
       this.emit('did-execute-suite', suite);
       return suite;
     },
-    createTest() {
-
+    createTest(testDef) {
+      return this.Test(testDef);
     },
     afterTests() {
 
@@ -35,26 +35,22 @@ const UI = stampit({
     ignoreTest() {
 
     },
-    onlySuite() {
-
-    },
-    onlyTest() {
-
-    },
-    setSuiteContext(parent) {
-      this.Suite = Suite.refs({parent});
+    setContext(suite) {
+      this.Suite = Suite.refs({parent: suite});
+      this.Test = Test.refs({suite});
     }
   },
   init() {
-    this.setSuiteContext(this.rootSuite || Suite());
+    this.setContext(this.rootSuite);
   }
 })
   .compose(EventEmittable, Decoratable)
   .on('will-execute-suite', function onWillExecuteSuite(suite) {
-    this.setSuiteContext(suite);
+    this.setContext(suite);
   })
   .on('did-execute-suite', function onDidExecuteSuite(suite) {
-    this.setSuiteContext(suite.parent);
+    this.setContext(suite.parent);
   });
 
-module.exports = UI;
+export default UI;
+export {Suite, Test};

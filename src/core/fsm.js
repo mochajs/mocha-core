@@ -1,10 +1,9 @@
 'use strict';
 
-const stampit = require('stampit');
-const EventEmittable = require('./base/eventemittable');
-const _ = require('lodash');
-const Mappable = require('./base/mappable');
-const fsm = require('fsm');
+import stampit from 'stampit';
+import {EventEmittable, Mappable} from './base';
+import fsm from 'fsm';
+import _ from 'lodash';
 
 const FSM = stampit({
   refs: {
@@ -68,4 +67,4 @@ const FSM = stampit({
 })
   .compose(EventEmittable);
 
-module.exports = FSM;
+export default FSM;

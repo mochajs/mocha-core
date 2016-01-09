@@ -1,9 +1,9 @@
 'use strict';
 
-const {EventEmitter} = require('events');
-const stampit = require('stampit');
-const Promise = require('bluebird');
-const _ = require('lodash');
+import {EventEmitter} from 'events';
+import stampit from 'stampit';
+import Promise from 'bluebird';
+import _ from 'lodash';
 
 function wait(event) {
   return new Promise(resolve => {
@@ -33,7 +33,7 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
   })
   .methods({
     waitOn(event, timeout) {
-      return _.isFinite(timeout)
+      return isFinite(timeout)
         ? wait.call(this, event).timeout(timeout)
         : wait.call(this, event);
     }
@@ -44,4 +44,4 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
     }
   });
 
-module.exports = EventEmittable;
+export default EventEmittable;

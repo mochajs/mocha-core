@@ -1,9 +1,9 @@
 'use strict';
 
-const stampit = require('stampit');
-const makeArray = require('../util/make-array');
-const _ = require('lodash');
-const FSM = require('./fsm');
+import stampit from 'stampit';
+import makeArray from '../util/make-array';
+import FSM from './fsm';
+import _ from 'lodash';
 
 const Plugin = stampit({
   props: {
@@ -14,11 +14,8 @@ const Plugin = stampit({
     const name = this.name;
     depGraph.addNode(name);
     const deps = makeArray(this.dependencies);
-
-    _(deps)
-      .reject(dep => depGraph.hasNode(dep))
-      .forEach(dep => depGraph.addNode(dep))
-      .value();
+    _.forEach(_.reject(deps, dep => depGraph.hasNode(dep)),
+      dep => depGraph.addNode(dep));
 
     _.forEach(deps, dep => depGraph.addDependency(name, dep));
 
@@ -68,4 +65,4 @@ const Plugin = stampit({
     this.done();
   });
 
-module.exports = Plugin;
+export default Plugin;

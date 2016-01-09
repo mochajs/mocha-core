@@ -1,18 +1,21 @@
 'use strict';
 
-const stampit = require('stampit');
-const Unique = require('./../core/base/unique');
-const _ = require('lodash');
-const debug = require('debug')('mocha3:ui:suite');
+import stampit from 'stampit';
+import Unique from '../core/base/unique';
+import _ from 'lodash';
 
 const Suite = stampit({
   refs: {
     parent: null,
-    pending: false
+    func: null
   },
   methods: {
-    addChild(suite) {
+    addChildSuite(suite) {
       this.children.push(suite);
+      return this;
+    },
+    addTest(test) {
+      this.tests.push(test);
       return this;
     },
     execute() {
@@ -22,25 +25,45 @@ const Suite = stampit({
     }
   },
   init({instance}) {
-    debug('Creating suite with instance', instance);
+    _.defaults(this, {
+      children: [],
+      tests: []
+    });
 
-    this.children = this.children || [];
     if (this.parent) {
-      if (!_.isFunction(this.func) || this.parent.pending) {
-        this.pending = true;
-      }
-      this.parent.addChild(this);
+      this.parent.addChildSuite(this);
     }
 
-    Object.defineProperty(this, 'fullTitle', {
-      get() {
-        let suite = this;
-        const fullTitle = [];
-        while (suite.title && suite.parent) {
-          fullTitle.unshift(suite.title);
-          suite = suite.parent;
+    const func = this.func;
+
+    Object.defineProperties(this, {
+      fullTitle: {
+        get() {
+          let suite = this;
+          const fullTitle = [];
+          while (suite.title && suite.parent) {
+            fullTitle.unshift(suite.title);
+            suite = suite.parent;
+          }
+          return fullTitle.join(' ');
         }
-        return fullTitle.join(' ');
+      },
+      pending: {
+        get() {
+          return Boolean(this.parent) &&
+            (this.parent.pending || !_.isFunction(this.func));
+        },
+        set(value) {
+          if (this.parent) {
+            if (_.isFunction(this.func)) {
+              if (value) {
+                this.func = null;
+              }
+            } else if (value) {
+              this.func = func;
+            }
+          }
+        }
       }
     });
   }

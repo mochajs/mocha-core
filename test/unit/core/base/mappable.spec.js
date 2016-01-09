@@ -1,8 +1,8 @@
 'use strict';
 
-describe(`core/base/mappable`, () => {
-  const Mappable = require('../../../../src/core/base/mappable');
+import Mappable from '$src/core/base/mappable';
 
+describe(`core/base/mappable`, () => {
   describe(`Mappable()`, () => {
     let map;
 

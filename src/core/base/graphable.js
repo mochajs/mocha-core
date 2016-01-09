@@ -1,8 +1,8 @@
 'use strict';
 
-const stampit = require('stampit');
-const {DepGraph} = require('dependency-graph');
+import stampit from 'stampit';
+import {DepGraph} from 'dependency-graph';
 
 const Graphable = stampit.convertConstructor(DepGraph);
 
-module.exports = Graphable;
+export default Graphable;

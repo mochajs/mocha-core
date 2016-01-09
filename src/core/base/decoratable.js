@@ -1,7 +1,7 @@
 'use strict';
 
-const stampit = require('stampit');
-const _ = require('lodash');
+import stampit from 'stampit';
+import _ from 'lodash';
 
 const Decoratable = stampit({
   refs: {
@@ -27,4 +27,4 @@ const Decoratable = stampit({
   }
 });
 
-module.exports = Decoratable;
+export default Decoratable;

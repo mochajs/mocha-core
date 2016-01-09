@@ -1,9 +1,9 @@
 'use strict';
-const _ = require('lodash');
-const Suite = require('../../../src/ui/suite');
+
+import _ from 'lodash';
+import UI, {Suite} from '$src/ui';
 
 describe(`ui`, () => {
-  const UI = require('../../../src/ui');
   let sandbox;
 
   beforeEach(() => {
@@ -19,9 +19,9 @@ describe(`ui`, () => {
       it(`should call setSuiteContext()`, () => {
         const rootSuite = Suite();
         const ui = UI.methods({
-          setSuiteContext: sandbox.stub()
+          setContext: sandbox.stub()
         })({rootSuite});
-        expect(ui.setSuiteContext)
+        expect(ui.setContext)
           .to
           .have
           .been
@@ -32,9 +32,9 @@ describe(`ui`, () => {
     describe(`if not given a rootSuite property`, () => {
       it(`should call setSuiteContext()`, () => {
         const ui = UI.methods({
-          setSuiteContext: sandbox.spy(UI.fixed.methods.setSuiteContext)
+          setContext: sandbox.spy(UI.fixed.methods.setContext)
         })();
-        expect(ui.setSuiteContext)
+        expect(ui.setContext)
           .to
           .have
           .been
@@ -53,7 +53,7 @@ describe(`ui`, () => {
         it(`should set the Suite prop to be a factory having ref parent`,
           () => {
             const parent = Suite();
-            ui.setSuiteContext(parent);
+            ui.setContext(parent);
             expect(ui.Suite.fixed.refs.parent)
               .to
               .equal(parent);
@@ -72,7 +72,7 @@ describe(`ui`, () => {
             execute: sandbox.stub()
           });
           sandbox.spy(ui, 'Suite');
-          sandbox.stub(ui, 'setSuiteContext');
+          sandbox.stub(ui, 'setContext');
           sandbox.spy(ui, 'createSuite');
         });
 

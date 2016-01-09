@@ -1,10 +1,10 @@
 'use strict';
 
+import Taggable from '$src/core/base/taggable';
+
 const SET = global.Set ? 'Set' : 'Object';
 
 describe(`core/base/taggable`, () => {
-  const Taggable = require('../../../../src/core/base/taggable');
-
   describe(`Taggable()`, () => {
     describe(`static method`, () => {
       describe(`tag()`, () => {

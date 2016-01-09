@@ -1,17 +1,17 @@
 'use strict';
 
-const stampit = require('stampit');
-const _ = require('lodash');
-const Map = require('es6-map');
+import stampit from 'stampit';
+import _ from 'lodash';
+import Map from 'es6-map';
 
 const Mappable = stampit({
   init({stamp, instance}) {
-    return _(new Map(_.pairs(instance)))
-      .mixin(stamp.fixed.methods, {chain: false})
-      .defaults(stamp.fixed.refs)
-      .assign(stamp.fixed.props)
-      .value();
+    const map = new Map(_.pairs(instance));
+    _.mixin(map, stamp.fixed.methods, {chain: false});
+    _.defaults(map, stamp.fixed.refs);
+
+    return _.assign(map, stamp.fixed.props);
   }
 });
 
-module.exports = Mappable;
+export default Mappable;

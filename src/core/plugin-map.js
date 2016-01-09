@@ -1,7 +1,7 @@
 'use strict';
 
-const Mappable = require('./base/mappable');
-const _ = require('lodash');
+import Mappable from './base/mappable';
+import _ from 'lodash';
 
 const PluginMap = Mappable.methods({
   isInstalled(name) {
@@ -19,4 +19,4 @@ const PluginMap = Mappable.methods({
   }
 });
 
-module.exports = PluginMap;
+export default PluginMap;

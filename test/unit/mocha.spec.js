@@ -1,7 +1,8 @@
 'use strict';
 
+import Mocha from '$src/mocha';
+
 describe(`mocha`, () => {
-  const Mocha = require('../../src/mocha');
   let sandbox;
   let mocha;
 

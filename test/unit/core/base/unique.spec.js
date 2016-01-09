@@ -1,10 +1,9 @@
 'use strict';
 
+import Unique from '$src/core/base/unique';
 const SYMBOL = global.Symbol ? 'Symbol' : 'Object';
 
 describe(`core/unique`, () => {
-  const Unique = require('../../../../src/core/base/unique');
-
   describe(`Unique()`, () => {
     it(`should return an object with a Symbol "id" property`, () => {
       expect(Unique().id)

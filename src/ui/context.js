@@ -1,7 +1,8 @@
 'use strict';
 
-const stampit = require('stampit');
+import stampit from 'stampit';
 
 const Context = stampit();
 
-module.exports = Context;
+export default Context;
+

@@ -1,3 +1,6 @@
 'use strict';
 
-module.exports = require('./mocha')();
+import Mocha from './mocha';
+
+export default Mocha();
+export {Mocha};

@@ -1,7 +1,8 @@
 'use strict';
 
+import EventEmittable from '$src/core/base/eventemittable';
+
 describe(`core/base/eventemittable`, () => {
-  const EventEmittable = require('../../../../src/core/base/eventemittable');
   let sandbox;
 
   beforeEach(() => {

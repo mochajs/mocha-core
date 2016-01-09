@@ -1,10 +1,9 @@
 'use strict';
 
-const _ = require('lodash');
+import _ from 'lodash';
+import FSM from '$src/core/fsm';
 
 describe(`core/base/fsm`, () => {
-  const FSM = require('../../../../src/core/fsm');
-
   describe(`FSM()`, () => {
     it(`should throw if no initial state declared`, () => {
       expect(FSM)

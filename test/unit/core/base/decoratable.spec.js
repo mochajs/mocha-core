@@ -1,8 +1,8 @@
 'use strict';
 
-describe(`core/base/decoratable`, () => {
-  const Decoratable = require('../../../../src/core/base/decoratable');
+import Decoratable from '$src/core/base/decoratable';
 
+describe(`core/base/decoratable`, () => {
   describe(`Decoratable()`, () => {
     it(`should return an Object with an Object "delegate" property`, () => {
       expect(Decoratable().delegate)

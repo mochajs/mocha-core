@@ -1,7 +1,7 @@
 'use strict';
 
-const stampit = require('stampit');
-const Symbol = require('es6-symbol');
+import stampit from 'stampit';
+import Symbol from 'es6-symbol';
 
 const Unique = stampit({
   init() {
@@ -13,4 +13,4 @@ const Unique = stampit({
   }
 });
 
-module.exports = Unique;
+export default Unique;

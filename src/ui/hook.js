@@ -1,7 +1,7 @@
 'use strict';
 
-const stampit = require('stampit');
+import stampit from 'stampit';
 
 const Hook = stampit();
 
-module.exports = Hook;
+export default Hook;

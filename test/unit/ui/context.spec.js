@@ -1,8 +1,8 @@
 'use strict';
 
-describe('ui/context', () => {
-  const Context = require('../../../src/ui/context');
+import Context from '$src/ui/context';
 
+describe('ui/context', () => {
   describe(`Context()`, () => {
     it('should be a function', () => {
       expect(Context).to.be.a('function');

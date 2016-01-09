@@ -1,5 +1,7 @@
 'use strict';
 
-const stampit = require('stampit');
+import stampit from 'stampit';
 
-module.exports = stampit();
+const Reporter = stampit();
+
+export default Reporter;

@@ -1,13 +1,11 @@
 'use strict';
 
-const Promise = require('bluebird');
-const _ = require('lodash');
-const EventEmittable = require('../../../src/core/base/eventemittable');
-const Graphable = require('../../../src/core/base/graphable');
+import Promise from 'bluebird';
+import _ from 'lodash';
+import {EventEmittable, Graphable} from '$src/core/base';
+import Plugin from '$src/core/plugin';
 
 describe(`core/plugin`, () => {
-  const Plugin = require('../../../src/core/plugin');
-
   let sandbox;
 
   beforeEach(() => {

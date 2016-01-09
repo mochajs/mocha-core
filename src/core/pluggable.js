@@ -1,17 +1,15 @@
 'use strict';
 
-const stampit = require('stampit');
-const PluginMap = require('./plugin-map');
-const base = require('./base');
-const Plugin = require('./plugin');
-
-const _ = require('lodash');
+import stampit from 'stampit';
+import {Plugin, PluginMap} from './index';
+import {Graphable, EventEmittable} from './base';
+import _ from 'lodash';
 
 const Pluggable = stampit({
   refs: {Plugin},
   init() {
     _.defaults(this, {
-      depGraph: base.Graphable(),
+      depGraph: Graphable(),
       pluginMap: PluginMap()
     });
   },
@@ -39,13 +37,11 @@ const Pluggable = stampit({
         throw new Error(`Plugin "${name}" is already loaded`);
       }
 
-      const depGraph = this.depGraph;
-      const api = this;
       const instance = _.assign({}, attrs, {
         func,
         opts,
-        depGraph,
-        api
+        depGraph: this.depGraph,
+        api: this
       });
 
       const plugin = this.Plugin(instance)
@@ -58,6 +54,6 @@ const Pluggable = stampit({
     }
   }
 })
-  .compose(base.EventEmittable);
+  .compose(EventEmittable);
 
-module.exports = Pluggable;
+export default Pluggable;

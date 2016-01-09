@@ -1,8 +1,8 @@
 'use strict';
 
-describe(`core/pluggable`, () => {
-  const Pluggable = require('../../../src/core/pluggable');
+import Pluggable from '$src/core/pluggable';
 
+describe(`core/pluggable`, () => {
   let sandbox;
 
   beforeEach(() => {

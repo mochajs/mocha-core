@@ -1,8 +1,16 @@
 'use strict';
 
-module.exports = {
-  PluginMap: require('./plugin-map'),
-  Plugin: require('./plugin'),
-  Pluggable: require('./pluggable'),
-  base: require('./base')
+import PluginMap from './plugin-map';
+import Pluggable from './pluggable';
+import Plugin from './plugin';
+import FSM from './fsm';
+import * as base from './base';
+
+export {
+  PluginMap,
+  Pluggable,
+  Plugin,
+  FSM,
+  base
 };
+

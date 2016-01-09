@@ -1,10 +1,10 @@
 'use strict';
 
+import PluginMap from '$src/core/plugin-map';
+
 const MAP = global.Map ? 'Map' : 'Object';
 
 describe(`core/plugin-map`, () => {
-  const PluginMap = require('../../../src/core/plugin-map');
-
   describe(`PluginMap()`, () => {
     it(`should return a Map`, () => {
       expect(PluginMap())

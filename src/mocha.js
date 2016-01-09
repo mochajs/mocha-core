@@ -1,20 +1,18 @@
 'use strict';
 
-const stampit = require('stampit');
-const Pluggable = require('./core/pluggable');
-const UI = require('./ui');
-const Reporter = require('./reporter');
-const Runner = require('./runner');
-const Suite = require('./ui/suite');
-const _ = require('lodash');
+import stampit from 'stampit';
+import Pluggable from './core/pluggable';
+import UI, {Suite} from './ui';
+import Reporter from './reporter';
+import _ from 'lodash';
+import bdd from 'mocha-ui-bdd';
 
 const Mocha = stampit({
   refs: {
-    ui: require('mocha-ui-bdd')
+    ui: bdd,
+    reporters: []
   },
   methods: {
-    run() {
-    },
     createAPI(API, opts = {}) {
       _.defaults(opts, {
         delegate: this
@@ -34,7 +32,10 @@ const Mocha = stampit({
       _.defaults(opts, {
         rootSuite: this.rootSuite
       });
-      return this.createAPI(Runner, opts);
+      //return this.createAPI(Runner, opts);
+    },
+    run() {
+      this.emit('pre-run', this);
     }
   },
   init() {
@@ -46,4 +47,4 @@ const Mocha = stampit({
     this.use(this.ui);
   });
 
-module.exports = Mocha.refs({Mocha});
+export default Mocha.refs({Mocha});

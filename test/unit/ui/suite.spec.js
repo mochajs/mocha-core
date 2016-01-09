@@ -1,8 +1,8 @@
 'use strict';
 
-describe('ui/suite', () => {
-  const Suite = require('../../../src/ui/suite');
+import Suite from '$src/ui/suite';
 
+describe('ui/suite', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -38,16 +38,18 @@ describe('ui/suite', () => {
 
     describe(`when given a non-falsy "parent" prop`, () => {
       let parent;
+      let rootSuite;
 
       beforeEach(() => {
-        parent = Suite();
-        sandbox.stub(parent, 'addChild')
+        rootSuite = Suite();
+        parent = Suite({parent: rootSuite});
+        sandbox.stub(parent, 'addChildSuite')
           .returns(parent);
       });
 
       it(`should add the suite as a child of the parent`, () => {
         const suite = Suite({parent});
-        expect(parent.addChild)
+        expect(parent.addChildSuite)
           .to
           .have
           .been
@@ -79,6 +81,11 @@ describe('ui/suite', () => {
       });
 
       describe(`if parent's "pending" prop is false`, () => {
+        beforeEach(() => {
+          parent.func = function() {
+          };
+        });
+
         describe(`and function is not passed`, () => {
           it(`should be pending`, () => {
             expect(Suite({parent}).pending).to.be.true;
@@ -104,7 +111,7 @@ describe('ui/suite', () => {
         it(`should add a suite to the "children" Array`, () => {
           const parent = Suite();
           const child = Suite();
-          parent.addChild(child);
+          parent.addChildSuite(child);
           expect(parent.children[0])
             .to
             .equal(child);
