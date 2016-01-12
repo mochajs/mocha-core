@@ -21,14 +21,16 @@ function wait(event) {
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
     on(event, action) {
-      return this.init(function initOn() {
-        this.on(event, action);
+      const onEvents = _.assign(this.fixed.refs.onEvents || {}, {
+        [event]: action
       });
+      return this.refs({onEvents});
     },
     once(event, action) {
-      return this.init(function initOnce() {
-        this.once(event, action);
+      const onceEvents = _.assign(this.fixed.refs.onceEvents || {}, {
+        [event]: action
       });
+      return this.refs({onceEvents});
     }
   })
   .methods({
@@ -42,6 +44,10 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
     init(...args) {
       return this.enclose(...args);
     }
+  })
+  .init(function initEventEmittable() {
+    _.forEach(this.onEvents, (action, event) => this.on(event, action));
+    _.forEach(this.onceEvents, (action, event) => this.once(event, action));
   });
 
 export default EventEmittable;
