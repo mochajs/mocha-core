@@ -32,7 +32,7 @@
     "deps:extra": "dependency-check package.json --extra --no-dev",
     "deps:missing": "dependency-check package.json --missing",
     "deps:update": "updtr",
-    "lint": "eslint src/ test/ scripts/ .*.js",
+    "lint": "eslint src/ test/ .*.js",
     "nsp": "nsp check",
     "prepublish": "npm run build",
     "preversion": "npm run test",
