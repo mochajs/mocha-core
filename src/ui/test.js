@@ -30,4 +30,4 @@ const Test = stampit({
 })
   .compose(EventEmittable);
 
-module.exports = Test;
+export default Test;

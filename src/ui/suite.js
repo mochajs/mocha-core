@@ -66,7 +66,7 @@ const Suite = stampit({
         }
       }
     });
-    
+
     this.emit('execute:pre', this);
     this.execute();
     this.emit('execute:post', this);
@@ -74,4 +74,4 @@ const Suite = stampit({
 })
   .compose(Unique, EventEmittable);
 
-module.exports = Suite;
+export default Suite;
