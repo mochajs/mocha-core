@@ -6,13 +6,12 @@ import Test from './test';
 import {Decoratable, EventEmittable} from '../core/base';
 
 const UI = stampit({
+  refs: {
+    recursive: true
+  },
   methods: {
     createSuite(suiteDef) {
-      const suite = this.Suite(suiteDef);
-      this.emit('will-execute-suite', suite);
-      suite.execute();
-      this.emit('did-execute-suite', suite);
-      return suite;
+      return this.Suite(suiteDef);
     },
     createTest(testDef) {
       return this.Test(testDef);
@@ -36,7 +35,15 @@ const UI = stampit({
 
     },
     setContext(suite) {
-      this.Suite = Suite.refs({parent: suite});
+      this.Suite = Suite.refs({parent: suite})
+        .once('execute:pre', suite => this.setContext(suite));
+
+      if (this.recursive) {
+        this.Suite =
+          this.Suite.once('execute:post',
+            suite => this.setContext(suite.parent));
+      }
+
       this.Test = Test.refs({suite});
     }
   },
@@ -44,13 +51,7 @@ const UI = stampit({
     this.setContext(this.rootSuite);
   }
 })
-  .compose(EventEmittable, Decoratable)
-  .on('will-execute-suite', function onWillExecuteSuite(suite) {
-    this.setContext(suite);
-  })
-  .on('did-execute-suite', function onDidExecuteSuite(suite) {
-    this.setContext(suite.parent);
-  });
+  .compose(EventEmittable, Decoratable);
 
 export default UI;
 export {Suite, Test};

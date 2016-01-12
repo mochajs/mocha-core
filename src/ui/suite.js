@@ -1,7 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import Unique from '../core/base/unique';
+import {Unique, EventEmittable} from '../core/base';
 import _ from 'lodash';
 
 const Suite = stampit({
@@ -19,12 +19,12 @@ const Suite = stampit({
       return this;
     },
     execute() {
-      if (!this.pending) {
+      if (!this.pending && _.isFunction(this.func)) {
         this.func();
       }
     }
   },
-  init({instance}) {
+  init() {
     _.defaults(this, {
       children: [],
       tests: []
@@ -66,8 +66,12 @@ const Suite = stampit({
         }
       }
     });
+    
+    this.emit('execute:pre', this);
+    this.execute();
+    this.emit('execute:post', this);
   }
 })
-  .compose(Unique);
+  .compose(Unique, EventEmittable);
 
 module.exports = Suite;

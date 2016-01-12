@@ -15,22 +15,19 @@ describe(`ui`, () => {
   });
 
   describe(`UI()`, () => {
-    describe(`if given a rootSuite property`, () => {
-      it(`should call setSuiteContext()`, () => {
-        const rootSuite = Suite();
-        const ui = UI.methods({
-          setContext: sandbox.stub()
-        })({rootSuite});
-        expect(ui.setContext)
-          .to
-          .have
-          .been
-          .calledWithExactly(rootSuite);
-      });
+    it(`should call setContext()`, () => {
+      const rootSuite = Suite();
+      sandbox.stub(UI.fixed.methods, 'setContext');
+      const ui = UI({rootSuite});
+      expect(ui.setContext)
+        .to
+        .have
+        .been
+        .calledWithExactly(rootSuite);
     });
 
     describe(`if not given a rootSuite property`, () => {
-      it(`should call setSuiteContext()`, () => {
+      it(`should call setContext()`, () => {
         const ui = UI.methods({
           setContext: sandbox.spy(UI.fixed.methods.setContext)
         })();
@@ -44,20 +41,89 @@ describe(`ui`, () => {
 
     describe(`method`, () => {
       let ui;
+      let parent;
 
       beforeEach(() => {
         ui = UI();
+        parent = Suite();
       });
 
-      describe(`setSuiteContext()`, () => {
-        it(`should set the Suite prop to be a factory having ref parent`,
+      describe(`setContext()`, () => {
+        it(`should set the Suite prop to be a factory having parent ref`,
           () => {
-            const parent = Suite();
             ui.setContext(parent);
             expect(ui.Suite.fixed.refs.parent)
               .to
               .equal(parent);
           });
+
+        it(`should subscribe to the Suite's "execute:pre" event`, () => {
+          ui.setContext(parent);
+          expect(ui.Suite.fixed.refs.onceEvents['execute:pre'])
+            .to
+            .be
+            .a('function');
+        });
+
+        describe(`when the UI is recursive`, () => {
+          beforeEach(() => {
+            ui.setContext(parent);
+          });
+
+          it(`should subscribe to the Suite's "execute:post" event`, () => {
+            expect(ui.Suite.fixed.refs.onceEvents['execute:post'])
+              .to
+              .be
+              .a('function');
+          });
+        });
+
+        describe(`when the UI is not recursive`, () => {
+          beforeEach(() => {
+            ui.recursive = false;
+            ui.setContext(parent);
+          });
+
+          it(`should not subscribe to the Suite's "execute:post" event`, () => {
+            expect(ui.Suite.fixed.refs.onceEvents['execute:post']).to.be.undefined;
+          });
+        });
+
+        it(`should set the Test prop to be a factory having suite ref`, () => {
+          ui.setContext(parent);
+          expect(ui.Test.fixed.refs.suite)
+            .to
+            .equal(parent);
+        });
+      });
+
+      describe(`createTest()`, () => {
+        let testDef;
+
+        beforeEach(() => {
+          testDef = {
+            title: 'my test',
+            func: _.noop,
+            suite: Suite()
+          };
+        });
+
+        it(`should return a Test`, () => {
+          expect(ui.createTest(testDef))
+            .to
+            .be
+            .an('object');
+        });
+
+        it(`should instantiate a Test`, () => {
+          sandbox.spy(ui, 'Test');
+          ui.createTest(testDef);
+          expect(ui.Test)
+            .to
+            .have
+            .been
+            .calledWithExactly(testDef);
+        });
       });
 
       describe(`createSuite()`, () => {
@@ -68,12 +134,9 @@ describe(`ui`, () => {
             title: 'my suite',
             func: _.noop
           };
-          ui.Suite = ui.Suite.methods({
-            execute: sandbox.stub()
-          });
+          sandbox.stub(ui.Suite.fixed.methods, 'execute');
           sandbox.spy(ui, 'Suite');
           sandbox.stub(ui, 'setContext');
-          sandbox.spy(ui, 'createSuite');
         });
 
         it(`should return a Suite`, () => {
@@ -90,27 +153,6 @@ describe(`ui`, () => {
             .have
             .been
             .calledWithExactly(suiteDef);
-        });
-
-        it(`should emit 'will-execute-suite'`, () => {
-          expect(() => ui.createSuite(suiteDef))
-            .to
-            .emitFrom(ui, 'will-execute-suite');
-        });
-
-        it(`should call suite.execute()`, () => {
-          const suite = ui.createSuite(suiteDef);
-          expect(suite.execute)
-            .to
-            .have
-            .been
-            .calledOn(suite);
-        });
-
-        it(`should emit 'did-execute-suite'`, () => {
-          expect(() => ui.createSuite(suiteDef))
-            .to
-            .emitFrom(ui, 'did-execute-suite');
         });
       });
     });
