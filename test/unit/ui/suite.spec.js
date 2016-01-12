@@ -1,6 +1,6 @@
 'use strict';
 
-import Suite from '$src/ui/suite';
+import Suite from '../../../src/ui/suite';
 
 describe('ui/suite', () => {
   let sandbox;

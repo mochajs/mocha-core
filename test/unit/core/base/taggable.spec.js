@@ -1,6 +1,6 @@
 'use strict';
 
-import Taggable from '$src/core/base/taggable';
+import Taggable from '../../../../src/core/base/taggable';
 
 const SET = global.Set ? 'Set' : 'Object';
 

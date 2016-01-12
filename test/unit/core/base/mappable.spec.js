@@ -1,6 +1,6 @@
 'use strict';
 
-import Mappable from '$src/core/base/mappable';
+import Mappable from '../../../../src/core/base/mappable';
 
 describe(`core/base/mappable`, () => {
   describe(`Mappable()`, () => {

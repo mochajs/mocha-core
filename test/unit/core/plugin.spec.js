@@ -2,8 +2,8 @@
 
 import Promise from 'bluebird';
 import _ from 'lodash';
-import {EventEmittable, Graphable} from '$src/core/base';
-import Plugin from '$src/core/plugin';
+import {EventEmittable, Graphable} from '../../../src/core/base';
+import Plugin from '../../../src/core/plugin';
 
 describe(`core/plugin`, () => {
   let sandbox;

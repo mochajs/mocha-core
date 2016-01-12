@@ -17,7 +17,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/phantomjs-polyfill/bind-polyfill.js',
-      'node_modules/$src/**/*.js',
+      'src/**/*.js',
       'test/unit/**/*.js'
     ],
 
@@ -28,7 +28,7 @@ module.exports = function(config) {
     // available preprocessors:
     // https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'node_modules/$src/**/*.js': 'browserify',
+      'src/**/*.js': 'browserify',
       'test/unit/**/*.js': 'browserify'
     },
 

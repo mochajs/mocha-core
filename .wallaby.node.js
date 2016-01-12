@@ -3,7 +3,7 @@
 module.exports = function wallabyConfig(wallaby) {
   return {
     files: [
-      'node_modules/$src/**/*.js',
+      'src/**/*.js',
       'test/unit/fixture.js',
       'package.json',
       {

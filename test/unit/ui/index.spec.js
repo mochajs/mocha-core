@@ -1,7 +1,7 @@
 'use strict';
 
 import _ from 'lodash';
-import UI, {Suite} from '$src/ui';
+import UI, {Suite} from '../../../src/ui';
 
 describe(`ui`, () => {
   let sandbox;

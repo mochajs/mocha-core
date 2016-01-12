@@ -2,7 +2,7 @@
 
 import {DepGraph} from 'dependency-graph';
 import _ from 'lodash';
-import Graphable from '$src/core/base/graphable';
+import Graphable from '../../../../src/core/base/graphable';
 
 describe(`core/base/graphable`, () => {
   describe(`Graphable()`, () => {

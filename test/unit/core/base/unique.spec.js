@@ -1,6 +1,6 @@
 'use strict';
 
-import Unique from '$src/core/base/unique';
+import Unique from '../../../../src/core/base/unique';
 const SYMBOL = global.Symbol ? 'Symbol' : 'Object';
 
 describe(`core/unique`, () => {

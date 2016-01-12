@@ -1,6 +1,6 @@
 'use strict';
 
-import Mocha from '$src/mocha';
+import Mocha from '../../src/mocha';
 
 describe(`mocha`, () => {
   let sandbox;

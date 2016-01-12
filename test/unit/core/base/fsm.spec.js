@@ -1,7 +1,7 @@
 'use strict';
 
 import _ from 'lodash';
-import FSM from '$src/core/fsm';
+import FSM from '../../../../src/core/fsm';
 
 describe(`core/base/fsm`, () => {
   describe(`FSM()`, () => {
