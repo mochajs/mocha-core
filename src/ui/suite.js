@@ -41,7 +41,7 @@ const Suite = stampit({
         get() {
           let suite = this;
           const fullTitle = [];
-          while (suite.title && suite.parent) {
+          while (suite && suite.title) {
             fullTitle.unshift(suite.title);
             suite = suite.parent;
           }
@@ -59,7 +59,7 @@ const Suite = stampit({
               if (value) {
                 this.func = null;
               }
-            } else if (value) {
+            } else if (!value) {
               this.func = func;
             }
           }

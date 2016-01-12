@@ -1,6 +1,7 @@
 'use strict';
 
 import Suite from '../../../src/ui/suite';
+import _ from 'lodash';
 
 describe('ui/suite', () => {
   let sandbox;
@@ -127,6 +128,165 @@ describe('ui/suite', () => {
             .have
             .been
             .calledOn(suite);
+        });
+      });
+    });
+
+    describe(`property`, () => {
+      let suite;
+      beforeEach(() => {
+        suite = Suite({title: 'foo'});
+      });
+
+      describe(`pending`, () => {
+        describe(`getter`, () => {
+          describe(`when the Suite has no parent`, () => {
+            it(`should be false`, () => {
+              expect(suite.pending).to.be.false;
+            });
+          });
+
+          describe(`when the Suite has a parent`, () => {
+            let parent;
+
+            beforeEach(() => {
+              parent = Suite();
+              suite.parent = parent;
+            });
+
+            describe(`and the parent is pending`, () => {
+              beforeEach(() => {
+                parent.pending = true;
+              });
+
+              it(`should be true`, () => {
+                expect(suite.pending).to.be.true;
+              });
+            });
+
+            describe(`and the parent is not pending`, () => {
+              describe(`and the Suite has no function`, () => {
+                it(`should be true`, () => {
+                  expect(suite.pending).to.be.true;
+                });
+              });
+
+              describe(`and the Suite has a function`, () => {
+                beforeEach(() => {
+                  suite.func = _.noop;
+                });
+
+                it(`should be false`, () => {
+                  expect(suite.pending).to.be.false;
+                });
+              });
+            });
+          });
+        });
+
+        describe(`setter`, () => {
+          describe(`when the Suite has no parent`, () => {
+            it(`should have no effect`, () => {
+              suite.pending = true;
+              expect(suite.pending).to.be.false;
+            });
+          });
+
+          describe(`when the Suite has a parent`, () => {
+            let parent;
+
+            beforeEach(() => {
+              parent = Suite();
+              suite.parent = parent;
+            });
+
+            describe(`and the Suite has no initial function`, () => {
+              describe(`and the value is falsy`, () => {
+                beforeEach(() => {
+                  suite.pending = false;
+                });
+
+                it(`should have a "true" pending value`, () => {
+                  expect(suite.pending).to.be.true;
+                });
+
+                it(`should have a null function`, () => {
+                  expect(suite.func).to.be.null;
+                });
+              });
+            });
+
+            describe(`and the Suite has an initial function`, () => {
+              let suite;
+
+              beforeEach(() => {
+                suite = Suite({func: _.noop, parent});
+              });
+
+              describe(`and the value is falsy`, () => {
+                beforeEach(() => {
+                  suite.pending = false;
+                });
+
+                it(`should have a "false" pending value`, () => {
+                  expect(suite.pending).to.be.false;
+                });
+              });
+
+              describe(`and the value is truthy`, () => {
+                beforeEach(() => {
+                  suite.pending = true;
+                });
+
+                it(`should nullify the function`, () => {
+                  expect(suite.func).to.be.null;
+                });
+
+                it(`should have a "true" pending value`, () => {
+                  expect(suite.pending).to.be.true;
+                });
+
+                describe(`and the value is falsy again`, () => {
+                  beforeEach(() => {
+                    suite.pending = false;
+                  });
+
+                  it(`should restore the function`, () => {
+                    expect(suite.func).to.be.a('function');
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+
+      describe(`fullTitle`, () => {
+        describe(`getter`, () => {
+          describe(`when the Suite has no parent`, () => {
+            it(`should return the title`, () => {
+              expect(suite.fullTitle).to.equal(suite.title);
+            });
+          });
+
+          describe(`when the Suite has a parent`, () => {
+            let parent;
+
+            beforeEach(() => {
+              parent = Suite({title: 'bar'});
+              suite.parent = parent;
+            });
+
+            it(`should concatenate the titles`, () => {
+              expect(suite.fullTitle).to.equal('bar foo');
+            });
+          });
+        });
+
+        describe(`setter`, () => {
+          it(`should throw a TypeError`, () => {
+            expect(() => suite.fullTitle = 'blah').to.throw(TypeError);
+          });
         });
       });
     });
