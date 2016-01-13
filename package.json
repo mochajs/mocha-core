@@ -102,7 +102,12 @@
   },
   "browserify": {
     "transform": [
-      "babelify"
+      [
+        "babelify",
+        {
+          "sourceMapRelative": "."
+        }
+      ]
     ]
   }
 }
