@@ -4,5 +4,7 @@
   ],
   "plugins": [
     "lodash"
-  ]
+  ],
+  "compact": false,
+  "sourceMaps": true
 }
