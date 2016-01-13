@@ -21,8 +21,8 @@
   "scripts": {
     "build": "parallel build:node build:browser",
     "build:browser": "mkdirp dist && parallel build:browser:main build:browser:min",
-    "build:browser:main": "browserify --require es6-symbol/implement --require es6-map/implement --require es6-set/implement --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] src --outfile dist/mocha.js",
-    "build:browser:min": "browserify --require es6-symbol/implement --require es6-map/implement --require es6-set/implement --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] --global-transform uglifyify src --outfile dist/mocha.min.js",
+    "build:browser:main": "browserify --debug --require es6-symbol/implement --require es6-map/implement --require es6-set/implement --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] src | exorcist dist/mocha.js.map > dist/mocha.js",
+    "build:browser:min": "browserify --debug --require es6-symbol/implement --require es6-map/implement --require es6-set/implement --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] --plugin [ minifyify --map dist/mocha.min.js.map --output dist/mocha.min.js.map ] src > dist/mocha.min.js",
     "build:node": "rimraf lib && babel src --out-dir lib",
     "bump:major": "npm version major -m 'Release v%s'",
     "bump:minor": "npm version minor -m 'Release v%s'",
@@ -37,10 +37,12 @@
     "prepublish": "npm run build",
     "preversion": "npm run test",
     "publish-please": "publish-please",
-    "test": "parallel check lint test:unit",
-    "test:unit": "parallel test:unit:node test:unit:browser",
-    "test:unit:browser": "karma start .karma.conf.js --single-run",
-    "test:unit:node": "babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- --require test/unit/fixture.js --recursive test/unit/"
+    "test": "parallel check lint test:node test:browser",
+    "test:browser": "parallel test:browser:unit",
+    "test:browser:unit": "karma start .karma.conf.js --single-run",
+    "test:node": "parallel test:node:unit",
+    "test:node:unit": "babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- --require test/unit/fixture.js --recursive test/unit/",
+    "test:unit": "parallel test:node:unit test:browser:unit"
   },
   "keywords": [],
   "dependencies": {
@@ -53,6 +55,7 @@
     "fsm": "^1.0.2",
     "lodash": "^3.10.1",
     "mocha-ui-bdd": "file:../mocha-ui-bdd",
+    "source-map-support": "^0.4.0",
     "stampit": "^2.1.1"
   },
   "devDependencies": {
@@ -86,6 +89,7 @@
     "karma-mocha": "^0.2.1",
     "karma-mocha-reporter": "^1.1.5",
     "karma-phantomjs-launcher": "^0.2.3",
+    "minifyify": "^7.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.3.4",
     "npm-parallel": "boneskull/npm-parallel#boneskull-patch-1",
@@ -97,7 +101,6 @@
     "rimraf": "^2.4.4",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
-    "uglifyify": "^3.0.1",
     "updtr": "^0.1.6"
   },
   "browserify": {
