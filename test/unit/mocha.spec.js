@@ -1,14 +1,13 @@
 'use strict';
 
 import Mocha from '../../src/mocha';
+import * as Plugins from '../../src/plugins';
 
 describe(`mocha`, () => {
   let sandbox;
-  let mocha;
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create('mocha');
-    mocha = Mocha.methods({use: sandbox.stub()})();
   });
 
   afterEach(() => {
@@ -16,20 +15,18 @@ describe(`mocha`, () => {
   });
 
   describe(`Mocha()`, () => {
+    beforeEach(() => {
+      sandbox.stub(Mocha.fixed.methods, 'use');
+    });
+
     it(`should use the default ui`, () => {
+      const mocha = Mocha();
+
       expect(mocha.use)
         .to
         .have
         .been
         .calledWithExactly(mocha.ui);
-    });
-  });
-
-  describe(`method`, () => {
-    describe(`expose()`, () => {
-      it(`should mix a prototype into the instance`, () => {
-
-      });
     });
   });
 });

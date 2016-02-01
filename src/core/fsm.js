@@ -40,12 +40,12 @@ const FSM = stampit({
         const currentState = this.state;
         const nextState = this.states.get(currentState)
           .get(action);
-        if (_.includes(this.reachableStates[currentState][nextState], action)) {
+        if (nextState && _.includes(this.reachableStates[currentState][nextState], action)) {
           this.state = nextState;
           this.emit(nextState, ...data);
           return this;
         }
-        throw new Error(`Invalid state transition: "${currentState}" => "${nextState}"`);
+        throw new Error(`Invalid state transition: "${action}()" not available in state "${currentState}"`);
       };
     },
     initialState(state) {

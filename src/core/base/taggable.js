@@ -1,15 +1,11 @@
 'use strict';
 
 import stampit from 'stampit';
-import Set from 'es6-set';
-import forEach from 'lodash/collection/forEach';
+import {Set} from '../../polyfill';
 
 function tag(...tags) {
-  const tagSet = new Set();
-  forEach(tags, tag => tagSet.add(tag));
-  return this.init(function tagInit({instance}) {
-    forEach(instance.tags, tag => tagSet.add(tag));
-    this.tags = tagSet;
+  return this.init(function tagInit() {
+    tags.forEach(tag => this.tags.add(tag));
   });
 }
 
@@ -17,6 +13,9 @@ const Taggable = stampit({
   static: {
     tag,
     tags: tag
+  },
+  init({instance}) {
+    this.tags = new Set(instance.tags);
   }
 });
 

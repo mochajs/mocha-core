@@ -1,6 +1,6 @@
 'use strict';
 
-import Mappable from './base/mappable';
+import Mappable from './../core/base/mappable';
 import _ from 'lodash';
 
 const PluginMap = Mappable.methods({

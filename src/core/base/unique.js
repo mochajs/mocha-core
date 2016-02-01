@@ -1,7 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import Symbol from 'es6-symbol';
+import {Symbol} from '../../polyfill';
 
 const Unique = stampit({
   init() {

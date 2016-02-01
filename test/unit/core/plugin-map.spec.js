@@ -1,6 +1,6 @@
 'use strict';
 
-import PluginMap from '../../../src/core/plugin-map';
+import PluginMap from '../../../src/plugins/plugin-map';
 
 const MAP = global.Map ? 'Map' : 'Object';
 

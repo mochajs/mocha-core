@@ -78,7 +78,7 @@ describe(`core/base/fsm`, () => {
                   toState
                 ])
                   .to
-                  .eql(_.pairs(value)[0]);
+                  .eql(_.toPairs(value)[0]);
               });
           });
         });

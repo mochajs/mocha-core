@@ -6,6 +6,7 @@ import Mappable from './mappable';
 import Graphable from './graphable';
 import Decoratable from './decoratable';
 import Taggable from './taggable';
+import Singleton from './singleton';
 
 export {
   EventEmittable,
@@ -13,5 +14,6 @@ export {
   Mappable,
   Graphable,
   Decoratable,
-  Taggable
+  Taggable,
+  Singleton
 };

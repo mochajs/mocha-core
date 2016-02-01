@@ -1,8 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import makeArray from '../util/make-array';
-import FSM from './fsm';
+import FSM from './../core/fsm';
 import _ from 'lodash';
 
 const Plugin = stampit({
@@ -13,7 +12,7 @@ const Plugin = stampit({
     const depGraph = this.depGraph;
     const name = this.name;
     depGraph.addNode(name);
-    const deps = makeArray(this.dependencies);
+    const deps = [].concat(this.dependencies || []);
     _.forEach(_.reject(deps, dep => depGraph.hasNode(dep)),
       dep => depGraph.addNode(dep));
 

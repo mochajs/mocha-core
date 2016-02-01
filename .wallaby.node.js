@@ -5,31 +5,31 @@ module.exports = function wallabyConfig(wallaby) {
     files: [
       'src/**/*.js',
       'test/unit/fixture.js',
-      'package.json',
-      {
-        pattern: 'test/unit/**/*.spec.js',
-        ignore: true
-      }
+      'package.json'
     ],
     tests: [
       'test/unit/**/*.spec.js'
     ],
     env: {
       type: 'node',
-      runner: 'node',
-      params: {
-        env: 'DEBUG=mocha:core:*'
-      }
+      runner: 'node'
     },
     compilers: {
       '**/*.js': wallaby.compilers.babel({
-        sourceMap: true,
-        presets: ['es2015']
+        presets: [
+          'es2015',
+          'stage-3'
+        ],
+        plugins: [
+          'lodash'
+        ],
+        sourceMaps: true
       })
     },
     testFramework: 'mocha',
     bootstrap: function bootstrap(wallaby) {
-      // set NODE_PATH here once we start forking things
+      // TODO set NODE_PATH here once we start forking things
+      /* eslint import/no-require:0 */
       require(require('path')
         .join(wallaby.projectCacheDir, 'test', 'unit', 'fixture'));
     },

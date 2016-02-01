@@ -1,6 +1,11 @@
 'use strict';
 
 import 'source-map-support/register';
+import 'trace';
+import 'clarify';
+
+Error.stackTraceLimit = Infinity;
+
 import chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';

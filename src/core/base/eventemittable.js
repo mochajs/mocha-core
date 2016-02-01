@@ -3,15 +3,16 @@
 import {EventEmitter} from 'events';
 import stampit from 'stampit';
 import Promise from 'bluebird';
-import _ from 'lodash';
+import {isEmpty, head, assign, forEach} from 'lodash';
+import Mappable from './mappable';
 
 function wait(event) {
   return new Promise(resolve => {
     this.once(event, (...args) => {
-      if (_.isEmpty(args)) {
+      if (isEmpty(args)) {
         return resolve();
       } else if (args.length === 1) {
-        return resolve(_.first(args));
+        return resolve(head(args));
       }
       return resolve(args);
     });
@@ -20,14 +21,21 @@ function wait(event) {
 
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
+    createEventsFrom(opts = {}) {
+      return this.refs({
+        [opts.collection]: Mappable(assign({}, this.fixed.refs[opts.collection], {
+          [opts.event]: opts.action
+        }))
+      });
+    },
     on(event, action) {
-      const onEvents = _.assign(this.fixed.refs.onEvents || {}, {
+      const onEvents = assign({}, this.fixed.refs.onEvents, {
         [event]: action
       });
       return this.refs({onEvents});
     },
     once(event, action) {
-      const onceEvents = _.assign(this.fixed.refs.onceEvents || {}, {
+      const onceEvents = assign({}, this.fixed.refs.onceEvents, {
         [event]: action
       });
       return this.refs({onceEvents});
@@ -35,9 +43,8 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
   })
   .methods({
     waitOn(event, timeout) {
-      return isFinite(timeout)
-        ? wait.call(this, event).timeout(timeout)
-        : wait.call(this, event);
+      return isFinite(timeout) ? wait.call(this, event)
+        .timeout(timeout) : wait.call(this, event);
     }
   })
   .static({
@@ -46,8 +53,8 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
     }
   })
   .init(function initEventEmittable() {
-    _.forEach(this.onEvents, (action, event) => this.on(event, action));
-    _.forEach(this.onceEvents, (action, event) => this.once(event, action));
+    forEach(this.onEvents, (action, event) => this.on(event, action));
+    forEach(this.onceEvents, (action, event) => this.once(event, action));
   });
 
 export default EventEmittable;

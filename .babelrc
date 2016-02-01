@@ -1,10 +1,17 @@
 {
   "presets": [
-    "es2015"
+    "es2015",
+    "stage-3"
   ],
   "plugins": [
     "lodash"
   ],
   "compact": false,
-  "sourceMaps": true
+  "sourceMaps": "inline",
+  "env": {
+    "dev": {
+      "sourceMaps": "both",
+      "retainLines": true
+    }
+  }
 }

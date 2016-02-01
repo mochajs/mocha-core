@@ -1,26 +1,36 @@
 'use strict';
 
 import stampit from 'stampit';
-import Pluggable from './core/pluggable';
+import {Pluggable} from './plugins';
 import UI, {Suite} from './ui';
 import Reporter from './reporter';
-import _ from 'lodash';
-import bdd from 'mocha-ui-bdd';
+import {defaults} from 'lodash';
+import {readFileSync} from 'graceful-fs';
+import {join} from 'path';
+
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json')));
 
 const Mocha = stampit({
   refs: {
-    ui: bdd,
-    reporters: []
+    ui: 'bdd',
+    exposeGlobals: true
   },
+  props: {
+    reporters: [],
+    resolverOptions: {
+      prefixes: [pkg.name]
+    }
+  },
+  static: {pkg},
   methods: {
     createAPI(API, opts = {}) {
-      _.defaults(opts, {
+      defaults(opts, {
         delegate: this
       });
       return API(opts);
     },
     createUI(opts = {}) {
-      _.defaults(opts, {
+      defaults(opts, {
         rootSuite: this.rootSuite
       });
       return this.createAPI(UI, opts);
@@ -29,7 +39,7 @@ const Mocha = stampit({
       return this.createAPI(Reporter, opts);
     },
     createRunner(opts = {}) {
-      _.defaults(opts, {
+      defaults(opts, {
         rootSuite: this.rootSuite
       });
       // return this.createAPI(Runner, opts);

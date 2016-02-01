@@ -1,17 +1,14 @@
 'use strict';
 
-import stampit from 'stampit';
-import _ from 'lodash';
-import Map from 'es6-map';
+import {Map} from '../../polyfill';
+import {fromPairs} from 'lodash';
+import Collection from './collection';
 
-const Mappable = stampit({
-  init({stamp, instance}) {
-    const map = new Map(_.pairs(instance));
-    _.mixin(map, stamp.fixed.methods, {chain: false});
-    _.defaults(map, stamp.fixed.refs);
-
-    return _.assign(map, stamp.fixed.props);
-  }
-});
+const Mappable = Collection.constructor(Map)
+  .methods({
+    toJSON() {
+      return fromPairs(Array.from(this));
+    }
+  });
 
 export default Mappable;

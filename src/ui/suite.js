@@ -34,6 +34,8 @@ const Suite = stampit({
       this.parent.addChildSuite(this);
     }
 
+    this.context = _.create(_.get(this, 'parent.context', {}));
+
     const func = this.func;
 
     Object.defineProperties(this, {
