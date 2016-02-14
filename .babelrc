@@ -1,17 +1,19 @@
 {
   "presets": [
-    "es2015",
-    "stage-3"
+    "es2015"
   ],
   "plugins": [
     "lodash"
   ],
-  "compact": false,
-  "sourceMaps": "inline",
+  "sourceMaps": true,
   "env": {
-    "dev": {
+    "jetbrains": {
       "sourceMaps": "both",
       "retainLines": true
+    },
+    "dist": {
+      "sourceMaps": "inline",
+      "compact": false
     }
   }
 }
