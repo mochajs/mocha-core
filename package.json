@@ -109,9 +109,8 @@
     "rimraf": "^2.4.4",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
-    "updtr": "^0.1.6"
-    "trace": "^2.0.2",
     "updtr": "^0.1.6",
+    "trace": "^2.0.2",
     "wallabify": "0.0.13",
     "watchify": "^3.7.0",
     "zone.js": "github:boneskull/zone.js#tsd-install-prepublish"
