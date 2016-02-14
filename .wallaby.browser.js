@@ -2,7 +2,7 @@
 
 /* eslint import/no-require:0 */
 
-module.exports = function wallabyConfig(wallaby) {
+module.exports = function wallabyConfig (wallaby) {
   return {
     files: [
       'node_modules/babel-polyfill/dist/polyfill.js',
@@ -49,7 +49,7 @@ module.exports = function wallabyConfig(wallaby) {
       ]
     }),
     testFramework: 'mocha',
-    bootstrap: function bootstrap() {
+    bootstrap: function bootstrap () {
       window.__moduleBundler.loadTests();
     },
     debug: true

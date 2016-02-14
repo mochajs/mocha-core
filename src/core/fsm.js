@@ -27,7 +27,7 @@ const FSM = stampit({
       return this.methods(actions);
     },
     createAction(action) {
-      return function fsmAction(...data) {
+      return function fsmAction (...data) {
         const currentState = this.state;
         const nextState = this.states[currentState][action];
         if (nextState &&

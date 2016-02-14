@@ -2,7 +2,7 @@
 
 /* eslint import/no-require:0 */
 
-module.exports = function wallabyConfig(wallaby) {
+module.exports = function wallabyConfig (wallaby) {
   return {
     files: [
       'src/**/*.js',
@@ -24,7 +24,7 @@ module.exports = function wallabyConfig(wallaby) {
       '**/*.js': wallaby.compilers.babel()
     },
     testFramework: 'mocha',
-    bootstrap: function bootstrap(wallaby) {
+    bootstrap: function bootstrap (wallaby) {
       // TODO set NODE_PATH here once we start forking things?
       require(require('path')
         .join(wallaby.projectCacheDir, 'test', 'unit', 'fixture'));

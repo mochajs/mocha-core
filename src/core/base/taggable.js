@@ -2,8 +2,8 @@
 
 import stampit from 'stampit';
 
-function tag(...tags) {
-  return this.init(function tagInit() {
+function tag (...tags) {
+  return this.init(function tagInit () {
     tags.forEach(tag => this.tags.add(tag));
   });
 }

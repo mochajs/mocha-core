@@ -47,7 +47,7 @@ const Mocha = stampit({
   }
 })
   .compose(Pluggable)
-  .init(function initMochaPlugins() {
+  .init(function initMochaPlugins () {
     this.use(this.ui);
     this.emit('init');
   });

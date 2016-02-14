@@ -17,7 +17,7 @@ describe(`core/base/decoratable`, () => {
 
         beforeEach(() => {
           decoratable = Decoratable();
-          decoratable.decorate('foo', function(baz) {
+          decoratable.decorate('foo', function (baz) {
             this.bar = baz;
           }, {
             context: decoratable,
@@ -26,7 +26,7 @@ describe(`core/base/decoratable`, () => {
         });
 
         it(`should return the decoratable`, () => {
-          expect(decoratable.decorate('foo', function() {
+          expect(decoratable.decorate('foo', function () {
           }))
             .to
             .equal(decoratable);
@@ -52,7 +52,7 @@ describe(`core/base/decoratable`, () => {
             decoratable.decorate([
               {
                 name: 'foo',
-                func: function(baz) {
+                func: function (baz) {
                   this.bar = baz;
                 },
                 opts: {
@@ -62,7 +62,7 @@ describe(`core/base/decoratable`, () => {
               },
               {
                 name: 'quux',
-                func: function(foo) {
+                func: function (foo) {
                   this.bar = foo;
                 },
                 opts: {
@@ -93,10 +93,10 @@ describe(`core/base/decoratable`, () => {
           it(`should use the keys as names and values as funcs (with default options)`,
             () => {
               decoratable.decorate({
-                foo: function(baz) {
+                foo: function (baz) {
                   this.bar = baz;
                 },
-                quux: function(foo) {
+                quux: function (foo) {
                   this.bar = foo;
                 }
               });

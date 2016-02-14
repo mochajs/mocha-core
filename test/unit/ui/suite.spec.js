@@ -69,7 +69,7 @@ describe('ui/suite', () => {
         });
 
         describe(`and function is passed`, () => {
-          function func() {
+          function func () {
           }
 
           it(`should inherit the "pending" prop`, () => {
@@ -83,7 +83,7 @@ describe('ui/suite', () => {
 
       describe(`if parent's "pending" prop is false`, () => {
         beforeEach(() => {
-          parent.func = function() {
+          parent.func = function () {
           };
         });
 
@@ -94,7 +94,7 @@ describe('ui/suite', () => {
         });
 
         describe(`and function is passed`, () => {
-          function func() {
+          function func () {
           }
 
           it(`should inherit the "pending" prop`, () => {
@@ -220,7 +220,11 @@ describe('ui/suite', () => {
               let suite;
 
               beforeEach(() => {
-                suite = Suite({func: _.noop, parent});
+                suite =
+                  Suite({
+                    func: _.noop,
+                    parent
+                  });
               });
 
               describe(`and the value is falsy`, () => {
@@ -252,7 +256,10 @@ describe('ui/suite', () => {
                   });
 
                   it(`should restore the function`, () => {
-                    expect(suite.func).to.be.a('function');
+                    expect(suite.func)
+                      .to
+                      .be
+                      .a('function');
                   });
                 });
               });
@@ -265,7 +272,9 @@ describe('ui/suite', () => {
         describe(`getter`, () => {
           describe(`when the Suite has no parent`, () => {
             it(`should return the title`, () => {
-              expect(suite.fullTitle).to.equal(suite.title);
+              expect(suite.fullTitle)
+                .to
+                .equal(suite.title);
             });
           });
 
@@ -278,14 +287,18 @@ describe('ui/suite', () => {
             });
 
             it(`should concatenate the titles`, () => {
-              expect(suite.fullTitle).to.equal('bar foo');
+              expect(suite.fullTitle)
+                .to
+                .equal('bar foo');
             });
           });
         });
 
         describe(`setter`, () => {
           it(`should throw a TypeError`, () => {
-            expect(() => suite.fullTitle = 'blah').to.throw(TypeError);
+            expect(() => suite.fullTitle = 'blah')
+              .to
+              .throw(TypeError);
           });
         });
       });

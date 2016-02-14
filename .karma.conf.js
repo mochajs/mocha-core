@@ -1,11 +1,11 @@
 'use strict';
 
+/* eslint import/no-require:0 */
+
 var pkg = require('./package.json');
 var globby = require('globby');
-var _ = require('lodash');
-var path = require('path');
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: [
       'mocha',

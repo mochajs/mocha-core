@@ -31,7 +31,7 @@ describe(`core/base/eventemittable`, () => {
     describe(`static method`, () => {
       describe(`init()`, () => {
         it(`should allow a new stamp to be created`, () => {
-          const stamp = EventEmittable.init(function() {
+          const stamp = EventEmittable.init(function () {
             this.foo = 'bar';
           });
           expect(stamp().foo)

@@ -1,7 +1,7 @@
 'use strict';
 
-function patch(addAsyncListener) {
-  return function() {
+function patch (addAsyncListener) {
+  return function () {
     const listener = addAsyncListener.apply(null, arguments);
     listener.run = (func, ctx, ...args) => {
       return func.apply(ctx, args);

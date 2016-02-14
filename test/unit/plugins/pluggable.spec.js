@@ -49,8 +49,8 @@ describe(`core/pluggable`, () => {
       });
     });
 
-    function makePlugin(attributes = {}) {
-      function plugin() {
+    function makePlugin (attributes = {}) {
+      function plugin () {
       }
 
       plugin.attributes = Plugin.normalize({attributes});

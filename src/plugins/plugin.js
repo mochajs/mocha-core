@@ -56,7 +56,7 @@ const Plugin = stampit({
     },
     installed: {}
   })
-  .once('waiting', function(missingDeps) {
+  .once('waiting', function (missingDeps) {
     if (isEmpty(missingDeps)) {
       return this.ready();
     }
@@ -70,7 +70,7 @@ const Plugin = stampit({
       });
     });
   })
-  .once('installing', function() {
+  .once('installing', function () {
     this.func(this.api, this.opts);
     this.done();
   });

@@ -6,7 +6,7 @@ import Promise from 'bluebird';
 import {isEmpty, head, assign, forEach} from 'lodash';
 import Mappable from './mappable';
 
-function wait(event) {
+function wait (event) {
   return new Promise(resolve => {
     this.once(event, (...args) => {
       if (isEmpty(args)) {
@@ -23,9 +23,11 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
     createEventsFrom(opts = {}) {
       return this.refs({
-        [opts.collection]: Mappable(assign({}, this.fixed.refs[opts.collection], {
-          [opts.event]: opts.action
-        }))
+        [opts.collection]: Mappable(assign({},
+          this.fixed.refs[opts.collection],
+          {
+            [opts.event]: opts.action
+          }))
       });
     },
     on(event, action) {
@@ -52,7 +54,7 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
       return this.enclose(...args);
     }
   })
-  .init(function initEventEmittable() {
+  .init(function initEventEmittable () {
     forEach(this.onEvents, (action, event) => this.on(event, action));
     forEach(this.onceEvents, (action, event) => this.once(event, action));
   });

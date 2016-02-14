@@ -19,7 +19,7 @@ describe(`highland`, () => {
         .join(''))
       .each(v => console.log(v));
 
-    function append(value) {
+    function append (value) {
       ee.emit('foo', value);
     }
 

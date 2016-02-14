@@ -49,7 +49,10 @@ describe(`core/base/fsm`, () => {
         });
 
         it(`should create an "action" method`, () => {
-          expect(stamp.fixed.methods.go).to.be.a('function');
+          expect(stamp.fixed.methods.go)
+            .to
+            .be
+            .a('function');
         });
       });
 

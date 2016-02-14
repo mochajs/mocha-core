@@ -68,9 +68,9 @@ const Test = stampit({
       run: 'ready'
     }
   })
-  .init(function initRun() {
+  .init(function initRun () {
     const run = this.run.bind(this);
-    this.run = function runAndFulfill(...data) {
+    this.run = function runAndFulfill (...data) {
       const finished = new Promise((resolve, reject) => {
         this.once('skipped', resolve)
           .once('passed', resolve)
@@ -80,20 +80,20 @@ const Test = stampit({
       return finished;
     };
   })
-  .on('ready', function onReady() {
+  .on('ready', function onReady () {
     if (this.pending) {
       return this.skip();
     }
     this.execute();
   })
-  .on('running', function onRunning() {
+  .on('running', function onRunning () {
     const storage = {
       test: this,
       async: false,
       id: this.id
     };
 
-    function done(storage, err) {
+    function done (storage, err) {
       process.removeAsyncListener(listener);
       if (err) {
         storage.test.fail(errorist(err));
@@ -128,10 +128,10 @@ const Test = stampit({
       done2();
     }
   })
-  .on('failed', function onFailed(err) {
+  .on('failed', function onFailed (err) {
     this.emit('fail', err);
   })
-  .on('passed', function onPassed() {
+  .on('passed', function onPassed () {
     this.emit('pass');
   });
 

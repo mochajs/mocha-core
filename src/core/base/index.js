@@ -9,11 +9,5 @@ import Taggable from './taggable';
 import Singleton from './singleton';
 
 export {
-  EventEmittable,
-  Unique,
-  Mappable,
-  Graphable,
-  Decoratable,
-  Taggable,
-  Singleton
+  EventEmittable, Unique, Mappable, Graphable, Decoratable, Taggable, Singleton
 };
