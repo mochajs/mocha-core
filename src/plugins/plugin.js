@@ -1,22 +1,33 @@
 'use strict';
 
 import stampit from 'stampit';
-import FSM from './../core/fsm';
-import _ from 'lodash';
+import FSM from '../core/fsm';
+import {size, isEmpty} from 'lodash';
+import _ from 'highland';
+import {remove} from '../util';
+
+const removePkg = remove('pkg');
 
 const Plugin = stampit({
-  props: {
-    installed: false
+  static: {
+    normalize(func = {}) {
+      const {attributes} = func;
+      attributes.dependencies = _([].concat(attributes.dependencies || []));
+      func.attributes =
+        Object.assign({}, attributes.pkg, removePkg(attributes));
+      return func;
+    }
   },
   init() {
-    const depGraph = this.depGraph;
-    const name = this.name;
-    depGraph.addNode(name);
-    const deps = [].concat(this.dependencies || []);
-    _.forEach(_.reject(deps, dep => depGraph.hasNode(dep)),
-      dep => depGraph.addNode(dep));
+    const {depGraph, name, dependencies} = this;
 
-    _.forEach(deps, dep => depGraph.addDependency(name, dep));
+    depGraph.addNode(name);
+
+    dependencies.observe()
+      .each(dep => depGraph.addDependency(name, dep));
+
+    dependencies.reject(dep => depGraph.hasNode(dep))
+      .each(dep => depGraph.addNode(dep));
 
     try {
       depGraph.dependenciesOf(name);
@@ -46,11 +57,11 @@ const Plugin = stampit({
     installed: {}
   })
   .once('waiting', function(missingDeps) {
-    if (_.isEmpty(missingDeps)) {
+    if (isEmpty(missingDeps)) {
       return this.ready();
     }
 
-    let remaining = _.size(missingDeps);
+    let remaining = size(missingDeps);
     _.forEach(missingDeps, dep => {
       this.api.once(`did-install:${dep}`, () => {
         if (!--remaining) {

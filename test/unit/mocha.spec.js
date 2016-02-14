@@ -1,7 +1,6 @@
 'use strict';
 
 import Mocha from '../../src/mocha';
-import * as Plugins from '../../src/plugins';
 
 describe(`mocha`, () => {
   let sandbox;

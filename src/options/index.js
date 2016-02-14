@@ -1,11 +1,23 @@
 'use strict';
 
 import stampit from 'stampit';
-import Singleton from '../core/base/singleton';
+import {Mappable, Singleton} from '../core/base';
 
-const Options = Singleton
-  .init(function initOptions() {
+const OptionMap = stampit({
+  static: {
+    option(opts) {
 
-  });
+    }
+  },
+  refs: {
+    options: Mappable()
+  },
+  methods: {
+    add(opts) {
 
-export default Options;
+    }
+  }
+})
+  .compose(Singleton);
+
+export default OptionMap;

@@ -1,11 +1,11 @@
 'use strict';
 
-import 'zone.js';
-import _ from 'lodash';
+require('zone.js/dist/zone');
+import noop from 'lodash/noop';
 
 process.addAsyncListener = (hooks = {}) => {
   hooks.onError = hooks.onError || hooks.error;
   return zone.fork(hooks);
 };
 
-process.removeAsyncListener = _.noop;
+process.removeAsyncListener = noop;

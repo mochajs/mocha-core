@@ -1,7 +1,16 @@
 'use strict';
 
 import stampit from 'stampit';
-import {isFunction, omit, omitBy, clone, defaults, mixin, assign, toPairs} from 'lodash';
+import {
+  isFunction,
+  omit,
+  omitBy,
+  clone,
+  defaults,
+  mixin,
+  assign,
+  toPairs
+} from 'lodash';
 
 const Collection = stampit({
   static: {

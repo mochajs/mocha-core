@@ -1,46 +1,37 @@
 'use strict';
 
 import stampit from 'stampit';
-import {EventEmittable, Mappable} from './base';
+import {EventEmittable} from './base';
 import fsm from 'fsm';
-import _ from 'lodash';
+import {includes, reduce, mapValues} from 'lodash';
 
 const FSM = stampit({
-  refs: {
-    states: Mappable()
+  props: {
+    states: {}
   },
-  init({stamp}) {
-    /* eslint lodash3/prefer-lodash-method:0 */
+  init() {
     if (!this.state) {
       throw new Error('No initial state declared');
     }
 
     const states = this.states;
-    // need to coerce the nested Maps into something fsm understands
-    const fsmStates = {};
-    states.forEach((actionMap, fromState) => {
-      fsmStates[fromState] = {};
-      if (actionMap) {
-        actionMap.forEach((toState, action) => {
-          fsmStates[fromState][action] = toState;
-          // while we're in here, create the action function.
-          this[action] =
-            stamp.createAction(action)
-              .bind(this);
-        });
-      }
-    });
 
-    fsm.validate(fsmStates);
-    this.reachableStates = fsm.reachable(fsmStates);
+    fsm.validate(states);
+    this.reachableStates = fsm.reachable(states);
   },
   static: {
+    createActions(actionMap) {
+      const actions = mapValues(actionMap, (toEvent, action) => {
+        return this.createAction(action);
+      });
+      return this.methods(actions);
+    },
     createAction(action) {
-      return function(...data) {
+      return function fsmAction(...data) {
         const currentState = this.state;
-        const nextState = this.states.get(currentState)
-          .get(action);
-        if (nextState && _.includes(this.reachableStates[currentState][nextState], action)) {
+        const nextState = this.states[currentState][action];
+        if (nextState &&
+          includes(this.reachableStates[currentState][nextState], action)) {
           this.state = nextState;
           this.emit(nextState, ...data);
           return this;
@@ -49,19 +40,19 @@ const FSM = stampit({
       };
     },
     initialState(state) {
-      return this.refs({state});
+      return this.props({state});
     },
     state(name, eventMap = {}) {
-      const states = Mappable(this.fixed.refs.states);
-      states.set(name, Mappable(eventMap));
-      return this.refs({states});
+      const states = Object.create(this.fixed.props.states);
+      states[name] = eventMap;
+      return this.props({states})
+        .createActions(eventMap);
     },
     states(stateMap = {}) {
-      const states = Mappable(this.fixed.refs.states);
-      _.forEach(stateMap, (eventMap, state) => {
-        states.set(state, Mappable(eventMap));
-      });
-      return this.refs({states});
+      const states = Object.assign({}, this.fixed.props.states, stateMap);
+      return reduce(stateMap, (stamp, actionMap) => {
+        return stamp.createActions(actionMap);
+      }, this.props({states}));
     }
   }
 })

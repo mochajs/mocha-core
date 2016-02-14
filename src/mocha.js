@@ -5,10 +5,7 @@ import {Pluggable} from './plugins';
 import UI, {Suite} from './ui';
 import Reporter from './reporter';
 import {defaults} from 'lodash';
-import {readFileSync} from 'graceful-fs';
-import {join} from 'path';
-
-const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json')));
+import pkg from './options/package';
 
 const Mocha = stampit({
   refs: {
@@ -16,10 +13,7 @@ const Mocha = stampit({
     exposeGlobals: true
   },
   props: {
-    reporters: [],
-    resolverOptions: {
-      prefixes: [pkg.name]
-    }
+    reporters: []
   },
   static: {pkg},
   methods: {
@@ -55,6 +49,7 @@ const Mocha = stampit({
   .compose(Pluggable)
   .init(function initMochaPlugins() {
     this.use(this.ui);
+    this.emit('init');
   });
 
 export default Mocha.refs({Mocha});

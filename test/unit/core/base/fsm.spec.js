@@ -22,7 +22,7 @@ describe(`core/base/fsm`, () => {
       describe(`initialState()`, () => {
         it(`should set the initial state of the FSM`, () => {
           const stamp = FSM.initialState('start');
-          expect(stamp.fixed.refs.state)
+          expect(stamp.fixed.props.state)
             .to
             .equal('start');
         });
@@ -36,17 +36,20 @@ describe(`core/base/fsm`, () => {
         });
 
         it(`should add a state to the state map`, () => {
-          expect(stamp.fixed.refs.states.get('start')
-            .get('go'))
+          expect(stamp.fixed.props.states['start']['go'])
             .to
             .equal('done');
         });
 
         it(`should use a clone of the "states" ref`, () => {
-          expect(stamp.fixed.refs.states)
+          expect(stamp.fixed.props.states)
             .not
             .to
-            .equal(FSM.fixed.refs.states);
+            .equal(FSM.fixed.props.states);
+        });
+
+        it(`should create an "action" method`, () => {
+          expect(stamp.fixed.methods.go).to.be.a('function');
         });
       });
 
@@ -69,25 +72,26 @@ describe(`core/base/fsm`, () => {
 
         it(`should add all states to the state map`, () => {
           _.forEach(states, (value, key) => {
-            expect(stamp.fixed.refs.states.has(key)).to.be.true;
-            /* eslint lodash3/prefer-lodash-method:0 */
-            stamp.fixed.refs.states.get(key)
-              .forEach((toState, action) => {
-                expect([
-                  action,
-                  toState
-                ])
-                  .to
-                  .eql(_.toPairs(value)[0]);
-              });
+            expect(stamp.fixed.props.states)
+              .to
+              .include
+              .key(key);
+            _.forEach(stamp.fixed.props.states[key], (toState, action) => {
+              expect([
+                action,
+                toState
+              ])
+                .to
+                .eql(_.toPairs(value)[0]);
+            });
           });
         });
 
         it(`should use a clone of the "states" ref`, () => {
-          expect(stamp.fixed.refs.states)
+          expect(stamp.fixed.props.states)
             .not
             .to
-            .equal(FSM.fixed.refs.states);
+            .equal(FSM.fixed.props.states);
         });
       });
     });

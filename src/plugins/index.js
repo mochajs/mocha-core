@@ -1,13 +1,6 @@
 'use strict';
 
-import Pluggable from './pluggable';
-import Plugin from './plugin';
-import PluginMap from './plugin-map';
-import Attributes from './attributes';
-
-export {
-  Pluggable,
-  Plugin,
-  PluginMap,
-  Attributes
-};
+export {default as Pluggable} from './pluggable';
+export {default as Plugin} from './plugin';
+export {default as loader} from './loader';
+export {default as resolver} from './resolver';

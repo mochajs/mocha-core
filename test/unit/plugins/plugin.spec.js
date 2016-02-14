@@ -1,9 +1,12 @@
 'use strict';
 
 import Promise from 'bluebird';
-import _ from 'lodash';
 import {EventEmittable, Graphable} from '../../../src/core/base';
 import Plugin from '../../../src/plugins/plugin';
+import _ from 'highland';
+
+function noop() {
+}
 
 describe(`core/plugin`, () => {
   let sandbox;
@@ -22,8 +25,8 @@ describe(`core/plugin`, () => {
       graph.addNode('bar');
       expect(() => Plugin({
         name: 'foo',
-        func: _.noop,
-        dependencies: 'bar',
+        func: noop,
+        dependencies: _(['bar']),
         api: EventEmittable(),
         depGraph: graph
       }))
@@ -38,11 +41,11 @@ describe(`core/plugin`, () => {
       graph.addNode('baz');
       expect(() => Plugin({
         name: 'foo',
-        func: _.noop,
-        dependencies: [
+        func: noop,
+        dependencies: _([
           'bar',
           'baz'
-        ],
+        ]),
         api: EventEmittable(),
         depGraph: graph
       }))
@@ -54,9 +57,10 @@ describe(`core/plugin`, () => {
     it(`should not throw if no "dependencies" are passed`, () => {
       expect(() => Plugin({
         name: 'foo',
-        func: _.noop,
+        func: noop,
         api: EventEmittable(),
-        depGraph: Graphable()
+        depGraph: Graphable(),
+        dependencies: _()
       }))
         .not
         .to
@@ -68,17 +72,17 @@ describe(`core/plugin`, () => {
       const graph = Graphable();
       Plugin({
         name: 'foo',
-        func: _.noop,
+        func: noop,
         api: EventEmittable(),
         depGraph: graph,
-        dependencies: 'bar'
+        dependencies: _(['bar'])
       });
       expect(() => Plugin({
         name: 'bar',
-        func: _.noop,
+        func: noop,
         api: EventEmittable(),
         depGraph: graph,
-        dependencies: 'foo'
+        dependencies: _(['foo'])
       }))
         .to
         .throw(Error, /cyclic/i);
@@ -98,7 +102,8 @@ describe(`core/plugin`, () => {
           func: func,
           api: api,
           depGraph: Graphable(),
-          version: '1.0.0'
+          version: '1.0.0',
+          dependencies: _()
         });
         plugin.func = func;
       });
@@ -154,7 +159,69 @@ describe(`core/plugin`, () => {
 
             it(`should throw`, () => {
               plugin.func = sandbox.stub();
-              expect(plugin.install).to.throw(Error, /invalid/i);
+              expect(() => plugin.install()).to.throw(Error, /invalid/i);
+            });
+          });
+        });
+      });
+
+      describe(`static`, () => {
+        describe(`static`, () => {
+          describe(`method`, () => {
+            describe(`normalize()`, () => {
+              it(`should not return a clone of the object`, () => {
+                const plugin = {attributes: {}};
+                expect(Plugin.normalize(plugin))
+                  .to
+                  .equal(plugin);
+              });
+
+              it(`should populate prop "dependencies" as a Stream`, () => {
+                const plugin = {attributes: {}};
+                expect(_.isStream(Plugin.normalize(plugin).attributes.dependencies)).to.be.true;
+              });
+
+              it(`should convert string "dependencies" to a Stream`, () => {
+                const plugin = {attributes: {dependencies: 'foo'}};
+                expect(_.isStream(Plugin.normalize(plugin).attributes.dependencies)).to.be.true;
+              });
+
+              describe(`if property "pkg" is present`, () => {
+                it(`should pull property "name"`, () => {
+                  const plugin = {attributes: {pkg: {name: 'foo'}}};
+                  expect(Plugin.normalize(plugin).attributes.name)
+                    .to
+                    .equal('foo');
+                });
+
+                it(`should pull property "description"`, () => {
+                  const plugin = {attributes: {pkg: {description: 'foo'}}};
+                  expect(Plugin.normalize(plugin).attributes.description)
+                    .to
+                    .equal('foo');
+                });
+
+                it(`should pull property "version"`, () => {
+                  const plugin = {attributes: {pkg: {version: 'foo'}}};
+                  expect(Plugin.normalize(plugin).attributes.version)
+                    .to
+                    .equal('foo');
+                });
+
+                describe(`if a "pkg" field is already present`, () => {
+                  it(`should not overwrite it`, () => {
+                    const plugin = {
+                      attributes: {
+                        name: 'foo',
+                        pkg: {name: 'bar'}
+                      }
+                    };
+                    expect(Plugin.normalize(plugin).attributes.name)
+                      .to
+                      .equal('foo');
+                  });
+                });
+              });
             });
           });
         });

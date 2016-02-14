@@ -5,7 +5,6 @@ import stampit from 'stampit';
 import FSM from '../core/fsm';
 import {isObject, isFunction} from 'lodash';
 import {Taggable, Unique} from '../core/base';
-import '../util/async-listener';
 
 const Test = stampit({
   refs: {
@@ -70,7 +69,7 @@ const Test = stampit({
     }
   })
   .init(function initRun() {
-    const run = this.run;
+    const run = this.run.bind(this);
     this.run = function runAndFulfill(...data) {
       const finished = new Promise((resolve, reject) => {
         this.once('skipped', resolve)

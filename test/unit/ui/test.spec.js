@@ -185,7 +185,7 @@ describe(`ui/test`, () => {
           });
         });
 
-        describe(`when the test is not pending`, () => {
+        xdescribe(`when the test is not pending`, () => {
           describe(`and the test is synchronous`, () => {
             beforeEach(() => {
               test.func = sandbox.spy();
