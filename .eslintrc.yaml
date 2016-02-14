@@ -3,7 +3,6 @@ extends:
   - semistandard
   - import/warnings
 plugins:
-#  - lodash3
   - no-class
   - prototype-chain
   - import
