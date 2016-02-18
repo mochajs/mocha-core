@@ -15,34 +15,33 @@ const Mocha = stampit({
   props: {
     reporters: []
   },
-  static: {pkg},
   methods: {
-    createAPI(API, opts = {}) {
+    createAPI (API, opts = {}) {
       defaults(opts, {
         delegate: this
       });
       return API(opts);
     },
-    createUI(opts = {}) {
+    createUI (opts = {}) {
       defaults(opts, {
         rootSuite: this.rootSuite
       });
       return this.createAPI(UI, opts);
     },
-    createReporter(opts = {}) {
+    createReporter (opts = {}) {
       return this.createAPI(Reporter, opts);
     },
-    createRunner(opts = {}) {
+    createRunner (opts = {}) {
       defaults(opts, {
         rootSuite: this.rootSuite
       });
       // return this.createAPI(Runner, opts);
     },
-    run() {
+    run () {
       this.emit('pre-run', this);
     }
   },
-  init() {
+  init () {
     this.rootSuite = Suite();
   }
 })
@@ -52,4 +51,5 @@ const Mocha = stampit({
     this.emit('init');
   });
 
-export default Mocha.refs({Mocha});
+export const mocha = Mocha();
+export default Mocha;

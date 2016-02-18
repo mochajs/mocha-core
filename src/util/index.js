@@ -1,6 +1,7 @@
 'use strict';
 
 import _ from 'highland';
+import isEmpty from 'lodash/isEmpty';
 
 export const remove = _.curry(function remove (prop, obj) {
   delete obj[prop];
@@ -12,3 +13,9 @@ export const every = _.curry(function every (stream, callback) {
     return acc && callback(value, key);
   });
 });
+
+export function collapse (value) {
+  if (!isEmpty(value)) {
+    return value;
+  }
+}

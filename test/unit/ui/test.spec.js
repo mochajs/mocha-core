@@ -1,8 +1,8 @@
 'use strict';
 
 import {Test, Suite} from '../../../src/ui';
-import _ from 'lodash';
-import '../../../src/util/async-listener';
+import noop from 'lodash/noop';
+import '../../../src/util/execution-context';
 
 describe(`ui/test`, () => {
   let sandbox;
@@ -18,7 +18,7 @@ describe(`ui/test`, () => {
       parent = Suite();
       suite = Suite({
         parent,
-        func: _.noop
+        func: noop
       });
     });
 
@@ -68,7 +68,7 @@ describe(`ui/test`, () => {
               suite.pending = true;
               test = Test({
                 suite,
-                func: _.noop
+                func: noop
               });
             });
 
@@ -83,7 +83,7 @@ describe(`ui/test`, () => {
             beforeEach(() => {
               test = Test({
                 suite,
-                func: _.noop
+                func: noop
               });
             });
 
@@ -102,7 +102,7 @@ describe(`ui/test`, () => {
             beforeEach(() => {
               test = Test({
                 suite,
-                func: _.noop
+                func: noop
               });
             });
 
@@ -123,7 +123,7 @@ describe(`ui/test`, () => {
                 it(`should reset the function`, () => {
                   expect(test.func)
                     .to
-                    .equal(_.noop);
+                    .equal(noop);
                 });
               });
             });
@@ -172,7 +172,7 @@ describe(`ui/test`, () => {
           describe(`if no longer pending`, () => {
             beforeEach(() => {
               test.run();
-              test.func = _.noop;
+              test.func = noop;
             });
 
             it(`should be allowed to run`, done => {
@@ -185,8 +185,8 @@ describe(`ui/test`, () => {
           });
         });
 
-        xdescribe(`when the test is not pending`, () => {
-          describe(`and the test is synchronous`, () => {
+        describe(`when the test is not pending`, () => {
+          xdescribe(`and the test is synchronous`, () => {
             beforeEach(() => {
               test.func = sandbox.spy();
             });
@@ -214,19 +214,19 @@ describe(`ui/test`, () => {
             });
           });
 
-          describe.skip(`and the test is asynchronous`, () => {
+          describe(`and the test is asynchronous`, () => {
             beforeEach(() => {
               sandbox.spy(test, 'pass');
             });
 
             describe(`and when the function does not throw an error`, () => {
-              let asyncFunc;
+              let funcUnderTest;
 
               beforeEach(() => {
-                asyncFunc = sandbox.stub();
+                funcUnderTest = sandbox.stub();
                 test.func = testDone => {
                   setTimeout(() => {
-                    asyncFunc();
+                    funcUnderTest();
                     testDone();
                   }, 200);
                 };
@@ -234,12 +234,8 @@ describe(`ui/test`, () => {
                 return test.run();
               });
 
-              afterEach(() => {
-                test.func = null;
-              });
-
               it(`should run the function`, () => {
-                expect(asyncFunc).to.have.been.calledOnce;
+                expect(funcUnderTest).to.have.been.calledOnce;
               });
 
               it(`should end in state "passed"`, () => {
@@ -249,16 +245,18 @@ describe(`ui/test`, () => {
               });
 
               it(`should throw if rerun`, () => {
-                expect(() => test.run())
+                return expect(test.run())
                   .to
-                  .throw(Error, /invalid/i);
+                  .eventually
+                  .be
+                  .rejectedWith(Error, /invalid/i);
               });
             });
 
             describe(`and when the function throws an error`, () => {
               beforeEach(() => {
                 test.func = () => {
-                  setTimeout(() => {
+                  setTimeout(function bzzt () {
                     throw new Error('foo');
                   }, 200);
                 };
@@ -285,7 +283,7 @@ describe(`ui/test`, () => {
                   .not
                   .to
                   .throw();
-                return finished.catch(_.noop);
+                return finished.catch(noop);
               });
             });
           });

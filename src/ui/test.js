@@ -3,15 +3,16 @@
 import errorist from 'errorist';
 import stampit from 'stampit';
 import FSM from '../core/fsm';
-import {isObject, isFunction} from 'lodash';
+import {isObject, isFunction, bindAll, last, curry} from 'lodash';
 import {Taggable, Unique} from '../core/base';
+import createExecutionContext from '../util/execution-context';
+import {resultTypes} from './result';
 
 const Test = stampit({
-  refs: {
-    suite: null,
-    async: false
+  props: {
+    results: []
   },
-  init() {
+  init () {
     if (!isObject(this.suite)) {
       throw new Error('Missing "suite" property');
     }
@@ -21,19 +22,11 @@ const Test = stampit({
     const func = this.func;
 
     Object.defineProperties(this, {
-      arity: {
-        get() {
-          if (isFunction(this.func)) {
-            return this.func.length;
-          }
-          return null;
-        }
-      },
       pending: {
-        get() {
+        get () {
           return this.suite.pending || !isFunction(this.func);
         },
-        set(value) {
+        set (value) {
           if (isFunction(this.func)) {
             if (value) {
               this.func = null;
@@ -44,20 +37,34 @@ const Test = stampit({
         }
       }
     });
+  },
+  methods: {
+    debug() {
+      console.error(`Test "${this.title}" [${this.id}] completed with results: ${this.results.map(res => String(res))}`);
+    },
+    run () {
+      try {
+        this.begin();
+      } catch (err) {
+        return Promise.reject(err);
+      }
+      // TODO maybe hook into the timeout here.
+      return this.waitOn('done');
+    }
   }
 })
   .compose(Unique, FSM, Taggable)
   .initialState('idle')
   .states({
     idle: {
-      run: 'ready'
+      begin: 'ready'
     },
     ready: {
       skip: 'skipped',
       execute: 'running'
     },
     skipped: {
-      run: 'ready'
+      begin: 'ready'
     },
     running: {
       pass: 'passed',
@@ -65,20 +72,8 @@ const Test = stampit({
     },
     passed: {},
     failed: {
-      run: 'ready'
+      begin: 'ready'
     }
-  })
-  .init(function initRun () {
-    const run = this.run.bind(this);
-    this.run = function runAndFulfill (...data) {
-      const finished = new Promise((resolve, reject) => {
-        this.once('skipped', resolve)
-          .once('passed', resolve)
-          .once('failed', reject);
-      });
-      run(...data);
-      return finished;
-    };
   })
   .on('ready', function onReady () {
     if (this.pending) {
@@ -87,52 +82,68 @@ const Test = stampit({
     this.execute();
   })
   .on('running', function onRunning () {
-    const storage = {
+    const executionState = {
       test: this,
       async: false,
-      id: this.id
-    };
-
-    function done (storage, err) {
-      process.removeAsyncListener(listener);
-      if (err) {
-        storage.test.fail(errorist(err));
-      } else {
-        storage.test.pass();
-      }
-    }
-
-    const done2 = done.bind(null, storage);
-
-    const listener = process.addAsyncListener({
-      create(storage) {
-        storage.async = true;
+      id: this.id,
+      done (result, err = null) {
+        executionContext.destroy();
+        this.test.results.push(result.fulfill(err));
+        this.test.debug();
+        if (err) {
+          return this.test.fail(err);
+        }
+        return this.test.pass();
       },
-      before(ctx, storage) {
+      onAddTask () {
+        this.async = true;
       },
-      error(storage, err) {
-        done(storage, err);
+      onError (...args) {
+        const err = last(args);
+        this.done(resultTypes.callback, err);
         return true;
       }
-    }, storage);
+    };
+
+    bindAll(executionState, [
+      'onAddTask',
+      'onError'
+    ]);
+
+    const executionContext = createExecutionContext({
+      onAddTask: executionState.onAddTask,
+      onError: executionState.onError
+    });
 
     let retval;
     try {
-      retval = listener.run(this.func, this.suite.context, done2);
+      retval =
+        executionContext.run(this.func,
+          this.suite.context,
+          executionState.done.bind(executionState, resultTypes.callback));
     } catch (err) {
-      done2(err);
+      return executionState.done(resultTypes.sync, err);
     }
     if (retval && isFunction(retval.then)) {
-      retval.then(() => done());
-    } else if (!storage.async) {
-      done2();
+      retval.then(() => executionState.done(resultTypes.promise),
+        executionState.bind(executionState, resultTypes.promise));
+    }
+
+    if (!executionState.async) {
+      executionState.done(resultTypes.sync);
     }
   })
   .on('failed', function onFailed (err) {
-    this.emit('fail', err);
+    this.emit('fail', errorist(err));
+    this.emit('done', this);
   })
   .on('passed', function onPassed () {
     this.emit('pass');
+    this.emit('done', this);
+  })
+  .on('skipped', function onSkipped () {
+    this.emit('skip');
+    this.emit('done', this);
   });
 
 export default Test;

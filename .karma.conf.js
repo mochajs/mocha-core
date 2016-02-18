@@ -1,7 +1,6 @@
 'use strict';
 
 /* eslint import/no-require:0 */
-
 var pkg = require('./package.json');
 var globby = require('globby');
 
@@ -15,7 +14,8 @@ module.exports = function (config) {
       'node_modules/babel-polyfill/dist/polyfill.min.js',
       './src/**/*.js',
       './test/unit/**/*.js',
-      '!./src/util/async-listener.js',
+      '!./src/index.js',
+      '!./src/util/execution-context.js',
       '!./src/plugins/resolver.js',
       '!./src/options/rc.js'
     ]),

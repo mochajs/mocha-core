@@ -1,14 +1,11 @@
 'use strict';
 
 import stampit from 'stampit';
+import {v4} from 'uuid';
 
 const Unique = stampit({
-  init() {
-    Object.defineProperty(this, 'id', {
-      value: Symbol(),
-      writable: false,
-      configurable: true
-    });
+  init () {
+    this.id = v4();
   }
 });
 

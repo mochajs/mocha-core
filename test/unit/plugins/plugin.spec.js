@@ -1,12 +1,9 @@
 'use strict';
 
-import Promise from 'bluebird';
 import {EventEmittable, Graphable} from '../../../src/core/base';
 import Plugin from '../../../src/plugins/plugin';
 import _ from 'highland';
-
-function noop () {
-}
+import noop from 'lodash/noop';
 
 describe(`core/plugin`, () => {
   let sandbox;

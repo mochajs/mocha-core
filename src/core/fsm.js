@@ -9,7 +9,7 @@ const FSM = stampit({
   props: {
     states: {}
   },
-  init() {
+  init () {
     if (!this.state) {
       throw new Error('No initial state declared');
     }
@@ -20,13 +20,12 @@ const FSM = stampit({
     this.reachableStates = fsm.reachable(states);
   },
   static: {
-    createActions(actionMap) {
-      const actions = mapValues(actionMap, (toEvent, action) => {
-        return this.createAction(action);
-      });
+    createActions (actionMap) {
+      const actions = mapValues(actionMap,
+        (toEvent, action) => this.createAction(action));
       return this.methods(actions);
     },
-    createAction(action) {
+    createAction (action) {
       return function fsmAction (...data) {
         const currentState = this.state;
         const nextState = this.states[currentState][action];
@@ -39,20 +38,20 @@ const FSM = stampit({
         throw new Error(`Invalid state transition: "${action}()" not available in state "${currentState}"`);
       };
     },
-    initialState(state) {
+    initialState (state) {
       return this.props({state});
     },
-    state(name, eventMap = {}) {
+    state (name, eventMap = {}) {
       const states = Object.create(this.fixed.props.states);
       states[name] = eventMap;
       return this.props({states})
         .createActions(eventMap);
     },
-    states(stateMap = {}) {
+    states (stateMap = {}) {
       const states = Object.assign({}, this.fixed.props.states, stateMap);
-      return reduce(stateMap, (stamp, actionMap) => {
-        return stamp.createActions(actionMap);
-      }, this.props({states}));
+      return reduce(stateMap,
+        (stamp, actionMap) => stamp.createActions(actionMap),
+        this.props({states}));
     }
   }
 })
