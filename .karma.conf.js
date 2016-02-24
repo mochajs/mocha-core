@@ -1,14 +1,14 @@
 'use strict';
 
 /* eslint import/no-require:0 */
-var pkg = require('./package.json');
 var globby = require('globby');
 
 module.exports = function (config) {
   config.set({
     frameworks: [
       'mocha',
-      'browserify'
+      'browserify',
+      'source-map-support'
     ],
     files: globby.sync([
       'node_modules/babel-polyfill/dist/polyfill.min.js',
@@ -25,7 +25,14 @@ module.exports = function (config) {
     },
     browserify: {
       debug: true,
-      transform: pkg.browserify.transform
+      transform: [
+        [
+          'babelify',
+          {
+            sourceMapRelative: '.'
+          }
+        ]
+      ]
     },
     reporters: [
       'mocha'
