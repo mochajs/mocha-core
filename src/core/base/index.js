@@ -1,13 +1,10 @@
 'use strict';
 
-import EventEmittable from './eventemittable';
-import Unique from './unique';
-import Mappable from './mappable';
-import Graphable from './graphable';
-import Decoratable from './decoratable';
-import Taggable from './taggable';
-import Singleton from './singleton';
-
-export {
-  EventEmittable, Unique, Mappable, Graphable, Decoratable, Taggable, Singleton
-};
+export {default as EventEmittable} from './eventemittable';
+export {default as Unique} from './unique';
+export {default as Mappable} from './mappable';
+export {default as Graphable} from './graphable';
+export {default as Decoratable} from './decoratable';
+export {default as Taggable} from './taggable';
+export {default as Singleton} from './singleton';
+export {default as Collection} from './collection';
