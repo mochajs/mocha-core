@@ -55,3 +55,4 @@ const UI = stampit({
 
 export default UI;
 export {Suite, Test};
+export {default as Result} from './result';
