@@ -7,16 +7,15 @@ import {
 
 const Collection = stampit({
   static: {
-    constructor(collection) {
+    constructor (collection) {
       return this.refs({
         constructor: collection
       });
     }
   },
-  init({stamp, instance}) {
-    const props = omitBy(instance, (value, key) => {
-      return isFunction(value) || key === 'constructor';
-    });
+  init ({stamp, instance}) {
+    const props = omitBy(instance,
+      (value, key) => isFunction(value) || key === 'constructor');
 
     const retval = new this.constructor(Array.isArray(instance)
       ? props

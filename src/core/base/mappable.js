@@ -5,7 +5,7 @@ import Collection from './collection';
 
 const Mappable = Collection.constructor(Map)
   .methods({
-    toJSON() {
+    toJSON () {
       return fromPairs(Array.from(this));
     }
   });

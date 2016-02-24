@@ -10,31 +10,31 @@ const UI = stampit({
     recursive: true
   },
   methods: {
-    createSuite(suiteDef) {
+    createSuite (suiteDef) {
       return this.Suite(suiteDef);
     },
-    createTest(testDef) {
+    createTest (testDef) {
       return this.Test(testDef);
     },
-    afterTests() {
+    afterTests () {
 
     },
-    beforeTests() {
+    beforeTests () {
 
     },
-    afterEachTest() {
+    afterEachTest () {
 
     },
-    beforeEachTest() {
+    beforeEachTest () {
 
     },
-    ignoreSuite() {
+    ignoreSuite () {
 
     },
-    ignoreTest() {
+    ignoreTest () {
 
     },
-    setContext(suite) {
+    setContext (suite) {
       this.Suite = Suite.refs({parent: suite})
         .once('execute:pre', suite => this.setContext(suite));
 
@@ -47,7 +47,7 @@ const UI = stampit({
       this.Test = Test.refs({suite});
     }
   },
-  init() {
+  init () {
     this.setContext(this.rootSuite);
   }
 })
