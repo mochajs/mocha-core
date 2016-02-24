@@ -2,6 +2,7 @@
 
 import {Test, Suite} from '../../../src/ui';
 import noop from 'lodash/noop';
+import {last} from 'lodash';
 import '../../../src/util/execution-context';
 
 describe(`ui/test`, () => {
@@ -163,37 +164,55 @@ describe(`ui/test`, () => {
       describe(`run()`, () => {
         describe(`when the test is pending`, () => {
           it(`should end in state "skipped"`, () => {
-            test.run();
-            expect(test.state)
+            return test.run()
+              .then(() => expect(test.state)
+                .to
+                .equal('skipped'));
+          });
+
+          it(`should return a "skipped" result`, () => {
+            return expect(test.run())
               .to
-              .equal('skipped');
+              .eventually
+              .contain
+              .all
+              .keys({
+                fulfilled: 'skipped',
+                aborted: true,
+                completed: false,
+                skipped: true
+              })
+              .and
+              .have
+              .property('elapsed')
+              .at
+              .least(1);
           });
 
           describe(`if no longer pending`, () => {
             beforeEach(() => {
-              test.run();
-              test.func = noop;
+              return test.run()
+                .then(() => test.func = noop);
             });
 
-            it(`should be allowed to run`, done => {
-              test.once('passed', done);
-              expect(() => test.run())
-                .not
-                .to
-                .throw();
+            it(`should be allowed to run`, () => {
+              return expect(test.run()).to.eventually.be.fulfilled;
             });
           });
         });
 
         describe(`when the test is not pending`, () => {
-          xdescribe(`and the test is synchronous`, () => {
+          describe(`and the test is synchronous`, () => {
             beforeEach(() => {
               test.func = sandbox.spy();
             });
 
-            describe(`and when the function does not throw an error`, () => {
+            describe(`and the function does not throw an error`, () => {
+              let result;
+
               beforeEach(() => {
-                test.run();
+                return test.run()
+                  .then(res => result = res);
               });
 
               it(`should run the function`, () => {
@@ -206,10 +225,48 @@ describe(`ui/test`, () => {
                   .equal('passed');
               });
 
-              it(`should throw if rerun`, () => {
-                expect(() => test.run())
-                  .to
-                  .throw(Error, /invalid/i);
+              it(`should return an "passed" result`, () => {
+                expect(result.passed).to.be.true;
+                // expect(result.completed).to.be.true;
+                // expect(result.aborted).to.be.false;
+                // expect(result.fulfilled).to.equal('sync');
+                // expect(result.async).to.be.false;
+                // expect(result.elapsed).to.be.at.least(1);
+              });
+
+              describe(`when rerun`, () => {
+                it(`should reject`, () => {
+                  return expect(test.run())
+                    .to
+                    .eventually
+                    .be
+                    .rejectedWith(Error, 'Cannot rerun a passed test');
+                });
+
+                it(`should contain multiple results`, () => {
+                  return test.run()
+                    .catch(() => {
+                      expect(test.results)
+                        .to
+                        .have
+                        .lengthOf(2);
+                    });
+                });
+
+                it(`should contain a final "error"-type result`, () => {
+                  return test.run()
+                    .catch(err => {
+                      expect(last(test.results))
+                        .to
+                        .eql({
+                          fulfilled: 'error',
+                          aborted: true,
+                          completed: false,
+                          error: err,
+                          skipped: false
+                        });
+                    });
+                });
               });
             });
           });
@@ -228,7 +285,7 @@ describe(`ui/test`, () => {
                   setTimeout(() => {
                     funcUnderTest();
                     testDone();
-                  }, 200);
+                  }, 50);
                 };
 
                 return test.run();
@@ -244,12 +301,12 @@ describe(`ui/test`, () => {
                   .equal('passed');
               });
 
-              it(`should throw if rerun`, () => {
+              it(`should reject if rerun`, () => {
                 return expect(test.run())
                   .to
                   .eventually
                   .be
-                  .rejectedWith(Error, /invalid/i);
+                  .rejectedWith(Error, 'Cannot rerun a passed test');
               });
             });
 
@@ -258,15 +315,10 @@ describe(`ui/test`, () => {
                 test.func = () => {
                   setTimeout(function bzzt () {
                     throw new Error('foo');
-                  }, 200);
+                  }, 50);
                 };
 
-                return test.run()
-                  .catch(err => {
-                    expect(err.message)
-                      .to
-                      .equal('foo');
-                  });
+                return test.run();
               });
 
               it(`should end in state "failed"`, () => {
@@ -276,14 +328,7 @@ describe(`ui/test`, () => {
               });
 
               it(`should allow the test to be rerun`, () => {
-                let finished;
-                expect(() => {
-                  finished = test.run();
-                })
-                  .not
-                  .to
-                  .throw();
-                return finished.catch(noop);
+                expect(test.run()).to.eventually.be.resolved;
               });
             });
           });
