@@ -2,8 +2,8 @@
 
 import {EventEmitter} from 'events';
 import stampit from 'stampit';
-import forEach from 'lodash/forEach';
-import {collapse} from '../../util';
+import {forEach, isError, flatten} from 'lodash';
+import {collapse, squish} from '../../util';
 
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
@@ -21,7 +21,8 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
     }
   })
   .methods({
-    waitOn (event, timeout) {
+    waitOn (event, opts = {}) {
+      const start = Date.now();
       // jumping through a lot of hoops here to avoid depending on bluebird
       return new Promise((resolve, reject) => {
         let t;
@@ -32,12 +33,18 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
 
         function done (result) {
           clearTimeout(t);
-          resolve(result);
+          // TODO maybe debug elapsed time here
+          const retval = opts.timer ? [Date.now() - start, result] : result;
+          if (isError(result)) {
+            // TODO debug error?  this should not happen.
+          }
+          resolve(retval);
         }
 
         this.once(event, listener);
 
-        if (isFinite(timeout)) {
+        const timeout = opts.timeout;
+        if (isFinite(timeout) && timeout > 0) {
           t = setTimeout(() => {
             this.removeListener(event, listener);
             reject(new Error(`Timed out while waiting for "${event} (${timeout}ms)"`));

@@ -63,15 +63,20 @@ describe(`core/base/eventemittable`, () => {
 
     describe(`method`, () => {
       let ee;
+      let t;
 
       beforeEach(() => {
         ee = EventEmittable();
       });
 
+      afterEach(() => {
+        clearTimeout(t);
+      });
+
       describe(`waitOn()`, () => {
         it(`should return a Promise which is resolved when an event is emitted`,
           () => {
-            const t = setTimeout(() => ee.emit('bar'));
+            t = setTimeout(() => ee.emit('bar'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
@@ -80,21 +85,30 @@ describe(`core/base/eventemittable`, () => {
               .then(() => clearTimeout(t));
           });
 
-        describe(`if a finite "timeout" parameter is supplied`, () => {
+        describe(`if a finite "timeout" option is supplied`, () => {
           it(`should timeout`, () => {
-            return expect(ee.waitOn('bar', 10)).to.eventually.be.rejected;
+            return expect(ee.waitOn('bar',
+              {timeout: 10})).to.eventually.be.rejected;
           });
         });
 
         describe(`if a non-finite "timeout" parameter is supplied`, () => {
           it(`should not timeout`, () => {
-            return expect(ee.waitOn('bar', Infinity)).to.eventually.be.resolved;
+            return expect(ee.waitOn('bar',
+              {timeout: Infinity})).to.eventually.be.resolved;
+          });
+        });
+
+        describe(`if a non-positive "timeout" parameter is supplied`, () => {
+          it(`should not timeout`, () => {
+            return expect(ee.waitOn('bar',
+              {timeout: 0})).to.eventually.be.resolved;
           });
         });
 
         describe(`if the event emits a single parameter`, () => {
           it(`should return the parameter`, () => {
-            const t = setTimeout(() => ee.emit('bar', 'baz'));
+            t = setTimeout(() => ee.emit('bar', 'baz'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
@@ -105,27 +119,41 @@ describe(`core/base/eventemittable`, () => {
 
         describe(`if the event emits multiple parameters`, () => {
           it(`should return them as an array`, () => {
-            const t = setTimeout(() => ee.emit('bar', 'baz', 'quux'));
+            t = setTimeout(() => ee.emit('bar', 'baz', 'quux'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
               .eql([
                 'baz',
                 'quux'
-              ])
-              .then(() => clearTimeout(t));
+              ]);
           });
         });
 
         describe(`if the event emits no parameters`, () => {
           it(`should return nothing`, () => {
-            const t = setTimeout(() => ee.emit('bar'));
+            t = setTimeout(() => ee.emit('bar'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
               .be
-              .undefined
-              .then(() => clearTimeout(t));
+              .undefined;
+          });
+        });
+
+        describe(`if the "timer" prop is truthy`, () => {
+          it(`should resolve with two parameters`, () => {
+            t = setTimeout(() => ee.emit('bar'), 20);
+            return expect(ee.waitOn('bar', {timer: true}))
+              .to
+              .eventually
+              .be
+              .an('array')
+              .then(([elapsed]) => expect(elapsed)
+                .to
+                .be
+                .at
+                .least(20));
           });
         });
       });
