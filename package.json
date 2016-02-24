@@ -22,8 +22,8 @@
   "scripts": {
     "build": "NODE_ENV=dist parallel build:node build:browser",
     "build:browser": "mkdirp dist && parallel build:browser:main build:browser:min",
-    "build:browser:main": "browserify --debug --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] src | exorcist dist/mocha.js.map > dist/mocha.js",
-    "build:browser:min": "browserify --debug --standalone mocha --plugin [ bannerify --file .banner.ejs --pkg package.json ] --plugin [ minifyify --map dist/mocha.min.js.map --output dist/mocha.min.js.map ] src > dist/mocha.min.js",
+    "build:browser:main": "browserify --debug --standalone mocha --transform [ babelify --sourceMapRelative . ] --plugin [ bannerify --file .banner.ejs --pkg package.json ] src | exorcist dist/mocha.js.map > dist/mocha.js",
+    "build:browser:min": "browserify --debug --standalone mocha --transform [ babelify --sourceMapRelative . ] --plugin [ bannerify --file .banner.ejs --pkg package.json ] --plugin [ minifyify --map dist/mocha.min.js.map --output dist/mocha.min.js.map ] src > dist/mocha.min.js",
     "build:node": "rimraf lib && babel src --out-dir lib",
     "bump:major": "npm version major -m 'Release v%s'",
     "bump:minor": "npm version minor -m 'Release v%s'",
@@ -114,16 +114,6 @@
     "wallabify": "0.0.14",
     "watchify": "^3.7.0",
     "zone.js": "github:boneskull/zone.js#tsd-install-prepublish"
-  },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "sourceMapRelative": "."
-        }
-      ]
-    ]
   },
   "browser": {
     "./src/util/execution-context.js": "./src/util/execution-context.browser.js",
