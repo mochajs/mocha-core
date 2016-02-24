@@ -5,15 +5,10 @@
   "plugins": [
     "lodash"
   ],
-  "sourceMaps": true,
+  "sourceMaps": "inline",
   "env": {
     "jetbrains": {
-      "sourceMaps": "both",
       "retainLines": true
-    },
-    "dist": {
-      "sourceMaps": "inline",
-      "compact": false
     }
   }
 }
