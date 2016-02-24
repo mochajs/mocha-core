@@ -3,9 +3,17 @@
 /* eslint import/no-require:0 */
 
 module.exports = function wallabyConfig (wallaby) {
+  var compiler = wallaby.compilers.babel({
+    sourceMaps: 'both',
+    babelrc: true
+  });
+
   return {
     files: [
-      'node_modules/babel-polyfill/dist/polyfill.js',
+      {
+        pattern: 'node_modules/babel-polyfill/dist/polyfill.js',
+        instrument: false
+      },
       {
         pattern: 'src/**/*.js',
         load: false
@@ -35,11 +43,14 @@ module.exports = function wallabyConfig (wallaby) {
       }
     ],
     env: {
-      runner: 'phantomjs'
+      runner: require('phantomjs-prebuilt').path,
+      params: {
+        runner: '--web-security=false'
+      }
     },
     compilers: {
-      'src/**/*.js': wallaby.compilers.babel(),
-      'test/unit/**/*.js': wallaby.compilers.babel()
+      'src/**/*.js': compiler,
+      'test/unit/**/*.js': compiler
     },
     postprocessor: require('wallabify')({
       debug: true,
