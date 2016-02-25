@@ -1,10 +1,7 @@
 'use strict';
 
-import * as Plugins from '../../../src/plugins';
-import Graphable from '../../../src/core/graphable';
+import {Plugin, Pluggable} from '../../../src/plugins';
 import _ from 'highland';
-
-const {Plugin, Pluggable} = Plugins;
 
 describe(`core/pluggable`, () => {
   let sandbox;
@@ -21,7 +18,9 @@ describe(`core/pluggable`, () => {
     let pluggable;
 
     beforeEach(() => {
-      pluggable = Pluggable({depGraph: Graphable()});
+      // depGraph is a singular object across all instances;
+      // this ensures we get a new one each time.
+      pluggable = Pluggable({depGraph: {}});
     });
 
     it(`should return an object`, () => {
@@ -31,20 +30,17 @@ describe(`core/pluggable`, () => {
         .an('object');
     });
 
-    it(`should initialize a Stream "pluginStream"`, () => {
-      expect(_.isStream(pluggable.pluginStream)).to.be.true;
-    });
-
-    it(`should initialize a Stream "loaderStream"`, () => {
-      expect(_.isStream(pluggable.loaderStream)).to.be.true;
+    it(`should initialize a plugin "use" stream`, () => {
+      expect(_.isStream(pluggable.useStream)).to.be.true;
     });
 
     describe(`property`, () => {
-      describe(`pluginStream`, () => {
+      describe(`useStream`, () => {
         it(`should emit "error" if an error received`, () => {
-          expect(() => pluggable.pluginStream.emit('error', new Error()))
+          const err = new Error();
+          expect(() => pluggable.useStream.emit('error', err))
             .to
-            .emitFrom(pluggable, 'error');
+            .emitFrom(pluggable, 'error', err);
         });
       });
     });
@@ -65,9 +61,11 @@ describe(`core/pluggable`, () => {
       });
 
       describe(`use()`, () => {
+        beforeEach(() => {
+          pluggable.removeAllListeners('use');
+        });
+
         it(`should emit "use"`, () => {
-          // stub this so we don't end up calling the loader
-          pluggable.pluginStream = _();
           expect(() => pluggable.use(plugin))
             .to
             .emitFrom(pluggable, 'use', {
@@ -82,6 +80,59 @@ describe(`core/pluggable`, () => {
           expect(pluggable.use(plugin))
             .to
             .equal(pluggable);
+        });
+      });
+    });
+
+    describe(`event`, () => {
+      describe(`use`, () => {
+        let loader;
+
+        beforeEach(() => {
+          loader = sinon.stub()
+            .returns(_());
+          Pluggable.__Rewire__('loader', loader);
+        });
+
+        afterEach(() => {
+          Pluggable.__ResetDependency__('loader');
+        });
+
+        describe(`when emitted`, () => {
+          beforeEach(() => {
+            pluggable.emit('use');
+          });
+
+          it(`should initialize a plugin "load" stream`, () => {
+            expect(_.isStream(pluggable.loadStream)).to.be.true;
+          });
+
+          describe(`"load" stream`, () => {
+            it(`should emit "error" on the Pluggable instance if it encounters one`,
+              () => {
+                const err = new Error();
+                expect(() => pluggable.loadStream.emit('error', err))
+                  .to
+                  .emitFrom(pluggable, 'error', err);
+              });
+          });
+
+          it(`should pass the "use" stream as a parameter`, () => {
+            expect(loader)
+              .to
+              .have
+              .been
+              .calledWithExactly(pluggable.useStream);
+          });
+
+          describe(`and emitted again`, () => {
+            it(`should not re-initialize the loading stream`, () => {
+              expect(() => pluggable.emit('use'))
+                .not
+                .to
+                .change(pluggable, 'loadStream');
+            });
+          });
         });
       });
     });

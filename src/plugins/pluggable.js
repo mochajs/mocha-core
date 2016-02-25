@@ -10,19 +10,17 @@ const Pluggable = stampit({
     depGraph: Graphable()
   },
   init () {
-    const pluginStream = this.pluginStream = _('use', this)
-      .on('error', err => this.emit('error', err));
+    const emitError = err => {
+      this.emit('error', err);
+    };
+    
+    this.once('use', () => {
+      this.loadStream = loader(this.useStream)
+        .on('error', emitError);
+    });
 
-    this.loaderStream = loader(pluginStream);
-
-    _([
-      pluginStream,
-      this.loaderStream
-    ])
-      .merge()
-      .errors(err => {
-        this.emit('error', err);
-      });
+    this.useStream = _('use', this)
+      .on('error', emitError);
   },
   methods: {
     use (pattern, opts = {}) {
