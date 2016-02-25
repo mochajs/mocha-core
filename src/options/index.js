@@ -5,7 +5,7 @@ import {Mappable, Singleton} from '../core/base';
 
 const OptionMap = stampit({
   static: {
-    option(opts) {
+    option (opts) {
 
     }
   },
@@ -13,7 +13,7 @@ const OptionMap = stampit({
     options: Mappable()
   },
   methods: {
-    add(opts) {
+    add (opts) {
 
     }
   }

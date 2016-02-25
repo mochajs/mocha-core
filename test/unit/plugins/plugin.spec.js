@@ -1,6 +1,6 @@
 'use strict';
 
-import {EventEmittable, Graphable} from '../../../src/core/base';
+import {EventEmittable, Graphable} from '../../../src/core';
 import Plugin from '../../../src/plugins/plugin';
 import _ from 'highland';
 import noop from 'lodash/noop';
@@ -189,9 +189,11 @@ describe(`core/plugin`, () => {
             describe(`if property "pkg" is present`, () => {
               it(`should pull property "name"`, () => {
                 const plugin = {attributes: {pkg: {name: 'foo'}}};
-                expect(Plugin.normalize(plugin).attributes.name)
+                expect(Plugin.normalize(plugin))
                   .to
-                  .equal('foo');
+                  .have
+                  .deep
+                  .property('attributes.name', 'foo');
               });
 
               it(`should pull property "description"`, () => {

@@ -1,7 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import {EventEmittable} from './base';
+import EventEmittable from './eventemittable';
 import fsm from 'fsm';
 import {includes, reduce, mapValues} from 'lodash';
 

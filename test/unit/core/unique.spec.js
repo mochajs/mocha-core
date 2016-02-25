@@ -1,6 +1,6 @@
 'use strict';
 
-import Unique from '../../../../src/core/base/unique';
+import Unique from '../../../src/core/unique';
 
 describe(`core/unique`, () => {
   describe(`Unique()`, () => {

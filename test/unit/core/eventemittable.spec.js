@@ -1,6 +1,6 @@
 'use strict';
 
-import EventEmittable from '../../../../src/core/base/eventemittable';
+import EventEmittable from '../../../src/core/eventemittable';
 
 describe(`core/base/eventemittable`, () => {
   let sandbox;

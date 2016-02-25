@@ -186,7 +186,7 @@ describe(`ui/test`, () => {
               .have
               .property('elapsed')
               .at
-              .least(1);
+              .least(0);
           });
 
           describe(`if no longer pending`, () => {

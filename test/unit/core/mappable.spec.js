@@ -1,6 +1,6 @@
 'use strict';
 
-import Mappable from '../../../../src/core/base/mappable';
+import Mappable from '../../../src/core/mappable';
 
 describe(`core/base/mappable`, () => {
   describe(`Mappable()`, () => {
@@ -22,7 +22,7 @@ describe(`core/base/mappable`, () => {
 
     it(`should support custom methods`, () => {
       map = Mappable.methods({
-        foo() {
+        foo () {
         }
       })();
       expect(map.foo)

@@ -1,7 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import {Graphable, EventEmittable} from '../core/base';
+import {Graphable, EventEmittable} from '../core';
 import loader from './loader';
 import _ from 'highland';
 
@@ -9,7 +9,7 @@ const Pluggable = stampit({
   refs: {
     depGraph: Graphable()
   },
-  init() {
+  init () {
     const pluginStream = this.pluginStream = _('use', this)
       .on('error', err => this.emit('error', err));
 
@@ -25,7 +25,7 @@ const Pluggable = stampit({
       });
   },
   methods: {
-    use(pattern, opts = {}) {
+    use (pattern, opts = {}) {
       this.emit('use', {
         pattern,
         opts,

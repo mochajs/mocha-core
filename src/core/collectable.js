@@ -5,7 +5,7 @@ import {
   isFunction, omit, omitBy, clone, defaults, mixin, assign, toPairs
 } from 'lodash';
 
-const Collection = stampit({
+const Collectable = stampit({
   static: {
     constructor (collection) {
       return this.refs({
@@ -27,4 +27,4 @@ const Collection = stampit({
   }
 });
 
-export default Collection;
+export default Collectable;

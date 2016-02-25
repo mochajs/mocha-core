@@ -31,7 +31,7 @@ const Option = stampit({
     listeners: undefined,
     init: noop
   },
-  init() {
+  init () {
     if (this.options) {
       this.options = OptionMap(this.options);
     }
@@ -40,7 +40,7 @@ const Option = stampit({
     }
   },
   methods: {
-    validate(optionMap) {
+    validate (optionMap) {
       if (!this.name) {
         throw new Error('option requires a name');
       }

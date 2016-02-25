@@ -3,7 +3,7 @@
 import stampit from 'stampit';
 import Suite from './suite';
 import Test from './test';
-import {Decoratable, EventEmittable} from '../core/base';
+import {Decoratable, EventEmittable} from '../core';
 
 const UI = stampit({
   refs: {

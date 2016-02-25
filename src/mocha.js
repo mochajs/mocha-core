@@ -5,18 +5,16 @@ import {Pluggable} from './plugins';
 import UI, {Suite} from './ui';
 import Reporter from './reporter';
 import {defaults} from 'lodash';
-import pkg from './options/package';
 
 const Mocha = stampit({
   refs: {
-    ui: 'bdd',
-    exposeGlobals: true
+    ui: 'bdd'
   },
   props: {
     reporters: []
   },
   methods: {
-    createAPI (API, opts = {}) {
+    createAPI (API = stampit(), opts = {}) {
       defaults(opts, {
         delegate: this
       });
@@ -30,15 +28,15 @@ const Mocha = stampit({
     },
     createReporter (opts = {}) {
       return this.createAPI(Reporter, opts);
-    },
-    createRunner (opts = {}) {
-      defaults(opts, {
-        rootSuite: this.rootSuite
-      });
-      // return this.createAPI(Runner, opts);
-    },
-    run () {
-      this.emit('pre-run', this);
+    // },
+    // createRunner (opts = {}) {
+    //   defaults(opts, {
+    //     rootSuite: this.rootSuite
+    //   });
+    //   return this.createAPI(Runner, opts);
+    // },
+    // run () {
+    //   this.emit('pre-run', this);
     }
   },
   init () {
@@ -48,7 +46,6 @@ const Mocha = stampit({
   .compose(Pluggable)
   .init(function initMochaPlugins () {
     this.use(this.ui);
-    this.emit('init');
   });
 
 export const mocha = Mocha();

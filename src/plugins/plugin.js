@@ -10,15 +10,17 @@ const removePkg = remove('pkg');
 
 const Plugin = stampit({
   static: {
-    normalize(func = {}) {
+    normalize (func = {}) {
       const {attributes} = func;
       attributes.dependencies = _([].concat(attributes.dependencies || []));
       func.attributes =
         Object.assign({}, attributes.pkg, removePkg(attributes));
+      console.log(attributes);
+      
       return func;
     }
   },
-  init() {
+  init () {
     const {depGraph, name, dependencies} = this;
 
     depGraph.addNode(name);
@@ -36,7 +38,7 @@ const Plugin = stampit({
     }
 
     Object.defineProperty(this, 'installed', {
-      get() {
+      get () {
         return this.state === 'installed';
       }
     });
@@ -56,7 +58,7 @@ const Plugin = stampit({
     },
     installed: {}
   })
-  .once('waiting', function (missingDeps) {
+  .once('waiting', function onWaiting (missingDeps) {
     if (isEmpty(missingDeps)) {
       return this.ready();
     }
@@ -70,7 +72,7 @@ const Plugin = stampit({
       });
     });
   })
-  .once('installing', function () {
+  .once('installing', function onInstalling () {
     this.func(this.api, this.opts);
     this.done();
   });

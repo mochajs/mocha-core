@@ -3,7 +3,7 @@
 import stampit from 'stampit';
 import FSM from '../core/fsm';
 import {isObject, isFunction, bindAll, last} from 'lodash';
-import {Taggable, Unique} from '../core/base';
+import {Taggable, Unique} from '../core';
 import createExecutionContext from '../util/execution-context';
 import {resultTypes} from './result';
 

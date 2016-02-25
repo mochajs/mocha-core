@@ -9,7 +9,7 @@ const Config = stampit({
   refs: {
     state: null
   },
-  init() {
+  init () {
     if (this.state !== 'loaded') {
       // TODO: get defaults
       const defaults = {};
@@ -17,11 +17,11 @@ const Config = stampit({
     }
   },
   methods: {
-    reload(defaults = {}) {
+    reload (defaults = {}) {
       this.update(rc(defaults, process.argv));
       this.state = 'loaded';
     },
-    update(...objs) {
+    update (...objs) {
       // update right-to-left
       forEach(objs.reverse(), obj => {
         forEach(obj, (value, key) => {

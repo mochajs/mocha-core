@@ -1,23 +1,23 @@
 'use strict';
 
 import stampit from 'stampit';
-import _ from 'lodash';
+import {isArray, forEach, defaults, isObject} from 'lodash';
 
 const Decoratable = stampit({
   refs: {
     delegate: {}
   },
   methods: {
-    decorate(name, func, opts = {}) {
-      if (_.isArray(name)) {
-        _.forEach(name,
+    decorate (name, func, opts = {}) {
+      if (isArray(name)) {
+        forEach(name,
           value => this.decorate(value.name, value.func, value.opts));
         return this;
-      } else if (_.isObject(name)) {
-        _.forEach(name, (value, key) => this.decorate(key, value));
+      } else if (isObject(name)) {
+        forEach(name, (value, key) => this.decorate(key, value));
         return this;
       }
-      _.defaults(opts, {
+      defaults(opts, {
         args: [],
         context: this
       });

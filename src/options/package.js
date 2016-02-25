@@ -1,5 +1,6 @@
 'use strict';
 
-const pkg = require('../../package.json');
-export default pkg;
+/* eslint import/no-require:0 */
+
+export default require('../../package.json');
 

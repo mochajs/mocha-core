@@ -1,10 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import {omitBy, flow} from 'lodash/fp';
-import isNull from 'lodash/fp/isNull';
-import isUndefined from 'lodash/fp/isUndefined';
-import isFunction from 'lodash/fp/isFunction';
+import {omitBy, flow, isNull, isUndefined, isFunction} from 'lodash/fp';
 
 const Result = stampit({
   props: {

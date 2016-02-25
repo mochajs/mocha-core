@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Plugins from '../../../src/plugins';
-import Graphable from '../../../src/core/base/graphable';
+import Graphable from '../../../src/core/graphable';
 import _ from 'highland';
 
 const {Plugin, Pluggable} = Plugins;

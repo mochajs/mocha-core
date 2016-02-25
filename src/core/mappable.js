@@ -1,9 +1,9 @@
 'use strict';
 
 import {fromPairs} from 'lodash';
-import Collection from './collection';
+import Collectable from './collectable';
 
-const Mappable = Collection.constructor(Map)
+const Mappable = Collectable.constructor(Map)
   .methods({
     toJSON () {
       return fromPairs(Array.from(this));

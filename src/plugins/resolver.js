@@ -1,14 +1,19 @@
 'use strict';
 
-import {head, isString, isFunction} from 'lodash';
+import {isString, isFunction} from 'lodash';
 import resolveDep from 'resolve-dep';
 import pkg from '../options/package';
 
-function load (modules) {
-  try {
-    return require(head(modules));
-  } catch (ignored) {
-    // ignored;
+export function load (pluginPaths = []) {
+  if (Array.isArray(pluginPaths)) {
+    const pluginPath = pluginPaths.shift();
+    if (pluginPath) {
+      try {
+        return require(pluginPath);
+      } catch (ignored) {
+        return load(pluginPaths);
+      }
+    }
   }
 }
 

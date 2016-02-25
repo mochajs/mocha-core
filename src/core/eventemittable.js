@@ -3,7 +3,7 @@
 import {EventEmitter} from 'events';
 import stampit from 'stampit';
 import {forEach, isError} from 'lodash';
-import {collapse} from '../../util';
+import {collapse} from '../util';
 
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({

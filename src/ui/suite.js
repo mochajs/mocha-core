@@ -1,8 +1,8 @@
 'use strict';
 
 import stampit from 'stampit';
-import {Unique, EventEmittable} from '../core/base';
-import _ from 'lodash';
+import {Unique, EventEmittable} from '../core';
+import {defaults, create, get, isFunction} from 'lodash';
 
 const Suite = stampit({
   refs: {
@@ -10,22 +10,22 @@ const Suite = stampit({
     func: null
   },
   methods: {
-    addChildSuite(suite) {
+    addChildSuite (suite) {
       this.children.push(suite);
       return this;
     },
-    addTest(test) {
+    addTest (test) {
       this.tests.push(test);
       return this;
     },
-    execute() {
-      if (!this.pending && _.isFunction(this.func)) {
+    execute () {
+      if (!this.pending && isFunction(this.func)) {
         this.func();
       }
     }
   },
-  init() {
-    _.defaults(this, {
+  init () {
+    defaults(this, {
       children: [],
       tests: []
     });
@@ -34,13 +34,13 @@ const Suite = stampit({
       this.parent.addChildSuite(this);
     }
 
-    this.context = _.create(_.get(this, 'parent.context', {}));
+    this.context = create(get(this, 'parent.context', {}));
 
     const func = this.func;
 
     Object.defineProperties(this, {
       fullTitle: {
-        get() {
+        get () {
           let suite = this;
           const fullTitle = [];
           while (suite && suite.title) {
@@ -51,13 +51,13 @@ const Suite = stampit({
         }
       },
       pending: {
-        get() {
+        get () {
           return Boolean(this.parent) &&
-            (this.parent.pending || !_.isFunction(this.func));
+            (this.parent.pending || !isFunction(this.func));
         },
-        set(value) {
+        set (value) {
           if (this.parent) {
-            if (_.isFunction(this.func)) {
+            if (isFunction(this.func)) {
               if (value) {
                 this.func = null;
               }

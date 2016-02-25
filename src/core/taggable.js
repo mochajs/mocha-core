@@ -13,7 +13,7 @@ const Taggable = stampit({
     tag,
     tags: tag
   },
-  init({instance}) {
+  init ({instance}) {
     this.tags = new Set(instance.tags);
   }
 });

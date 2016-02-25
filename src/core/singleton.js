@@ -2,10 +2,16 @@
 
 import stampit from 'stampit';
 
-const container = new WeakMap();
-
 const Singleton = stampit({
-  init({stamp}) {
+  static: {
+    container: new WeakMap(),
+    reset () {
+      this.container = new WeakMap();
+      return this;
+    }
+  },
+  init ({stamp}) {
+    const container = stamp.container;
     return container.get(stamp) || (container.set(stamp, this) && this);
   }
 });

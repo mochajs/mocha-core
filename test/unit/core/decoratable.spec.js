@@ -1,6 +1,6 @@
 'use strict';
 
-import Decoratable from '../../../../src/core/base/decoratable';
+import Decoratable from '../../../src/core/decoratable';
 
 describe(`core/base/decoratable`, () => {
   describe(`Decoratable()`, () => {
