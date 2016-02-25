@@ -1,8 +1,6 @@
 'use strict';
 
 /* eslint import/no-require:0 */
-var fs = require('fs');
-var babelRc = JSON.parse(fs.readFileSync('./.babelrc', 'utf-8'));
 
 module.exports = function wallabyConfig (wallaby) {
   return {
@@ -23,9 +21,7 @@ module.exports = function wallabyConfig (wallaby) {
       runner: 'node'
     },
     compilers: {
-      '**/*.js': wallaby.compilers.babel(Object.assign(babelRc, {
-        sourceMaps: 'both'
-      }))
+      '**/*.js': wallaby.compilers.babel()
     },
     testFramework: 'mocha',
     bootstrap: function bootstrap (wallaby) {

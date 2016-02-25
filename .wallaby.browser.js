@@ -3,11 +3,6 @@
 /* eslint import/no-require:0 */
 
 module.exports = function wallabyConfig (wallaby) {
-  var compiler = wallaby.compilers.babel({
-    sourceMaps: 'both',
-    babelrc: true
-  });
-
   return {
     files: [
       {
@@ -49,8 +44,7 @@ module.exports = function wallabyConfig (wallaby) {
       }
     },
     compilers: {
-      'src/**/*.js': compiler,
-      'test/unit/**/*.js': compiler
+      '**/*.js': wallaby.compilers.babel()
     },
     postprocessor: require('wallabify')({
       debug: true,
