@@ -15,8 +15,6 @@ const Plugin = stampit({
       attributes.dependencies = _([].concat(attributes.dependencies || []));
       func.attributes =
         Object.assign({}, attributes.pkg, removePkg(attributes));
-      console.log(attributes);
-      
       return func;
     }
   },
