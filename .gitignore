@@ -4,4 +4,4 @@ node_modules/
 lib/
 dist/
 build/
-.nyc_output
+.nyc_output/
