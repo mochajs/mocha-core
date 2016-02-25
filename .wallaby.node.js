@@ -6,7 +6,7 @@ module.exports = function wallabyConfig (wallaby) {
   return {
     files: [
       'src/**/*.js',
-      'test/unit/fixture.js',
+      'test/fixture.js',
       'package.json',
       {
         pattern: 'node_modules/mocha-ui-bdd/**',
@@ -28,7 +28,7 @@ module.exports = function wallabyConfig (wallaby) {
       wallaby.testFramework.timeout(0);
       // TODO set NODE_PATH here once we start forking things?
       require(require('path')
-        .join(wallaby.projectCacheDir, 'test', 'unit', 'fixture'));
+        .join(wallaby.projectCacheDir, 'test', 'fixture'));
     },
     debug: true
   };

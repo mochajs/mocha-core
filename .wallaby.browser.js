@@ -14,7 +14,7 @@ module.exports = function wallabyConfig (wallaby) {
         load: false
       },
       {
-        pattern: 'test/unit/fixture.js',
+        pattern: 'test/fixture.js',
         load: false
       },
       {
@@ -49,7 +49,7 @@ module.exports = function wallabyConfig (wallaby) {
     postprocessor: require('wallabify')({
       debug: true,
       entryPatterns: [
-        'test/unit/fixture.js',
+        'test/fixture.js',
         'test/unit/**/*.spec.js'
       ]
     }),
