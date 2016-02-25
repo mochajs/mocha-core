@@ -1,7 +1,7 @@
 'use strict';
 
 import {EventEmittable, Graphable} from '../../../src/core';
-import Plugin from '../../../src/plugins/plugin';
+import Plugin from '../../../src/plugins';
 import _ from 'highland';
 import noop from 'lodash/noop';
 

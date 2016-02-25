@@ -1,6 +1,6 @@
 'use strict';
 
-import {Plugin, Pluggable} from '../../../src/plugins';
+import Plugin, {Pluggable} from '../../../src/plugins';
 import _ from 'highland';
 
 describe(`core/pluggable`, () => {

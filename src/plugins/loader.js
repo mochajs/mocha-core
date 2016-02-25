@@ -1,7 +1,7 @@
 'use strict';
 
 import resolver from './resolver';
-import Plugin from './plugin';
+import Plugin from './index';
 import {get, isString} from 'lodash';
 
 const usedPlugins = new Set();

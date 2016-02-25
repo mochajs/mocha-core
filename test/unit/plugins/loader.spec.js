@@ -9,7 +9,7 @@ import {
   assertUnused,
   default as loader
 } from '../../../src/plugins/loader';
-import {Plugin} from '../../../src/plugins';
+import Plugin from '../../../src/plugins';
 
 describe(`plugins/loader`, () => {
   const stubs = {usedPlugins: {}};
