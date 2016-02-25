@@ -35,8 +35,11 @@ module.exports = function (config) {
       ]
     },
     reporters: [
-      'mocha'
+      'mocha-clean'
     ],
+    mochaReporter: {
+      output: 'autowatch'
+    },
     logLevel: 'WARN',
     autoWatch: true,
     browsers: ['PhantomJS'],
