@@ -1,6 +1,6 @@
 'use strict';
 
-import Mocha, {mocha as mochaInstance} from '../../src/mocha';
+import Mocha from '../../src/mocha';
 import Reporter from '../../src/reporter';
 import UI from '../../src/ui';
 
@@ -13,13 +13,6 @@ describe(`mocha`, () => {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it(`should export an instance of Mocha`, () => {
-    expect(mochaInstance)
-      .to
-      .be
-      .an('object');
   });
 
   describe(`Mocha`, () => {

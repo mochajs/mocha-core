@@ -48,5 +48,4 @@ const Mocha = stampit({
     this.use(this.ui);
   });
 
-export const mocha = Mocha();
 export default Mocha;

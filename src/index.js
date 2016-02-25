@@ -11,14 +11,14 @@
 
 import 'source-map-support/register';
 import 'babel-polyfill';
+import Mocha from './mocha';
+import pkg from './options/package';
 
 /**
- * Default instance of Mocha.  It doesn't need to be used by consumers, but
+ * Default instance of Mocha.  It doesn't *need* to be used by consumers, but
  * exists for the sake of convenience.
  * @type {Mocha}
  */
-export {mocha} from './mocha';
+export const mocha = Mocha();
 
-/* eslint import/no-require:0 */
-export const version = require('../package.json').version;
-
+export const version = pkg.version;
