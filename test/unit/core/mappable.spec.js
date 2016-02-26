@@ -2,7 +2,7 @@
 
 import Mappable from '../../../src/core/mappable';
 
-describe(`core/base/mappable`, () => {
+describe(`core/mappable`, () => {
   describe(`Mappable()`, () => {
     let map;
 

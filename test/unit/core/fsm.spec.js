@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import FSM from '../../../src/core/fsm';
 
-describe(`core/base/fsm`, () => {
+describe(`core/fsm`, () => {
   describe(`FSM()`, () => {
     it(`should throw if no initial state declared`, () => {
       expect(FSM)

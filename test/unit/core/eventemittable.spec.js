@@ -2,11 +2,11 @@
 
 import EventEmittable from '../../../src/core/eventemittable';
 
-describe(`core/base/eventemittable`, () => {
+describe(`core/eventemittable`, () => {
   let sandbox;
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create('core/base/eventemittable');
+    sandbox = sinon.sandbox.create('core/eventemittable');
   });
 
   afterEach(() => {

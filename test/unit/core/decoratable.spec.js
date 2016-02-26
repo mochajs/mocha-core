@@ -2,7 +2,7 @@
 
 import Decoratable from '../../../src/core/decoratable';
 
-describe(`core/base/decoratable`, () => {
+describe(`core/decoratable`, () => {
   describe(`Decoratable()`, () => {
     it(`should return an Object with an Object "delegate" property`, () => {
       expect(Decoratable().delegate)

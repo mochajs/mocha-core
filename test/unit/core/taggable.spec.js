@@ -4,7 +4,7 @@ import Taggable from '../../../src/core/taggable';
 
 const SET = global.Set ? 'Set' : 'Object';
 
-describe(`core/base/taggable`, () => {
+describe(`core/taggable`, () => {
   describe(`Taggable()`, () => {
     describe(`static method`, () => {
       describe(`tag()`, () => {

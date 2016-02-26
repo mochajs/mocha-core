@@ -13,7 +13,7 @@ const Pluggable = stampit({
     const emitError = err => {
       this.emit('error', err);
     };
-    
+
     this.once('use', () => {
       this.loadStream = loader(this.useStream)
         .on('error', emitError);
