@@ -9,7 +9,8 @@ import {
   assertUnused,
   default as loader
 } from '../../../src/plugins/loader';
-import Plugin from '../../../src/plugins';
+import _ from 'highland';
+import {Graphable} from '../../../src/core';
 
 describe(`plugins/loader`, () => {
   const stubs = {usedPlugins: {}};
@@ -278,6 +279,47 @@ describe(`plugins/loader`, () => {
         .have
         .been
         .calledWithExactly(opts.func.attributes.name);
+    });
+  });
+
+  describe(`loader()`, () => {
+    beforeEach(() => {
+      loader.__Rewire__('resolver', sandbox.stub()
+        .returnsArg(0));
+    });
+
+    afterEach(() => {
+      loader.__ResetDependency__('resolver');
+    });
+
+    describe(`when passed a stream of plugin functions`, () => {
+      let stream;
+      let pattern;
+      let depGraph;
+
+      beforeEach(() => {
+        depGraph = Graphable();
+        pattern = () => {
+        };
+        pattern.attributes = {
+          name: 'foo'
+        };
+        stream = loader(_([
+          {
+            pattern,
+            depGraph
+          }
+        ]));
+      });
+
+      it(`should return a stream of Plugin instances`, () => {
+        stream.toArray(([plugin]) => {
+          expect(plugin)
+            .to
+            .have
+            .property('state', 'idle');
+        });
+      });
     });
   });
 });
