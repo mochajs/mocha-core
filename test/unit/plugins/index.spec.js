@@ -165,68 +165,6 @@ describe(`core/plugin`, () => {
           });
         });
       });
-
-      describe(`static`, () => {
-        describe(`method`, () => {
-          describe(`normalize()`, () => {
-            it(`should not return a clone of the object`, () => {
-              const plugin = {attributes: {}};
-              expect(Plugin.normalize(plugin))
-                .to
-                .equal(plugin);
-            });
-
-            it(`should populate prop "dependencies" as a Stream`, () => {
-              const plugin = {attributes: {}};
-              expect(_.isStream(Plugin.normalize(plugin).attributes.dependencies)).to.be.true;
-            });
-
-            it(`should convert string "dependencies" to a Stream`, () => {
-              const plugin = {attributes: {dependencies: 'foo'}};
-              expect(_.isStream(Plugin.normalize(plugin).attributes.dependencies)).to.be.true;
-            });
-
-            describe(`if property "pkg" is present`, () => {
-              it(`should pull property "name"`, () => {
-                const plugin = {attributes: {pkg: {name: 'foo'}}};
-                expect(Plugin.normalize(plugin))
-                  .to
-                  .have
-                  .deep
-                  .property('attributes.name', 'foo');
-              });
-
-              it(`should pull property "description"`, () => {
-                const plugin = {attributes: {pkg: {description: 'foo'}}};
-                expect(Plugin.normalize(plugin).attributes.description)
-                  .to
-                  .equal('foo');
-              });
-
-              it(`should pull property "version"`, () => {
-                const plugin = {attributes: {pkg: {version: 'foo'}}};
-                expect(Plugin.normalize(plugin).attributes.version)
-                  .to
-                  .equal('foo');
-              });
-
-              describe(`if a "pkg" field is already present`, () => {
-                it(`should not overwrite it`, () => {
-                  const plugin = {
-                    attributes: {
-                      name: 'foo',
-                      pkg: {name: 'bar'}
-                    }
-                  };
-                  expect(Plugin.normalize(plugin).attributes.name)
-                    .to
-                    .equal('foo');
-                });
-              });
-            });
-          });
-        });
-      });
     });
   });
 });

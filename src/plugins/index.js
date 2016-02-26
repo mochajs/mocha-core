@@ -4,20 +4,8 @@ import stampit from 'stampit';
 import FSM from '../core/fsm';
 import {size, isEmpty} from 'lodash';
 import _ from 'highland';
-import {remove} from '../util';
-
-const removePkg = remove('pkg');
 
 const Plugin = stampit({
-  static: {
-    normalize (func = {}) {
-      const {attributes} = func;
-      attributes.dependencies = _([].concat(attributes.dependencies || []));
-      func.attributes =
-        Object.assign({}, attributes.pkg, removePkg(attributes));
-      return func;
-    }
-  },
   init () {
     const {depGraph, name, dependencies} = this;
 

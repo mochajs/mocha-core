@@ -3,8 +3,11 @@
 import resolver from './resolver';
 import Plugin from './index';
 import {get, isString} from 'lodash';
+import _ from 'highland';
+import {remove} from '../util';
 
 const usedPlugins = new Set();
+const removePkg = remove('pkg');
 
 export function resolve (opts = {}) {
   opts.func = resolver(opts.pattern);
@@ -17,7 +20,10 @@ export function assertResolved (opts = {}) {
 }
 
 export function normalize (opts = {}) {
-  opts.func = Plugin.normalize(opts.func);
+  const {func} = opts;
+  const {attributes} = func;
+  attributes.dependencies = _([].concat(attributes.dependencies || []));
+  func.attributes = Object.assign({}, attributes.pkg, removePkg(attributes));
 }
 
 export function assertAttributes (opts = {}) {

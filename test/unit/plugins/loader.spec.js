@@ -68,21 +68,119 @@ describe(`plugins/loader`, () => {
   });
 
   describe(`normalize()`, () => {
-    let opts;
-
-    beforeEach(() => {
-      sandbox.stub(Plugin, 'normalize')
-        .returnsArg(0);
-      opts = {func: noop};
+    it(`should modify the attributes in place`, () => {
+      const opts = {
+        func: {
+          attributes: {
+            name: 'foo'
+          }
+        }
+      };
+      expect(() => normalize(opts))
+        .to
+        .change(opts.func, 'attributes');
     });
 
-    it(`should defer to Plugin.normalize()`, () => {
+    it(`should populate prop "dependencies" as a Stream`, () => {
+      const opts = {
+        func: {
+          attributes: {
+            name: 'foo'
+          }
+        }
+      };
       normalize(opts);
-      expect(Plugin.normalize)
-        .to
-        .have
-        .been
-        .calledWithExactly(opts.func);
+      expect(_.isStream(opts.func.attributes.dependencies)).to.be.true;
+    });
+
+    it(`should convert string "dependencies" to a Stream`, () => {
+      const opts = {
+        func: {
+          attributes: {
+            name: 'foo',
+            dependencies: 'bar'
+          }
+        }
+      };
+      normalize(opts);
+      expect(_.isStream(opts.func.attributes.dependencies)).to.be.true;
+    });
+
+    describe(`if property "pkg" is present`, () => {
+      it(`should pull property "name"`, () => {
+        const opts = {
+          func: {
+            attributes: {
+              pkg: {
+                name: 'foo'
+              }
+            }
+          }
+        };
+        normalize(opts);
+        expect(opts)
+          .to
+          .have
+          .deep
+          .property('func.attributes.name', 'foo');
+      });
+
+      it(`should pull property "description"`, () => {
+        const opts = {
+          func: {
+            attributes: {
+              pkg: {
+                description: 'foo'
+              }
+            }
+          }
+        };
+        normalize(opts);
+        expect(opts)
+          .to
+          .have
+          .deep
+          .property('func.attributes.description', 'foo');
+      });
+
+      it(`should pull property "version"`, () => {
+        const opts = {
+          func: {
+            attributes: {
+              pkg: {
+                version: 'foo'
+              }
+            }
+          }
+        };
+        normalize(opts);
+        expect(opts)
+          .to
+          .have
+          .deep
+          .property('func.attributes.version', 'foo');
+      });
+
+      describe(`if a "name" field is already present`, () => {
+        it(`should not overwrite it`, () => {
+          const opts = {
+            func: {
+              attributes: {
+                name: 'foo',
+                pkg: {
+                  name: 'bar'
+                }
+              }
+            }
+          };
+          normalize(opts);
+          expect(opts)
+            .to
+            .have
+            .deep
+            .property('func.attributes.name', 'foo');
+        });
+      });
     });
   });
 
