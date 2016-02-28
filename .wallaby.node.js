@@ -14,7 +14,7 @@ module.exports = function wallabyConfig (wallaby) {
       }
     ],
     tests: [
-      'test/unit/**/*.spec.js'
+      'test/**/*.spec.js'
     ],
     env: {
       type: 'node',

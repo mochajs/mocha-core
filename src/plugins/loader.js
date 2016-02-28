@@ -2,11 +2,11 @@
 
 import resolver from './resolver';
 import Plugin from './index';
-import {get, isString} from 'lodash';
-import _ from 'highland';
+import {get, isString, isFunction, every, some} from 'lodash';
 import {remove} from '../util';
-
-const usedPlugins = new Set();
+import {ok as assert} from 'assert';
+import {Kefir} from 'kefir';
+let usedPlugins = new Set();
 const removePkg = remove('pkg');
 
 export function resolve (opts = {}) {
@@ -14,29 +14,26 @@ export function resolve (opts = {}) {
 }
 
 export function assertResolved (opts = {}) {
-  if (!opts.func) {
-    throw new Error(`Could not resolve plugin by pattern "${opts.pattern}"`);
-  }
+  assert(isFunction(opts.func),
+    `Could not resolve plugin by pattern "${opts.pattern}"`);
 }
 
 export function normalize (opts = {}) {
   const {func} = opts;
   const {attributes} = func;
-  attributes.dependencies = _([].concat(attributes.dependencies || []));
+  attributes.dependencies = [].concat(attributes.dependencies || []);
   func.attributes = Object.assign({}, attributes.pkg, removePkg(attributes));
 }
 
 export function assertAttributes (opts = {}) {
-  if (!isString(get(opts, 'func.attributes.name'))) {
-    throw new Error(`Plugin must have a "name" property in its "attributes" object`);
-  }
+  assert(isString(get(opts, 'func.attributes.name')),
+    `Plugin must have a "name" property in its "attributes" object`);
 }
 
 export function assertUnused (opts = {}) {
   const name = get(opts, 'func.attributes.name');
-  if (usedPlugins.has(name)) {
-    throw new Error(`Plugin "${name}" is already loaded`);
-  }
+  assert(!usedPlugins.has(name),
+    `Plugin with name "${name}" is already loaded`);
 }
 
 export function build (opts = {}) {
@@ -46,11 +43,46 @@ export function build (opts = {}) {
 }
 
 export default function loader (stream) {
-  return stream.fork()
-    .doto(resolve)
+  return stream.doto(resolve)
     .doto(assertResolved)
     .doto(normalize)
     .doto(assertAttributes)
     .doto(assertUnused)
     .map(build);
+}
+
+export function kLoader (pluggable) {
+  usedPlugins = new Set();
+
+  const useStream = Kefir.fromEvents(pluggable, 'use')
+    .log('use plugin')
+    .onValue(resolve)
+    .onValue(assertResolved)
+    .onValue(normalize)
+    .onValue(assertAttributes)
+    .onValue(assertUnused)
+    .map(build)
+    .skipDuplicates((a, b) => a.name === b.name);
+
+  function install (plugin) {
+    plugin.install();
+    pluggable.plugins.set(plugin.name, plugin);
+    pluggable.emit('installed', plugin.name);
+  }
+
+  function hasAllDeps (plugin) {
+    return every(plugin.dependencies, dep => pluggable.plugins.has(dep));
+  }
+
+  const withoutDeps = useStream.filter(hasAllDeps)
+    .onValue(install);
+
+  // TODO make this more efficient with reduce-like function (try scan()?)
+  const withDeps = useStream.filter(
+    plugin => some(plugin.dependencies, dep => !pluggable.plugins.has(dep)))
+    .sampledBy(withoutDeps, plugin => hasAllDeps(plugin) && plugin)
+    .filter()
+    .onValue(install);
+
+  return withoutDeps.merge(withDeps);
 }

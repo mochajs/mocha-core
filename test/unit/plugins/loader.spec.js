@@ -10,7 +10,7 @@ import {
   default as loader
 } from '../../../src/plugins/loader';
 import _ from 'highland';
-import {Graphable} from '../../../src/core';
+import {EventEmittable, Graphable} from '../../../src/core';
 
 describe(`plugins/loader`, () => {
   const stubs = {usedPlugins: {}};
@@ -245,14 +245,14 @@ describe(`plugins/loader`, () => {
     let opts;
 
     beforeEach(() => {
-      PluginStub = sandbox.stub()
-        .returnsArg(0);
-      loader.__Rewire__('Plugin', PluginStub);
       opts = {
         func: noop,
         bar: 'baz'
       };
       opts.func.attributes = {name: 'foo'};
+      PluginStub = sandbox.stub()
+        .returns(EventEmittable(Object.assign({}, opts.func.attributes, opts)));
+      loader.__Rewire__('Plugin', PluginStub);
     });
 
     afterEach(() => {
@@ -286,10 +286,19 @@ describe(`plugins/loader`, () => {
     beforeEach(() => {
       loader.__Rewire__('resolver', sandbox.stub()
         .returnsArg(0));
+      [
+        assertResolved,
+        assertAttributes,
+        assertUnused
+      ].forEach(fn => loader.__Rewire__(fn.name, sandbox.stub()));
     });
 
     afterEach(() => {
-      loader.__ResetDependency__('resolver');
+      [
+        assertResolved,
+        assertAttributes,
+        assertUnused
+      ].forEach(fn => loader.__ResetDependency__(fn.name));
     });
 
     describe(`when passed a stream of plugin functions`, () => {

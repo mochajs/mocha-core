@@ -7,7 +7,7 @@
       "sourceMaps": true
     },
     "jetbrains": {
-      "sourceMaps": "both",
+      "sourceMaps": "inline",
       "plugins": [
         "rewire"
       ],

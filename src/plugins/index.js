@@ -6,16 +6,16 @@ import {size, isEmpty} from 'lodash';
 import _ from 'highland';
 
 const Plugin = stampit({
+  props: {
+    dependencies: []
+  },
   init () {
     const {depGraph, name, dependencies} = this;
 
     depGraph.addNode(name);
-
-    dependencies.observe()
-      .each(dep => depGraph.addDependency(name, dep));
-
-    dependencies.reject(dep => depGraph.hasNode(dep))
-      .each(dep => depGraph.addNode(dep));
+    dependencies.filter(dep => !depGraph.hasNode(dep))
+      .forEach(dep => depGraph.addNode(dep));
+    dependencies.forEach(dep => depGraph.addDependency(name, dep));
 
     try {
       depGraph.dependenciesOf(name);
@@ -34,29 +34,12 @@ const Plugin = stampit({
   .initialState('idle')
   .states({
     idle: {
-      install: 'waiting'
-    },
-    waiting: {
-      ready: 'installing'
+      install: 'installing'
     },
     installing: {
       done: 'installed'
     },
     installed: {}
-  })
-  .once('waiting', function onWaiting (missingDeps) {
-    if (isEmpty(missingDeps)) {
-      return this.ready();
-    }
-
-    let remaining = size(missingDeps);
-    _.forEach(missingDeps, dep => {
-      this.api.once(`did-install:${dep}`, () => {
-        if (!--remaining) {
-          this.ready();
-        }
-      });
-    });
   })
   .once('installing', function onInstalling () {
     this.func(this.api, this.opts);
