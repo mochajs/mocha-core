@@ -1,15 +1,14 @@
 'use strict';
 
 import stampit from 'stampit';
-import FSM from '../core/fsm';
-import {size, isEmpty} from 'lodash';
-import _ from 'highland';
+import {FSM, Graphable} from '../core';
 
 const Plugin = stampit({
   props: {
     dependencies: []
   },
   init () {
+    this.depGraph = this.depGraph || Graphable();
     const {depGraph, name, dependencies} = this;
 
     depGraph.addNode(name);
@@ -20,7 +19,8 @@ const Plugin = stampit({
     try {
       depGraph.dependenciesOf(name);
     } catch (e) {
-      throw new Error(`Cyclic dependency detected in "${name}": ${e.message}`);
+      this.emit('error',
+        new Error(`Possible cyclic dependency detected in Plugin w/ name "${name}": ${e.message}`));
     }
 
     Object.defineProperty(this, 'installed', {
@@ -48,5 +48,3 @@ const Plugin = stampit({
 
 export default Plugin;
 export {default as Pluggable} from './pluggable';
-export {default as loader} from './loader';
-export {default as resolver} from './resolver';
