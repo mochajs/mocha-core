@@ -1,6 +1,6 @@
 'use strict';
 
-import {EventEmittable, Singleton, Mappable} from '../core/base';
+import {EventEmittable, Singleton, Mappable} from '../core';
 import {forEach} from 'lodash';
 import rc from './rc';
 import stampit from 'stampit';

@@ -1,7 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import {Mappable, Singleton} from '../core/base';
+import {Mappable, Singleton} from '../core';
 
 const OptionMap = stampit({
   static: {
