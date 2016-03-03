@@ -13,7 +13,8 @@ module.exports = function (config) {
     files: globby.sync([
       'node_modules/babel-polyfill/dist/polyfill.min.js',
       './src/**/*.js',
-      './test/unit/**/*.js',
+      './test/**/*.js',
+      '!./test/unit/plugins/resolver.spec.js',
       '!./src/index.js',
       '!./src/util/execution-context.js',
       '!./src/plugins/resolver.js',
