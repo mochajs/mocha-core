@@ -2,7 +2,7 @@
 
 import {isFunction} from 'lodash';
 
-export function resolve (pattern) {
+export default function resolver (pattern) {
   if (isFunction(pattern)) {
     return pattern;
   }
