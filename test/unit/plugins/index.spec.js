@@ -2,7 +2,6 @@
 
 import {EventEmittable, Graphable} from '../../../src/core';
 import Plugin from '../../../src/plugins';
-import _ from 'highland';
 import noop from 'lodash/noop';
 
 describe(`core/plugin`, () => {

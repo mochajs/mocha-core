@@ -24,6 +24,10 @@ describe(`mocha`, () => {
         mocha = Mocha();
       });
 
+      afterEach(() => {
+        mocha.emit('ready');
+      });
+
       it(`should use the default ui`, () => {
         expect(mocha.use)
           .to
@@ -47,6 +51,10 @@ describe(`mocha`, () => {
       beforeEach(() => {
         sandbox.stub(Mocha.fixed.methods, 'use');
         mocha = Mocha();
+      });
+
+      afterEach(() => {
+        mocha.emit('ready');
       });
 
       describe(`createAPI()`, () => {

@@ -1,16 +1,9 @@
 'use strict';
 
-import {
-  resolve,
-  assertResolved,
-  normalize,
-  assertAttributes,
-  build,
-  assertUnused,
-  default as loader
-} from '../../../src/plugins/loader';
-import _ from 'highland';
-import {EventEmittable, Graphable} from '../../../src/core';
+import * as Loader from '../../../src/plugins/loader';
+import {EventEmittable} from '../../../src/core';
+import {Pluggable} from '../../../src/plugins';
+const {resolve, assertResolved, normalize, assertAttributes, assertUnused, build} = Loader;
 
 describe(`plugins/loader`, () => {
   const stubs = {usedPlugins: {}};
@@ -24,35 +17,58 @@ describe(`plugins/loader`, () => {
     stubs.resolver = sandbox.stub()
       .returns(noop);
     stubs.usedPlugins.add = sandbox.stub();
-    stubs.usedPlugins.has = sandbox.stub();
-    stubs.usedPlugins.has.onCall(0)
+    stubs.usedPlugins.has = sandbox.stub()
       .returns(false);
-    stubs.usedPlugins.has.onCall(1)
-      .returns(true);
-    loader.__Rewire__('resolver', stubs.resolver);
-    loader.__Rewire__('usedPlugins', {
+
+    Loader.__Rewire__('resolver', stubs.resolver);
+    Loader.__Rewire__('usedPlugins', {
       add: stubs.usedPlugins.add,
       has: stubs.usedPlugins.has
     });
   });
 
   afterEach(() => {
-    loader.__ResetDependency__('resolver');
-    loader.__ResetDependency__('usedPlugins');
+    Loader.__ResetDependency__('resolver');
+    Loader.__ResetDependency__('usedPlugins');
     sandbox.restore();
   });
 
   describe(`resolve()`, () => {
-    it(`should modify the object with the return value of resolver()`, () => {
-      const opts = {pattern: 'foo'};
-      resolve(opts);
-      expect(opts.func)
+    let opts;
+
+    beforeEach(() => {
+      opts = {pattern: 'foo'};
+    });
+
+    it(`should an object having "func" property as returned by resolver()`,
+      () => {
+        expect(resolve(opts))
+          .to
+          .have
+          .property('func', noop);
+      });
+
+    it(`should not return the identity`, () => {
+      expect(resolve(opts))
+        .not
         .to
-        .equal(noop);
+        .equal(opts);
     });
   });
 
   describe(`assertResolve()`, () => {
+    let opts;
+
+    beforeEach(() => {
+      opts = {func: noop};
+    });
+
+    it(`should return the identity`, () => {
+      expect(assertResolved(opts))
+        .to
+        .equal(opts);
+    });
+
     it(`should throw an error if "func" is not present`, () => {
       expect(assertResolved)
         .to
@@ -60,7 +76,6 @@ describe(`plugins/loader`, () => {
     });
 
     it(`should not change the value of "func"`, () => {
-      const opts = {func: noop};
       expect(() => assertResolved(opts))
         .not
         .to
@@ -69,6 +84,20 @@ describe(`plugins/loader`, () => {
   });
 
   describe(`normalize()`, () => {
+    it(`should return the identity`, () => {
+      const opts = {
+        func: {
+          attributes: {
+            name: 'foo'
+          }
+        }
+      };
+
+      expect(normalize(opts))
+        .to
+        .equal(opts);
+    });
+
     it(`should modify the attributes in place`, () => {
       const opts = {
         func: {
@@ -82,7 +111,7 @@ describe(`plugins/loader`, () => {
         .change(opts.func, 'attributes');
     });
 
-    it(`should populate prop "dependencies" as a Stream`, () => {
+    it(`should create Array prop "dependencies"`, () => {
       const opts = {
         func: {
           attributes: {
@@ -91,10 +120,13 @@ describe(`plugins/loader`, () => {
         }
       };
       normalize(opts);
-      expect(_.isStream(opts.func.attributes.dependencies)).to.be.true;
+      expect(opts.func.attributes.dependencies)
+        .to
+        .be
+        .an('array');
     });
 
-    it(`should convert string "dependencies" to a Stream`, () => {
+    it(`should coerce string "dependencies" into an Array`, () => {
       const opts = {
         func: {
           attributes: {
@@ -104,7 +136,10 @@ describe(`plugins/loader`, () => {
         }
       };
       normalize(opts);
-      expect(_.isStream(opts.func.attributes.dependencies)).to.be.true;
+      expect(opts.func.attributes.dependencies)
+        .to
+        .be
+        .an('array');
     });
 
     describe(`if property "pkg" is present`, () => {
@@ -186,6 +221,15 @@ describe(`plugins/loader`, () => {
   });
 
   describe(`assertAttributes()`, () => {
+    it(`should return the identity`, () => {
+      const opts = {func: noop};
+      opts.func.attributes = {name: 'foo'};
+
+      expect(assertAttributes(opts))
+        .to
+        .equal(opts);
+    });
+
     it(`should throw if no string "func.attributes.name" prop in "opts" parameter`,
       () => {
         const opts = {func: noop};
@@ -226,17 +270,24 @@ describe(`plugins/loader`, () => {
     });
 
     it(`should not throw if the plugin is not already loaded`, () => {
-      expect(() => assertUnused(opts))
+      expect(() => assertUnused(stubs.usedPlugins, opts))
         .not
         .to
-        .throw();
+        .throw(Error, /already used/i);
     });
 
     it(`should throw if the plugin is already loaded`, () => {
-      assertUnused(opts);
-      expect(() => assertUnused(opts))
+      stubs.usedPlugins = new Set();
+      stubs.usedPlugins.add(opts.func.attributes.name);
+      expect(() => assertUnused(stubs.usedPlugins, opts))
         .to
-        .throw(Error, /already loaded/i);
+        .throw(Error, /already used/i);
+    });
+
+    it(`should return the identity`, () => {
+      expect(assertUnused(stubs.usedPlugins, opts))
+        .to
+        .equal(opts);
     });
   });
 
@@ -252,15 +303,22 @@ describe(`plugins/loader`, () => {
       opts.func.attributes = {name: 'foo'};
       PluginStub = sandbox.stub()
         .returns(EventEmittable(Object.assign({}, opts.func.attributes, opts)));
-      loader.__Rewire__('Plugin', PluginStub);
+      Loader.__Rewire__('Plugin', PluginStub);
     });
 
     afterEach(() => {
-      loader.__ResetDependency__('Plugin');
+      Loader.__ResetDependency__('Plugin');
+    });
+
+    it(`should not return the identity`, () => {
+      expect(build(stubs.usedPlugins, opts))
+        .not
+        .to
+        .equal(opts);
     });
 
     it(`should defer to Plugin()`, () => {
-      build(opts);
+      build(stubs.usedPlugins, opts);
       expect(PluginStub)
         .to
         .have
@@ -273,7 +331,7 @@ describe(`plugins/loader`, () => {
     });
 
     it(`should add the "name" value to "usedPlugins"`, () => {
-      build(opts);
+      build(stubs.usedPlugins, opts);
       expect(stubs.usedPlugins.add)
         .to
         .have
@@ -284,49 +342,51 @@ describe(`plugins/loader`, () => {
 
   describe(`loader()`, () => {
     beforeEach(() => {
-      loader.__Rewire__('resolver', sandbox.stub()
-        .returnsArg(0));
       [
+        resolve,
+        normalize,
         assertResolved,
         assertAttributes,
         assertUnused
-      ].forEach(fn => loader.__Rewire__(fn.name, sandbox.stub()));
+      ].forEach(fn => Loader.__Rewire__(fn.name, sandbox.stub()
+        .returnsArg(0)));
     });
 
     afterEach(() => {
       [
+        resolve,
+        normalize,
         assertResolved,
         assertAttributes,
         assertUnused
-      ].forEach(fn => loader.__ResetDependency__(fn.name));
+      ].forEach(fn => Loader.__ResetDependency__(fn.name));
     });
 
-    describe(`when passed a stream of plugin functions`, () => {
-      let stream;
-      let pattern;
-      let depGraph;
+    describe(`when passed a Pluggable which emits "use"`, () => {
+      let pluggable;
+      let plugin;
 
       beforeEach(() => {
-        depGraph = Graphable();
-        pattern = () => {
+        pluggable = Pluggable();
+        plugin = function () {
         };
-        pattern.attributes = {
+        plugin.attributes = {
           name: 'foo'
         };
-        stream = loader(_([
-          {
-            pattern,
-            depGraph
-          }
-        ]));
       });
 
-      it(`should return a stream of Plugin instances`, () => {
-        stream.toArray(([plugin]) => {
-          expect(plugin)
+      afterEach(() => {
+        pluggable.emit('ready');
+      });
+
+      it(`should return a stream of Plugin instances`, done => {
+        Loader.default(pluggable)
+          .onValue(value => expect(value.state)
             .to
-            .have
-            .property('state', 'idle');
+            .equal('installed'))
+          .onValue(() => done());
+        pluggable.emit('use', {
+          func: plugin
         });
       });
     });

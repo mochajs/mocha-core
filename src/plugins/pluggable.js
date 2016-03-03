@@ -2,10 +2,8 @@
 
 import stampit from 'stampit';
 import {Graphable, EventEmittable, Mappable} from '../core';
-import loader, {kLoader} from './loader';
-import installer from './installer';
-import _ from 'highland';
-import {Kefir} from 'kefir';
+import loader from './loader';
+import {isEmpty, isString, isFunction} from 'lodash/fp';
 
 const Pluggable = stampit({
   refs: {
@@ -13,28 +11,24 @@ const Pluggable = stampit({
   },
   init () {
     this.plugins = Mappable();
-
-    const emitError = err => {
-      this.emit('error', err);
-    };
-
-    kLoader(this);
-
-    // this.useStream = _('use', this)
-    //   .through(loader)
-    //   .through(installer)
-    //   .each(plugin => this.plugins.set(plugin.name, plugin))
-    //   .on('error', emitError);
+    this.loadStream = loader(this)
+      .takeErrors(1)
+      .onError(err => {
+        this.emit('error', err);
+      });
   },
   methods: {
     use (pattern, opts = {}) {
-      this.emit('use', {
-        pattern,
-        opts,
-        depGraph: this.depGraph,
-        api: this
-      });
-      return this;
+      if (!isEmpty(pattern) && (isString(pattern) || isFunction(pattern))) {
+        this.emit('use', {
+          pattern,
+          opts,
+          depGraph: this.depGraph,
+          api: this
+        });
+        return this;
+      }
+      this.emit('error', new Error('Function or path to plugin required'));
     }
   }
 })

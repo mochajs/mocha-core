@@ -2,67 +2,94 @@
 
 import resolver from './resolver';
 import Plugin from './index';
-import {get, isString, isFunction, every, some} from 'lodash';
+import {isString, isFunction, get, flow, negate, every, curry} from 'lodash/fp';
 import {remove} from '../util';
-import {ok as assert} from 'assert';
 import {Kefir} from 'kefir';
+
 let usedPlugins = new Set();
-const removePkg = remove('pkg');
+
+export const helpers = {
+  removePkg: remove('pkg'),
+  getName: get('func.attributes.name')
+};
 
 export function resolve (opts = {}) {
-  opts.func = resolver(opts.pattern);
+  return Object.assign({func: resolver(opts.pattern)}, opts);
 }
 
 export function assertResolved (opts = {}) {
-  assert(isFunction(opts.func),
-    `Could not resolve plugin by pattern "${opts.pattern}"`);
+  if (!isFunction(opts.func)) {
+    throw new Error(`Could not resolve plugin by pattern "${opts.pattern}"`);
+  }
+  return opts;
 }
 
 export function normalize (opts = {}) {
   const {func} = opts;
   const {attributes} = func;
   attributes.dependencies = [].concat(attributes.dependencies || []);
-  func.attributes = Object.assign({}, attributes.pkg, removePkg(attributes));
+  func.attributes =
+    Object.assign({}, attributes.pkg, helpers.removePkg(attributes));
+  return opts;
 }
 
 export function assertAttributes (opts = {}) {
-  assert(isString(get(opts, 'func.attributes.name')),
-    `Plugin must have a "name" property in its "attributes" object`);
+  if (!isString(helpers.getName(opts))) {
+    throw new Error(`Plugin must have a "name" property in its "attributes" object`);
+  }
+  return opts;
 }
 
-export function assertUnused (opts = {}) {
-  const name = get(opts, 'func.attributes.name');
-  assert(!usedPlugins.has(name),
-    `Plugin with name "${name}" is already loaded`);
-}
+export const assertUnused = curry(function assertUnused (usedPlugins, opts) {
+  const name = helpers.getName(opts);
+  if (usedPlugins.has(name)) {
+    throw new Error(`Plugin with name "${name}" is already used`);
+  }
+  return opts;
+});
 
-export function build (opts = {}) {
+export const build = curry(function build (usedPlugins, opts) {
   const plugin = Plugin(Object.assign({}, opts.func.attributes, opts));
   usedPlugins.add(plugin.name);
   return plugin;
-}
+});
 
-export default function loader (stream) {
-  return stream.doto(resolve)
-    .doto(assertResolved)
-    .doto(normalize)
-    .doto(assertAttributes)
-    .doto(assertUnused)
-    .map(build);
-}
+export default function loader (pluggable) {
+  const pluginReady = flow(get('dependencies'),
+    every(dep => pluggable.plugins.has(dep)));
+  const pluginNotReady = negate(pluginReady);
 
-export function kLoader (pluggable) {
-  usedPlugins = new Set();
+  const preprocess = flow(resolve,
+    assertResolved,
+    normalize,
+    assertAttributes,
+    assertUnused(usedPlugins));
 
-  const useStream = Kefir.fromEvents(pluggable, 'use')
-    .log('use plugin')
-    .onValue(resolve)
-    .onValue(assertResolved)
-    .onValue(normalize)
-    .onValue(assertAttributes)
-    .onValue(assertUnused)
-    .map(build)
-    .skipDuplicates((a, b) => a.name === b.name);
+  function activateUseStream (emitter) {
+    function onUse (opts = {}) {
+      try {
+        emitter.emit(preprocess(opts));
+      } catch (err) {
+        emitter.error(err);
+      }
+    }
+
+    function onReady () {
+      emitter.end();
+      usedPlugins = new Set();
+    }
+
+    pluggable.on('use', onUse);
+    pluggable.on('ready', onReady);
+
+    return function deactivateUseStream () {
+      pluggable.removeListener('use', onUse);
+      pluggable.removeListener('ready', onReady);
+    };
+  }
+
+  const useStream = Kefir.stream(activateUseStream)
+    .map(build(usedPlugins));
 
   function install (plugin) {
     plugin.install();
@@ -70,19 +97,21 @@ export function kLoader (pluggable) {
     pluggable.emit('installed', plugin.name);
   }
 
-  function hasAllDeps (plugin) {
-    return every(plugin.dependencies, dep => pluggable.plugins.has(dep));
-  }
-
-  const withoutDeps = useStream.filter(hasAllDeps)
-    .onValue(install);
+  const withoutDeps = useStream.filter(pluginReady);
 
   // TODO make this more efficient with reduce-like function (try scan()?)
-  const withDeps = useStream.filter(
-    plugin => some(plugin.dependencies, dep => !pluggable.plugins.has(dep)))
-    .sampledBy(withoutDeps, plugin => hasAllDeps(plugin) && plugin)
-    .filter()
+  const withDeps = useStream.filter(pluginNotReady)
+    .sampledBy(withoutDeps, plugin => pluginReady(plugin) && plugin)
+    .filter();
+
+  withoutDeps.merge(withDeps)
+    // .takeErrors(1)
+    // .onError(err => {
+    //   console.log(`err count ${++errCount}: ${err}`);
+    //   err.message += ` ** ${errCount}`;
+    //   pluggable.emit('error', err);
+    // })
     .onValue(install);
 
-  return withoutDeps.merge(withDeps);
+  return useStream;
 }

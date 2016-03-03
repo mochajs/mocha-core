@@ -1,7 +1,7 @@
 'use strict';
 
 import {Pluggable} from '../../../src/plugins';
-import _ from 'highland';
+import {Graphable} from '../../../src/core';
 
 describe(`core/pluggable`, () => {
   let sandbox;
@@ -20,7 +20,7 @@ describe(`core/pluggable`, () => {
     beforeEach(() => {
       // depGraph is a singular object across all instances;
       // this ensures we get a new one each time.
-      pluggable = Pluggable({depGraph: {}});
+      pluggable = Pluggable({depGraph: Graphable()});
     });
 
     it(`should return an object`, () => {
@@ -28,21 +28,6 @@ describe(`core/pluggable`, () => {
         .to
         .be
         .an('object');
-    });
-
-    xit(`should initialize a plugin "use" stream`, () => {
-      expect(_.isStream(pluggable.useStream)).to.be.true;
-    });
-
-    describe(`property`, () => {
-      xdescribe(`useStream`, () => {
-        it(`should emit "error" if an error received`, () => {
-          const err = new Error();
-          expect(() => pluggable.useStream.emit('error', err))
-            .to
-            .emitFrom(pluggable, 'error', err);
-        });
-      });
     });
 
     function makePlugin (attributes = {}) {
@@ -53,6 +38,18 @@ describe(`core/pluggable`, () => {
       return plugin;
     }
 
+    describe(`property`, () => {
+      describe(`loadStream`, () => {
+        describe(`when an error is emitted`, () => {
+          it(`should emit an error on the Pluggable`, () => {
+            expect(() => pluggable.loadStream._emit('error', new Error()))
+              .to
+              .emitFrom(pluggable, 'error');
+          });
+        });
+      });
+    });
+
     describe(`method`, () => {
       let plugin;
 
@@ -61,8 +58,14 @@ describe(`core/pluggable`, () => {
       });
 
       describe(`use()`, () => {
-        beforeEach(() => {
-          pluggable.removeAllListeners('use');
+        afterEach(() => {
+          pluggable.emit('ready');
+        });
+
+        it(`should emit "error" if no pattern supplied`, () => {
+          expect(() => pluggable.use())
+            .to
+            .emitFrom(pluggable, 'error');
         });
 
         it(`should emit "use"`, () => {
@@ -80,59 +83,6 @@ describe(`core/pluggable`, () => {
           expect(pluggable.use(plugin))
             .to
             .equal(pluggable);
-        });
-      });
-    });
-
-    describe(`event`, () => {
-      describe(`use`, () => {
-        let loader;
-
-        beforeEach(() => {
-          loader = sinon.stub()
-            .returns(_());
-          Pluggable.__Rewire__('loader', loader);
-        });
-
-        afterEach(() => {
-          Pluggable.__ResetDependency__('loader');
-        });
-
-        describe(`when emitted`, () => {
-          beforeEach(() => {
-            pluggable.emit('use');
-          });
-
-          xit(`should initialize a plugin "load" stream`, () => {
-            expect(_.isStream(pluggable.loadStream)).to.be.true;
-          });
-
-          xdescribe(`"load" stream`, () => {
-            it(`should emit "error" on the Pluggable instance if it encounters one`,
-              () => {
-                const err = new Error();
-                expect(() => pluggable.loadStream.emit('error', err))
-                  .to
-                  .emitFrom(pluggable, 'error', err);
-              });
-          });
-
-          xit(`should pass the "use" stream as a parameter`, () => {
-            expect(loader)
-              .to
-              .have
-              .been
-              .calledWithExactly(pluggable.useStream);
-          });
-
-          xdescribe(`and emitted again`, () => {
-            it(`should not re-initialize the loading stream`, () => {
-              expect(() => pluggable.emit('use'))
-                .not
-                .to
-                .change(pluggable, 'loadStream');
-            });
-          });
         });
       });
     });

@@ -15,11 +15,17 @@ describe(`e2e/plugins/installation`, () => {
       plugin.attributes = {name: 'foo'};
     });
 
+    afterEach(() => {
+      pluggable.emit('ready');
+    });
+
     it(`should install the plugin`, () => {
       pluggable.use(plugin);
-      console.log('used');
-
       expect(pluggable.plugins.get(plugin.attributes.name))
+        .to
+        .be
+        .an('object')
+        .and
         .to
         .have
         .property('name', 'foo');
@@ -33,8 +39,7 @@ describe(`e2e/plugins/installation`, () => {
       pluggable = Pluggable({depGraph: Graphable()});
       plugin = function () {
       };
-      plugin.attributes =
-      {
+      plugin.attributes = {
         name: 'foo',
         dependencies: ['bar']
       };
@@ -46,20 +51,42 @@ describe(`e2e/plugins/installation`, () => {
       };
     });
 
-    it(`should not immediately install the plugin if the deps are not installed`,
-      () => {
+    afterEach(() => {
+      pluggable.emit('ready');
+    });
+
+    describe(`when the deps are not installed`, () => {
+      it(`should not immediately install the plugin if the deps are not installed`,
+        () => {
+          pluggable.use(plugin);
+          expect(pluggable.plugins.has(plugin.attributes.name)).to.be.false;
+        });
+
+      it(`should not emit "installed"`, () => {
+        expect(() => pluggable.use(plugin))
+          .not
+          .to
+          .emitFrom(pluggable, 'installed');
+      });
+    });
+
+    describe(`when the deps are installed`, () => {
+      it(`should emit "installed"`, () => {
         pluggable.use(plugin);
-        expect(pluggable.plugins.has(plugin.attributes.name)).to.be.false;
+        expect(() => pluggable.use(dep))
+          .to
+          .emitFrom(pluggable, 'installed');
       });
 
-    it(`should install the plugin once the deps are installed`, () => {
-      pluggable.use(plugin);
-      pluggable.use(dep);
+      it(`should put the installed plugin into the "plugins" Mappable`, () => {
+        pluggable.use(plugin);
+        pluggable.use(dep);
 
-      expect(pluggable.plugins.get(plugin.attributes.name))
-        .to
-        .have
-        .property('name', 'foo');
+        expect(pluggable.plugins.get(plugin.attributes.name))
+          .to
+          .have
+          .property('name', 'foo');
+      });
     });
   });
 });

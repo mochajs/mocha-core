@@ -54,7 +54,7 @@
     "dependency-graph": "^0.4.1",
     "fsm": "^1.0.2",
     "graceful-fs": "^4.1.2",
-    "highland": "^2.6.0",
+    "kefir": "^3.2.1",
     "lodash": "^4.5.1",
     "mocha-ui-bdd": "file:../mocha-ui-bdd",
     "rc-yaml": "^0.1.0",
