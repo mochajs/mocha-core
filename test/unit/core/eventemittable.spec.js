@@ -153,7 +153,7 @@ describe(`core/eventemittable`, () => {
                 .to
                 .be
                 .at
-                .least(20));
+                .least(19)); // weird
           });
         });
       });
