@@ -9,3 +9,4 @@ rules:
   mocha-only/mocha-only: 2
   max-nested-callbacks: 0
   prototype-chain/prototype-chain: 0
+  import/namespace: 0
