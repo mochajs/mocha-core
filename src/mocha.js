@@ -5,6 +5,7 @@ import {Pluggable} from './plugins';
 import UI, {Suite} from './ui';
 import Reporter from './reporter';
 import {defaults} from 'lodash';
+import {API} from './core';
 
 const Mocha = stampit({
   refs: {
@@ -14,12 +15,6 @@ const Mocha = stampit({
     reporters: []
   },
   methods: {
-    createAPI (API = stampit(), opts = {}) {
-      defaults(opts, {
-        delegate: this
-      });
-      return API(opts);
-    },
     createUI (opts = {}) {
       defaults(opts, {
         rootSuite: this.rootSuite
@@ -43,7 +38,7 @@ const Mocha = stampit({
     this.rootSuite = Suite();
   }
 })
-  .compose(Pluggable)
+  .compose(Pluggable, API)
   .init(function initMochaPlugins () {
     this.use(this.ui);
   });

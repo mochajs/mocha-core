@@ -9,3 +9,4 @@ export {default as Mappable} from './mappable';
 export {default as Singleton} from './singleton';
 export {default as Taggable} from './taggable';
 export {default as Unique} from './unique';
+export {default as API} from './api';
