@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "description": "next-gen Mocha",
   "license": "Apache-2.0",
-  "repository": "https://github.com/boneskull/mocha3.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/boneskull/mocha3.git"
+  },
   "author": {
     "name": "Christopher Hiller",
     "email": "boneskull@boneskull.com",
