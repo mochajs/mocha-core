@@ -13,6 +13,7 @@ import 'source-map-support/register';
 import 'babel-polyfill';
 import Mocha from './mocha';
 import pkg from './options/package';
+import './util/mixins';
 
 /**
  * Default instance of Mocha.  It doesn't *need* to be used by consumers, but
