@@ -1,26 +1,29 @@
 'use strict';
 
 import stampit from 'stampit';
-import {isArray, forEach, defaults, isObject} from 'lodash';
+import {forEach, defaults} from 'lodash/fp';
+import is from 'check-more-types';
 
 const Decoratable = stampit({
-  refs: {
+  props: {
     delegate: {}
   },
   methods: {
     decorate (name, func, opts = {}) {
-      if (isArray(name)) {
-        forEach(name,
-          value => this.decorate(value.name, value.func, value.opts));
+      if (is.not.function(func)) {
+        throw new Error('"func" must be a Function');
+      }
+      if (is.array(name)) {
+        forEach(value => this.decorate(value.name, value.func, value.opts), name);
         return this;
-      } else if (isObject(name)) {
-        forEach(name, (value, key) => this.decorate(key, value));
+      } else if (is.object(name)) {
+        forEach((value, key) => this.decorate(key, value), name);
         return this;
       }
-      defaults(opts, {
+      defaults({
         args: [],
         context: this
-      });
+      }, opts);
       this.delegate[name] = func.bind(opts.context, ...opts.args);
       return this;
     }
