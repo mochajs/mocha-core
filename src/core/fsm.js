@@ -33,9 +33,10 @@ const FSM = stampit({
       la(is.unemptyString(state));
       return this.props({initial: state});
     },
-    final (state) {
-      la(is.unemptyString(state));
-      return this.props({final: state});
+    final (...args) {
+      args = flatten(args);
+      la(is.arrayOfUnemptyStrings(args));
+      return this.props({final: args});
     },
     events (...args) {
       args = flatten(args);

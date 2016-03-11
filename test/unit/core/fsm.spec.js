@@ -53,11 +53,48 @@ describe(`core/fsm`, () => {
       });
 
       describe(`final()`, () => {
-        it(`should set the final state of the FSM`, () => {
-          expect(FSM.final('end').fixed.props)
-            .to
-            .have
-            .property('final', 'end');
+        describe(`when not supplied a nonempty string or array of nonempty strings`,
+          () => {
+            it(`should throw`, () => {
+              expect(FSM.final)
+                .to
+                .throw(Error);
+            });
+          });
+
+        describe(`when supplied a nonempty string`, () => {
+          it(`should set the final state of the FSM`, () => {
+            expect(FSM.final('end').fixed.props)
+              .to
+              .have
+              .property('final')
+              .which
+              .is
+              .an('array')
+              .of
+              .length(1)
+              .and
+              .includes('end');
+          });
+        });
+
+        describe(`when supplied an array of nonempty strings`, () => {
+          it(`should set the final state of the FSM`, () => {
+            expect(FSM.final([
+              'end',
+              'fin'
+            ]).fixed.props)
+              .to
+              .have
+              .property('final')
+              .which
+              .is
+              .an('array')
+              .of
+              .length(2)
+              .and
+              .includes('end', 'fin');
+          });
         });
       });
 
