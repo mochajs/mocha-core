@@ -140,22 +140,6 @@ describe(`core/eventemittable`, () => {
               .undefined;
           });
         });
-
-        describe(`if the "timer" prop is truthy`, () => {
-          it(`should resolve with two parameters`, () => {
-            t = setTimeout(() => ee.emit('bar'), 20);
-            return expect(ee.waitOn('bar', {timer: true}))
-              .to
-              .eventually
-              .be
-              .an('array')
-              .then(([elapsed]) => expect(elapsed)
-                .to
-                .be
-                .at
-                .least(19)); // weird
-          });
-        });
       });
     });
   });

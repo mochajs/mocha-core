@@ -22,7 +22,6 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
   })
   .methods({
     waitOn (event, opts = {}) {
-      const start = Date.now();
       // jumping through a lot of hoops here to avoid depending on bluebird
       return new Promise((resolve, reject) => {
         let t;
@@ -33,12 +32,10 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
 
         function done (result) {
           clearTimeout(t);
-          // TODO maybe debug elapsed time here
-          const retval = opts.timer ? [Date.now() - start, result] : result;
           if (isError(result)) {
-            // TODO debug error?  this should not happen.
+            return reject(result);
           }
-          resolve(retval);
+          resolve(result);
         }
 
         this.once(event, listener);
