@@ -8,6 +8,7 @@ import chaiEventEmitter from 'chai-eventemitter';
 import 'source-map-support/register';
 import 'trace';
 import 'clarify';
+import '../src/util/mixins';
 
 Error.stackTraceLimit = Infinity;
 
