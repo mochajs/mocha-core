@@ -1,60 +1,66 @@
 'use strict';
 
+import StateMachine from 'fsm-as-promised';
 import stampit from 'stampit';
-import EventEmittable from './eventemittable';
-import fsm from 'fsm';
-import {includes, reduce, mapValues} from 'lodash';
+import {pick, flatten} from 'lodash/fp';
+import is from 'check-more-types';
+import la from 'lazy-ass';
+
+const getStateMachineProps = pick([
+  'events',
+  'callbacks',
+  'initial',
+  'final'
+]);
+const isEvent = is.schema({
+  name: is.unemptyString,
+  from: is.or(is.unemptyString, is.arrayOfUnemptyStrings),
+  to: is.maybe.unemptyString
+});
 
 const FSM = stampit({
+  refs: {
+    callbacks: {}
+  },
   props: {
-    states: {}
+    events: []
   },
   init () {
-    if (!this.state) {
-      throw new Error('No initial state declared');
-    }
-
-    const states = this.states;
-
-    fsm.validate(states);
-    this.reachableStates = fsm.reachable(states);
+    StateMachine(getStateMachineProps(this), this);
   },
   static: {
-    createActions (actionMap) {
-      const actions = mapValues(actionMap,
-        (toEvent, action) => this.createAction(action));
-      return this.methods(actions);
+    initial (state) {
+      la(is.unemptyString(state));
+      return this.props({initial: state});
     },
-    createAction (action) {
-      return function fsmAction (...data) {
-        const currentState = this.state;
-        const nextState = this.states[currentState][action];
-        if (nextState &&
-          includes(this.reachableStates[currentState][nextState], action)) {
-          this.state = nextState;
-          this.emit(nextState, ...data);
-          return this;
-        }
-        throw new Error(`Invalid state transition: "${action}()" not available in state "${currentState}"`);
-      };
+    final (state) {
+      la(is.unemptyString(state));
+      return this.props({final: state});
     },
-    initialState (state) {
-      return this.props({state});
+    events (...args) {
+      args = flatten(args);
+      la(is.arrayOf(isEvent, args));
+      return this.props({events: this.fixed.props.events.concat(args)});
     },
-    state (name, eventMap = {}) {
-      const states = Object.create(this.fixed.props.states);
-      states[name] = eventMap;
-      return this.props({states})
-        .createActions(eventMap);
+    event (obj) {
+      la(isEvent(obj));
+      return this.props({events: this.fixed.props.events.concat(obj)});
     },
-    states (stateMap = {}) {
-      const states = Object.assign({}, this.fixed.props.states, stateMap);
-      return reduce(stateMap,
-        (stamp, actionMap) => stamp.createActions(actionMap),
-        this.props({states}));
+    callback (name, func) {
+      la(is.unemptyString(name));
+      la(is.function(func));
+      const callbacks = Object.assign({},
+        this.fixed.refs.callbacks,
+        {[name]: func});
+      return this.refs({callbacks});
+    },
+    callbacks (obj) {
+      la(is.object(obj));
+      // TODO validate
+      const callbacks = Object.assign({}, this.fixed.refs.callbacks, obj);
+      return this.refs({callbacks});
     }
   }
-})
-  .compose(EventEmittable);
+});
 
 export default FSM;

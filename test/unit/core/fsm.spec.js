@@ -1,149 +1,272 @@
 'use strict';
 
-import _ from 'lodash';
 import FSM from '../../../src/core/fsm';
 
 describe(`core/fsm`, () => {
   describe(`FSM()`, () => {
-    it(`should throw if no initial state declared`, () => {
-      expect(FSM)
-        .to
-        .throw(Error, /initial/);
-    });
-
     it(`should return an object`, () => {
-      expect(FSM({state: 'foo'}))
+      expect(FSM())
         .to
         .be
         .an('object');
     });
 
-    describe(`static method`, () => {
-      describe(`initialState()`, () => {
-        it(`should set the initial state of the FSM`, () => {
-          const stamp = FSM.initialState('start');
-          expect(stamp.fixed.props.state)
-            .to
-            .equal('start');
-        });
-      });
-
-      describe(`state()`, () => {
-        let stamp;
-
-        beforeEach(() => {
-          stamp = FSM.state('start', {go: 'done'});
-        });
-
-        it(`should add a state to the state map`, () => {
-          expect(stamp.fixed.props.states['start']['go'])
-            .to
-            .equal('done');
-        });
-
-        it(`should use a clone of the "states" ref`, () => {
-          expect(stamp.fixed.props.states)
-            .not
-            .to
-            .equal(FSM.fixed.props.states);
-        });
-
-        it(`should create an "action" method`, () => {
-          expect(stamp.fixed.methods.go)
-            .to
-            .be
-            .a('function');
-        });
-      });
-
-      describe(`states()`, () => {
-        let stamp;
-        let states;
-
-        beforeEach(() => {
-          states = {
-            start: {
-              go: 'done'
-            },
-            done: {
-              finish: 'reallyDone'
-            },
-            reallyDone: {}
-          };
-          stamp = FSM.states(states);
-        });
-
-        it(`should add all states to the state map`, () => {
-          _.forEach(states, (value, key) => {
-            expect(stamp.fixed.props.states)
-              .to
-              .include
-              .key(key);
-            _.forEach(stamp.fixed.props.states[key], (toState, action) => {
-              expect([
-                action,
-                toState
-              ])
-                .to
-                .eql(_.toPairs(value)[0]);
-            });
-          });
-        });
-
-        it(`should use a clone of the "states" ref`, () => {
-          expect(stamp.fixed.props.states)
-            .not
-            .to
-            .equal(FSM.fixed.props.states);
-        });
+    describe(`if no initial state declared`, () => {
+      it(`should begin in state "none"`, () => {
+        expect(FSM())
+          .to
+          .have
+          .property('current', 'none');
       });
     });
 
-    describe(`method`, () => {
-      let states;
-      let fsm;
-
-      beforeEach(() => {
-        states = {
-          start: {
-            go: 'done'
-          },
-          done: {
-            finish: 'reallyDone'
-          },
-          reallyDone: {}
-        };
-        fsm = FSM.states(states)
-          .initialState('start')();
+    describe(`if no callbacks assigned`, () => {
+      it(`should have an empty "callbacks" property`, () => {
+        expect(FSM())
+          .to
+          .have
+          .property('callbacks')
+          .which
+          .deep
+          .equals({});
       });
+    });
 
-      describe(`emit()`, () => {
-        describe(`when an unknown event is emitted`, () => {
-          it(`should pass through`, () => {
-            expect(() => fsm.emit('foo', 'bar'))
+    describe(`static method`, () => {
+      describe(`initial()`, () => {
+        describe(`when supplied a nonempty string`, () => {
+          it(`should set the initial state of the FSM`, () => {
+            expect(FSM.initial('start').fixed.props)
               .to
-              .emitFrom(fsm, 'foo', 'bar');
-          });
-
-          it(`should leave the state the same`, () => {
-            expect(fsm.state)
-              .to
-              .equal('start');
+              .have
+              .property('initial', 'start');
           });
         });
 
-        describe(`when an action is executed`, () => {
-          it(`should emit the next state`, () => {
-            expect(() => fsm.go())
+        describe(`when not supplied a nonempty string`, () => {
+          it(`should throw`, () => {
+            expect(() => FSM.initial())
               .to
-              .emitFrom(fsm, 'done');
+              .throw(Error);
+          });
+        });
+      });
+
+      describe(`final()`, () => {
+        it(`should set the final state of the FSM`, () => {
+          expect(FSM.final('end').fixed.props)
+            .to
+            .have
+            .property('final', 'end');
+        });
+      });
+
+      describe(`event()`, () => {
+        describe(`when not supplied a parameter`, () => {
+          it(`should throw`, () => {
+            expect(FSM.event)
+              .to
+              .throw(Error);
+          });
+        });
+
+        describe(`when not supplied an event object matching the schema`,
+          () => {
+            it(`should throw`, () => {
+              expect(() => FSM.event({
+                name: 'foo',
+                bar: 'baz'
+              }))
+                .to
+                .throw(Error);
+            });
           });
 
-          it(`should set the next state`, () => {
-            fsm.go();
-            expect(fsm.state)
+        describe(`when supplied a valid event object`, () => {
+          it(`should add an event to the array of events`, () => {
+            const event = {
+              name: 'foo',
+              from: 'bar'
+            };
+            const stamp = FSM.event(event);
+            expect(stamp.fixed.props.events)
               .to
-              .equal('done');
+              .have
+              .length(1)
+              .and
+              .include(event);
+          });
+
+          describe(`being an event object with an unempty string "name" prop`,
+            () => {
+              describe(`and unempty string "from" prop`, () => {
+                it(`should not throw`, () => {
+                  expect(() => FSM.event({
+                    name: 'foo',
+                    from: 'bar'
+                  }))
+                    .not
+                    .to
+                    .throw();
+                });
+              });
+
+              describe(`and array of unempty strings "from" prop`, () => {
+                it(`should not throw`, () => {
+                  expect(() => FSM.event({
+                    name: 'foo',
+                    from: ['bar']
+                  }))
+                    .not
+                    .to
+                    .throw();
+                });
+
+                describe(`and an unempty string "to" prop`, () => {
+                  it(`should not throw`, () => {
+                    expect(() => FSM.event({
+                      name: 'foo',
+                      from: ['bar'],
+                      to: 'baz'
+                    }))
+                      .not
+                      .to
+                      .throw();
+                  });
+                });
+              });
+            });
+        });
+      });
+
+      describe(`events()`, () => {
+        describe(`when supplied no parameters`, () => {
+          it(`should throw`, () => {
+            expect(FSM.events)
+              .to
+              .throw(Error);
+          });
+        });
+
+        describe(`when supplied valid parameters`, () => {
+          it(`should add the event(s) to the array events prop`, () => {
+            const events = [
+              {
+                name: 'foo',
+                from: 'bar'
+              },
+              {
+                name: 'baz',
+                from: 'quux'
+              }
+            ];
+            const stamp = FSM.events(events);
+            expect(stamp.fixed.props.events)
+              .to
+              .eql(events);
+          });
+
+          describe(`being an array of valid event objects`, () => {
+            it(`should not throw`, () => {
+              expect(() => FSM.events([
+                {
+                  name: 'foo',
+                  from: 'bar'
+                },
+                {
+                  name: 'baz',
+                  from: 'quux'
+                }
+              ]))
+                .not
+                .to
+                .throw();
+            });
+          });
+
+          describe(`being a series of valid event objects`, () => {
+            it(`should not throw`, () => {
+              expect(() => FSM.events({
+                name: 'foo',
+                from: 'bar'
+              }, {
+                name: 'baz',
+                from: 'quux'
+              }))
+                .not
+                .to
+                .throw();
+            });
+          });
+        });
+      });
+
+      describe(`callback()`, () => {
+        describe(`when not supplied parameters`, () => {
+          it(`should throw`, () => {
+            expect(FSM.callback)
+              .to
+              .throw();
+          });
+        });
+
+        describe(`when supplied an unempty string but no function`, () => {
+          it(`should throw`, () => {
+            expect(() => FSM.callback('foo'))
+              .to
+              .throw(Error);
+          });
+        });
+
+        describe(`when supplied an unempty string and a function`, () => {
+          it(`should not throw`, () => {
+            expect(() => FSM.callback('foo', () => {
+            }))
+              .not
+              .to
+              .throw();
+          });
+
+          it(`should assign a property to the "callbacks" ref with key of string and value of function`,
+            () => {
+              const name = 'foo';
+              const func = () => {
+              };
+              const stamp = FSM.callback(name, func);
+              expect(stamp.fixed.refs.callbacks)
+                .to
+                .have
+                .property(name, func);
+            });
+        });
+      });
+
+      describe(`callbacks()`, () => {
+        describe(`when not supplied an object parameter`, () => {
+          it(`should throw`, () => {
+            expect(FSM.callbacks)
+              .to
+              .throw();
+          });
+        });
+
+        describe(`when supplied an object parameter`, () => {
+          it(`should not throw`, () => {
+            expect(() => FSM.callbacks({}))
+              .not
+              .to
+              .throw();
+          });
+
+          it(`should assign it to the "callbacks" ref`, () => {
+            const obj = {
+              foo: () => {
+              }
+            };
+            const stamp = FSM.callbacks(obj);
+            expect(stamp.fixed.refs.callbacks)
+              .to
+              .eql(obj);
           });
         });
       });
