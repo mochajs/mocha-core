@@ -1,6 +1,6 @@
 'use strict';
 
-import {Result} from '../../../src/ui';
+import {Result} from '../../../src/runner/results';
 
 describe(`ui/result`, () => {
   describe(`Result()`, () => {
@@ -26,7 +26,8 @@ describe(`ui/result`, () => {
               .eql({
                 fulfilled: 'skipped',
                 completed: false,
-                aborted: false
+                aborted: false,
+                explicit: false
               });
           });
       });

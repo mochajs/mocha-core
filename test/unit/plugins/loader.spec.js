@@ -5,7 +5,7 @@ import {EventEmittable} from '../../../src/core';
 import {Pluggable} from '../../../src/plugins';
 const {resolve, assertResolved, normalize, assertAttributes, assertUnused, build} = Loader;
 
-describe(`plugins/loader`, () => {
+describe.skip(`plugins/loader`, () => {
   const stubs = {usedPlugins: {}};
   let sandbox;
   let noop;

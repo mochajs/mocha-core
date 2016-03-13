@@ -1,6 +1,6 @@
 'use strict';
 
-import noop from 'lodash/noop';
+import noop from '../../../node_modules/lodash/noop';
 
 /* eslint import/no-require:0 */
 require('zone.js/dist/zone');

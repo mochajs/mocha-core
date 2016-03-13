@@ -2,8 +2,6 @@
 
 import {Test, Suite} from '../../../src/ui';
 import noop from 'lodash/noop';
-import {last} from 'lodash';
-import '../../../src/util/execution-context';
 
 describe(`ui/test`, () => {
   let sandbox;
@@ -27,7 +25,7 @@ describe(`ui/test`, () => {
       it(`should throw`, () => {
         expect(Test)
           .to
-          .throw(Error, /suite/);
+          .throw(Error, /suite/i);
       });
     });
 
@@ -112,8 +110,8 @@ describe(`ui/test`, () => {
                 test.pending = true;
               });
 
-              it(`should set the "func" property to null`, () => {
-                expect(test.func).to.be.null;
+              it(`should be pending`, () => {
+                expect(test.pending).to.be.true;
               });
 
               describe(`and is subsequently supplied a falsy value`, () => {
@@ -121,10 +119,8 @@ describe(`ui/test`, () => {
                   test.pending = false;
                 });
 
-                it(`should reset the function`, () => {
-                  expect(test.func)
-                    .to
-                    .equal(noop);
+                it(`should not be pending`, () => {
+                  expect(test.pending).to.be.false;
                 });
               });
             });
@@ -138,12 +134,8 @@ describe(`ui/test`, () => {
             });
 
             describe(`and it is supplied a falsy value`, () => {
-              beforeEach(() => {
-                test.pending = false;
-              });
-
               it(`should have no effect`, () => {
-                expect(test.pending).to.be.true;
+                expect(() => test.pending = false).not.to.change(test, 'pending');
               });
             });
           });
@@ -164,10 +156,7 @@ describe(`ui/test`, () => {
       describe(`run()`, () => {
         describe(`when the test is pending`, () => {
           it(`should end in state "skipped"`, () => {
-            return test.run()
-              .then(() => expect(test.state)
-                .to
-                .equal('skipped'));
+            return expect(test.run()).to.eventually.be.fulfilled;
           });
 
           it(`should return a "skipped" result`, () => {
@@ -212,7 +201,9 @@ describe(`ui/test`, () => {
 
               beforeEach(() => {
                 return test.run()
-                  .then(res => result = res);
+                  .then(res => {
+                    result = res
+                  });
               });
 
               it(`should run the function`, () => {
@@ -220,18 +211,13 @@ describe(`ui/test`, () => {
               });
 
               it(`should end in state "passed"`, () => {
-                expect(test.state)
+                expect(test.current)
                   .to
                   .equal('passed');
               });
 
               it(`should return an "passed" result`, () => {
                 expect(result.passed).to.be.true;
-                // expect(result.completed).to.be.true;
-                // expect(result.aborted).to.be.false;
-                // expect(result.fulfilled).to.equal('sync');
-                // expect(result.async).to.be.false;
-                // expect(result.elapsed).to.be.at.least(1);
               });
 
               describe(`when rerun`, () => {
@@ -240,42 +226,13 @@ describe(`ui/test`, () => {
                     .to
                     .eventually
                     .be
-                    .rejectedWith(Error, 'Cannot rerun a passed test');
-                });
-
-                it(`should contain multiple results`, () => {
-                  return test.run()
-                    .catch(() => {
-                      expect(test.results)
-                        .to
-                        .have
-                        .lengthOf(2);
-                    });
-                });
-
-                it(`should contain a final "error"-type result`, () => {
-                  return test.run()
-                    .catch(err => {
-                      expect(last(test.results))
-                        .to
-                        .eql({
-                          fulfilled: 'error',
-                          aborted: true,
-                          completed: false,
-                          error: err,
-                          skipped: false
-                        });
-                    });
+                    .rejectedWith(Error);
                 });
               });
             });
           });
 
           describe(`and the test is asynchronous`, () => {
-            beforeEach(() => {
-              sandbox.spy(test, 'pass');
-            });
-
             describe(`and when the function does not throw an error`, () => {
               let funcUnderTest;
 
@@ -288,7 +245,7 @@ describe(`ui/test`, () => {
                   }, 50);
                 };
 
-                return test.run();
+                return test.run().then(res => console.log(res));
               });
 
               it(`should run the function`, () => {
@@ -296,7 +253,7 @@ describe(`ui/test`, () => {
               });
 
               it(`should end in state "passed"`, () => {
-                expect(test.state)
+                expect(test.current)
                   .to
                   .equal('passed');
               });
@@ -306,7 +263,7 @@ describe(`ui/test`, () => {
                   .to
                   .eventually
                   .be
-                  .rejectedWith(Error, 'Cannot rerun a passed test');
+                  .rejectedWith(Error);
               });
             });
 
@@ -322,7 +279,7 @@ describe(`ui/test`, () => {
               });
 
               it(`should end in state "failed"`, () => {
-                expect(test.state)
+                expect(test.current)
                   .to
                   .equal('failed');
               });

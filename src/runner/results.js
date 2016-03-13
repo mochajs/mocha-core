@@ -1,16 +1,33 @@
 'use strict';
 
 import stampit from 'stampit';
-import {omitBy, flow, isNull, isUndefined, isFunction} from 'lodash/fp';
+import {omitBy, flow, map, fromPairs} from 'lodash/fp';
+import is from 'check-more-types';
+
+const resultTypes = [
+  'skipped',
+  'error',
+  'sync',
+  'async',
+  'userCallback',
+  'promise'
+];
 
 const Result = stampit({
+  static: {
+    fulfilledWith (fulfilled) {
+      return Result.props({fulfilled});
+    }
+  },
   props: {
     completed: false,
     aborted: false,
     failed: null,
     error: null,
     skipped: null,
-    async: null
+    async: null,
+    explicit: false,
+    event: null
   },
   methods: {
     cleanup () {
@@ -23,6 +40,7 @@ const Result = stampit({
         this.fulfilled === 'callback' || this.fulfilled === 'promise';
       this.failed = Boolean(err);
       this.passed = !err;
+      this.event = this.failed ? 'fail' : 'pass';
       this.error = err;
       return this.cleanup();
     },
@@ -30,12 +48,13 @@ const Result = stampit({
       this.aborted = true;
       this.error = err;
       this.skipped = !err;
+      this.event = this.skipped ? 'skip' : 'error';
       return this.cleanup();
     },
     toJSON () {
-      return flow(omitBy(isNull),
-        omitBy(isUndefined),
-        omitBy(isFunction))(
+      return flow(omitBy(is.null),
+        omitBy(is.not.defined),
+        omitBy(is.function))(
         this);
     },
     toString () {
@@ -44,13 +63,10 @@ const Result = stampit({
   }
 });
 
-const resultTypes = {
-  skipped: Result.props({fulfilled: 'skipped'}),
-  error: Result.props({fulfilled: 'error'}),
-  sync: Result.props({fulfilled: 'sync'}),
-  callback: Result.props({fulfilled: 'callback'}),
-  promise: Result.props({fulfilled: 'promise'})
-};
+const results = flow(map(value => [
+  value,
+  Result.fulfilledWith(value)
+]), fromPairs)(resultTypes);
 
-export default Result;
-export {resultTypes};
+export {Result, resultTypes};
+export default results;
