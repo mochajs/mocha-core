@@ -1,7 +1,7 @@
 'use strict';
 
 import stampit from 'stampit';
-import {FSM, Graphable} from '../core';
+import {FSM, Graphable, EventEmittable} from '../core';
 
 const Plugin = stampit({
   props: {
@@ -30,20 +30,17 @@ const Plugin = stampit({
     });
   }
 })
-  .compose(FSM)
-  .initialState('idle')
-  .states({
-    idle: {
-      install: 'installing'
-    },
-    installing: {
-      done: 'installed'
-    },
-    installed: {}
+  .compose(FSM, EventEmittable)
+  .initial('idle')
+  .final('installed')
+  .events({
+    name: 'install',
+    from: 'idle',
+    to: 'installed'
   })
-  .once('installing', function onInstalling () {
+  .callback('install', function install (opts) {
     this.func(this.api, this.opts);
-    this.done();
+    return opts;
   });
 
 export default Plugin;
