@@ -56,7 +56,7 @@
     "debug": "^2.2.0",
     "dependency-graph": "^0.4.1",
     "fsm": "^1.0.2",
-    "fsm-as-promised": "^0.10.1",
+    "fsm-as-promised": "github:vstirbu/fsm-as-promised",
     "graceful-fs": "^4.1.2",
     "kefir": "^3.2.1",
     "lazy-ass": "^1.4.0",

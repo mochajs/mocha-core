@@ -2,9 +2,9 @@
 
 import StateMachine from 'fsm-as-promised';
 import stampit from 'stampit';
-import {pick, flatten} from 'lodash/fp';
+import {pick, flatten, startsWith} from 'lodash/fp';
 import is from 'check-more-types';
-import la from 'lazy-ass';
+import assert from 'lazy-ass';
 
 const getStateMachineProps = pick([
   'events',
@@ -12,11 +12,23 @@ const getStateMachineProps = pick([
   'initial',
   'final'
 ]);
-const isEvent = is.schema({
+
+const startsWithOn = startsWith('on');
+
+const isBasicEvent = is.schema({
   name: is.unemptyString,
   from: is.or(is.unemptyString, is.arrayOfUnemptyStrings),
   to: is.maybe.unemptyString
 });
+
+const isConditionalEvent = is.schema({
+  name: is.unemptyString,
+  from: is.or(is.unemptyString, is.arrayOfUnemptyStrings),
+  to: is.arrayOfUnemptyStrings,
+  condition: is.function
+});
+
+const isEvent = is.or(isBasicEvent, isConditionalEvent);
 
 const FSM = stampit({
   refs: {
@@ -30,33 +42,37 @@ const FSM = stampit({
   },
   static: {
     initial (state) {
-      la(is.unemptyString(state));
+      assert(is.unemptyString(state));
       return this.props({initial: state});
     },
     final (...args) {
       args = flatten(args);
-      la(is.arrayOfUnemptyStrings(args));
+      assert(is.arrayOfUnemptyStrings(args));
       return this.props({final: args});
     },
     events (...args) {
       args = flatten(args);
-      la(is.arrayOf(isEvent, args));
+      assert(is.arrayOf(isEvent, args));
       return this.props({events: this.fixed.props.events.concat(args)});
     },
     event (obj) {
-      la(isEvent(obj));
+      assert(isEvent(obj));
       return this.props({events: this.fixed.props.events.concat(obj)});
     },
     callback (name, func) {
-      la(is.unemptyString(name));
-      la(is.function(func));
+      assert(is.unemptyString(name));
+      assert(is.function(func));
+      if (!startsWithOn(name)) {
+        name = `on${name}`;
+      }
+      name = name.toLowerCase();
       const callbacks = Object.assign({},
         this.fixed.refs.callbacks,
         {[name]: func});
       return this.refs({callbacks});
     },
     callbacks (obj) {
-      la(is.object(obj));
+      assert(is.object(obj));
       // TODO validate
       const callbacks = Object.assign({}, this.fixed.refs.callbacks, obj);
       return this.refs({callbacks});

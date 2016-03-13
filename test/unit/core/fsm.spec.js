@@ -171,6 +171,34 @@ describe(`core/fsm`, () => {
                       .throw();
                   });
                 });
+
+                describe(`and an array of unempty strings "to" prop`, () => {
+                  describe(`and no "condition" function`, () => {
+                    it(`should throw`, () => {
+                      expect(() => FSM.event({
+                        name: 'foo',
+                        from: ['bar'],
+                        to: ['baz']
+                      }))
+                        .to
+                        .throw(Error);
+                    });
+                  });
+
+                  describe(`and a "condition" function`, () => {
+                    it(`should not throw`, () => {
+                      expect(() => FSM.event({
+                        name: 'foo',
+                        from: ['bar'],
+                        to: ['baz'],
+                        condition () {}
+                      }))
+                        .not
+                        .to
+                        .throw(Error);
+                    });
+                  });
+                });
               });
             });
         });
@@ -266,7 +294,7 @@ describe(`core/fsm`, () => {
 
           it(`should assign a property to the "callbacks" ref with key of string and value of function`,
             () => {
-              const name = 'foo';
+              const name = 'onfoo';
               const func = () => {
               };
               const stamp = FSM.callback(name, func);
@@ -275,6 +303,32 @@ describe(`core/fsm`, () => {
                 .have
                 .property(name, func);
             });
+        });
+
+        describe(`when supplied a name which does not start with "on"`, () => {
+          it(`should prepend "on" to the callback name`, () => {
+            const name = 'foo';
+            const func = () => {
+            };
+            const stamp = FSM.callback(name, func);
+            expect(stamp.fixed.refs.callbacks)
+              .to
+              .have
+              .property('onfoo', func);
+          });
+        });
+
+        describe(`when supplied a name which is camelCased`, () => {
+          it(`should convert the name to lower case`, () => {
+            const name = 'fooBar';
+            const func = () => {
+            };
+            const stamp = FSM.callback(name, func);
+            expect(stamp.fixed.refs.callbacks)
+              .to
+              .have
+              .property('onfoobar', func);
+          });
         });
       });
 
