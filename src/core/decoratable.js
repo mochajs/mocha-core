@@ -10,17 +10,18 @@ const Decoratable = stampit({
   },
   methods: {
     decorate (name, func, opts = {}) {
-      if (is.not.function(func)) {
-        throw new Error('"func" must be a Function');
-      }
       if (is.array(name)) {
-        forEach(value => this.decorate(value.name, value.func, value.opts), name);
+        forEach(value => this.decorate(value.name, value.func, value.opts),
+          name);
         return this;
       } else if (is.object(name)) {
         forEach((value, key) => this.decorate(key, value), name);
         return this;
       }
-      defaults({
+      if (is.not.function(func)) {
+        throw new Error('"func" must be a Function');
+      }
+      opts = defaults({
         args: [],
         context: this
       }, opts);

@@ -89,14 +89,15 @@ describe(`core/decoratable`, () => {
               .equal('foo');
           });
         });
+        
         describe(`when passed an object`, () => {
           it(`should use the keys as names and values as funcs (with default options)`,
             () => {
               decoratable.decorate({
-                foo: function (baz) {
+                foo (baz) {
                   this.bar = baz;
                 },
-                quux: function (foo) {
+                quux (foo) {
                   this.bar = foo;
                 }
               });
