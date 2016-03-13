@@ -15,23 +15,13 @@ const Mocha = stampit({
     reporters: []
   },
   methods: {
-    createUI (opts = {}) {
-      defaults(opts, {
+    createUI (properties = {}) {
+      return this.createAPI(UI, defaults(properties, {
         rootSuite: this.rootSuite
-      });
-      return this.createAPI(UI, opts);
+      }));
     },
-    createReporter (opts = {}) {
-      return this.createAPI(Reporter, opts);
-    // },
-    // createRunner (opts = {}) {
-    //   defaults(opts, {
-    //     rootSuite: this.rootSuite
-    //   });
-    //   return this.createAPI(Runner, opts);
-    // },
-    // run () {
-    //   this.emit('pre-run', this);
+    createReporter (properties = {}) {
+      return this.createAPI(Reporter, properties);
     }
   },
   init () {
@@ -40,6 +30,7 @@ const Mocha = stampit({
 })
   .compose(Pluggable, API)
   .init(function initMochaPlugins () {
+    this.reporter = new Set();
     this.use(this.ui);
   });
 
