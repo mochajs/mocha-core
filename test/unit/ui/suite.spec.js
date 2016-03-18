@@ -14,21 +14,21 @@ describe('ui/suite', () => {
     sandbox.restore();
   });
 
-  describe(`Suite()`, () => {
+  describe('Suite()', () => {
     let func;
     beforeEach(() => {
       func = sandbox.spy();
     });
 
-    it(`should return an object with a null "parent" prop`, () => {
+    it('should return an object with a null "parent" prop', () => {
       expect(Suite().parent).to.be.null;
     });
 
-    it(`should return an object with a false "pending" prop`, () => {
+    it('should return an object with a false "pending" prop', () => {
       expect(Suite().pending).to.be.false;
     });
 
-    it(`should return an object with an empty "children" prop`, () => {
+    it('should return an object with an empty "children" prop', () => {
       const suite = Suite();
       expect(suite.children)
         .to
@@ -37,7 +37,7 @@ describe('ui/suite', () => {
       expect(suite.children).to.be.empty;
     });
 
-    describe(`when given a non-falsy "parent" prop`, () => {
+    describe('when given a non-falsy "parent" prop', () => {
       let parent;
       let rootSuite;
 
@@ -48,7 +48,7 @@ describe('ui/suite', () => {
           .returns(parent);
       });
 
-      it(`should add the suite as a child of the parent`, () => {
+      it('should add the suite as a child of the parent', () => {
         const suite = Suite({parent});
         expect(parent.addChildSuite)
           .to
@@ -57,22 +57,22 @@ describe('ui/suite', () => {
           .calledWithExactly(suite);
       });
 
-      describe(`if parent's "pending" prop is true`, () => {
+      describe('if parent\'s "pending" prop is true', () => {
         beforeEach(() => {
           parent.pending = true;
         });
 
-        describe(`and function is not passed`, () => {
-          it(`should inherit the "pending" prop`, () => {
+        describe('and function is not passed', () => {
+          it('should inherit the "pending" prop', () => {
             expect(Suite({parent}).pending).to.be.true;
           });
         });
 
-        describe(`and function is passed`, () => {
+        describe('and function is passed', () => {
           function func () {
           }
 
-          it(`should inherit the "pending" prop`, () => {
+          it('should inherit the "pending" prop', () => {
             expect(Suite({
               parent,
               func
@@ -81,23 +81,23 @@ describe('ui/suite', () => {
         });
       });
 
-      describe(`if parent's "pending" prop is false`, () => {
+      describe('if parent\'s "pending" prop is false', () => {
         beforeEach(() => {
           parent.func = function () {
           };
         });
 
-        describe(`and function is not passed`, () => {
-          it(`should be pending`, () => {
+        describe('and function is not passed', () => {
+          it('should be pending', () => {
             expect(Suite({parent}).pending).to.be.true;
           });
         });
 
-        describe(`and function is passed`, () => {
+        describe('and function is passed', () => {
           function func () {
           }
 
-          it(`should inherit the "pending" prop`, () => {
+          it('should inherit the "pending" prop', () => {
             expect(Suite({
               parent,
               func
@@ -107,9 +107,9 @@ describe('ui/suite', () => {
       });
     });
 
-    describe(`method`, () => {
-      describe(`addChild()`, () => {
-        it(`should add a suite to the "children" Array`, () => {
+    describe('method', () => {
+      describe('addChild()', () => {
+        it('should add a suite to the "children" Array', () => {
           const parent = Suite();
           const child = Suite();
           parent.addChildSuite(child);
@@ -119,8 +119,8 @@ describe('ui/suite', () => {
         });
       });
 
-      describe(`execute()`, () => {
-        it(`should execute the "func" property in the suite's context`, () => {
+      describe('execute()', () => {
+        it('should execute the "func" property in the suite\'s context', () => {
           const suite = Suite({func});
           suite.execute();
           expect(func)
@@ -132,21 +132,21 @@ describe('ui/suite', () => {
       });
     });
 
-    describe(`property`, () => {
+    describe('property', () => {
       let suite;
       beforeEach(() => {
         suite = Suite({title: 'foo'});
       });
 
-      describe(`pending`, () => {
-        describe(`getter`, () => {
-          describe(`when the Suite has no parent`, () => {
-            it(`should be false`, () => {
+      describe('pending', () => {
+        describe('getter', () => {
+          describe('when the Suite has no parent', () => {
+            it('should be false', () => {
               expect(suite.pending).to.be.false;
             });
           });
 
-          describe(`when the Suite has a parent`, () => {
+          describe('when the Suite has a parent', () => {
             let parent;
 
             beforeEach(() => {
@@ -154,29 +154,29 @@ describe('ui/suite', () => {
               suite.parent = parent;
             });
 
-            describe(`and the parent is pending`, () => {
+            describe('and the parent is pending', () => {
               beforeEach(() => {
                 parent.pending = true;
               });
 
-              it(`should be true`, () => {
+              it('should be true', () => {
                 expect(suite.pending).to.be.true;
               });
             });
 
-            describe(`and the parent is not pending`, () => {
-              describe(`and the Suite has no function`, () => {
-                it(`should be true`, () => {
+            describe('and the parent is not pending', () => {
+              describe('and the Suite has no function', () => {
+                it('should be true', () => {
                   expect(suite.pending).to.be.true;
                 });
               });
 
-              describe(`and the Suite has a function`, () => {
+              describe('and the Suite has a function', () => {
                 beforeEach(() => {
                   suite.func = _.noop;
                 });
 
-                it(`should be false`, () => {
+                it('should be false', () => {
                   expect(suite.pending).to.be.false;
                 });
               });
@@ -184,15 +184,15 @@ describe('ui/suite', () => {
           });
         });
 
-        describe(`setter`, () => {
-          describe(`when the Suite has no parent`, () => {
-            it(`should have no effect`, () => {
+        describe('setter', () => {
+          describe('when the Suite has no parent', () => {
+            it('should have no effect', () => {
               suite.pending = true;
               expect(suite.pending).to.be.false;
             });
           });
 
-          describe(`when the Suite has a parent`, () => {
+          describe('when the Suite has a parent', () => {
             let parent;
 
             beforeEach(() => {
@@ -200,23 +200,23 @@ describe('ui/suite', () => {
               suite.parent = parent;
             });
 
-            describe(`and the Suite has no initial function`, () => {
-              describe(`and the value is falsy`, () => {
+            describe('and the Suite has no initial function', () => {
+              describe('and the value is falsy', () => {
                 beforeEach(() => {
                   suite.pending = false;
                 });
 
-                it(`should have a "true" pending value`, () => {
+                it('should have a "true" pending value', () => {
                   expect(suite.pending).to.be.true;
                 });
 
-                it(`should have a null function`, () => {
+                it('should have a null function', () => {
                   expect(suite.func).to.be.null;
                 });
               });
             });
 
-            describe(`and the Suite has an initial function`, () => {
+            describe('and the Suite has an initial function', () => {
               let suite;
 
               beforeEach(() => {
@@ -227,35 +227,35 @@ describe('ui/suite', () => {
                   });
               });
 
-              describe(`and the value is falsy`, () => {
+              describe('and the value is falsy', () => {
                 beforeEach(() => {
                   suite.pending = false;
                 });
 
-                it(`should have a "false" pending value`, () => {
+                it('should have a "false" pending value', () => {
                   expect(suite.pending).to.be.false;
                 });
               });
 
-              describe(`and the value is truthy`, () => {
+              describe('and the value is truthy', () => {
                 beforeEach(() => {
                   suite.pending = true;
                 });
 
-                it(`should nullify the function`, () => {
+                it('should nullify the function', () => {
                   expect(suite.func).to.be.null;
                 });
 
-                it(`should have a "true" pending value`, () => {
+                it('should have a "true" pending value', () => {
                   expect(suite.pending).to.be.true;
                 });
 
-                describe(`and the value is falsy again`, () => {
+                describe('and the value is falsy again', () => {
                   beforeEach(() => {
                     suite.pending = false;
                   });
 
-                  it(`should restore the function`, () => {
+                  it('should restore the function', () => {
                     expect(suite.func)
                       .to
                       .be
@@ -268,17 +268,17 @@ describe('ui/suite', () => {
         });
       });
 
-      describe(`fullTitle`, () => {
-        describe(`getter`, () => {
-          describe(`when the Suite has no parent`, () => {
-            it(`should return the title`, () => {
+      describe('fullTitle', () => {
+        describe('getter', () => {
+          describe('when the Suite has no parent', () => {
+            it('should return the title', () => {
               expect(suite.fullTitle)
                 .to
                 .equal(suite.title);
             });
           });
 
-          describe(`when the Suite has a parent`, () => {
+          describe('when the Suite has a parent', () => {
             let parent;
 
             beforeEach(() => {
@@ -286,7 +286,7 @@ describe('ui/suite', () => {
               suite.parent = parent;
             });
 
-            it(`should concatenate the titles`, () => {
+            it('should concatenate the titles', () => {
               expect(suite.fullTitle)
                 .to
                 .equal('bar foo');
@@ -294,8 +294,8 @@ describe('ui/suite', () => {
           });
         });
 
-        describe(`setter`, () => {
-          it(`should throw a TypeError`, () => {
+        describe('setter', () => {
+          it('should throw a TypeError', () => {
             expect(() => suite.fullTitle = 'blah')
               .to
               .throw(TypeError);

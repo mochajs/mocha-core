@@ -3,7 +3,7 @@
 import Hook from '../../../src/ui/hook';
 
 describe('ui/hook', () => {
-  describe(`Hook()`, () => {
+  describe('Hook()', () => {
     it('should be a function', () => {
       expect(Hook)
         .to
@@ -11,7 +11,7 @@ describe('ui/hook', () => {
         .a('function');
     });
 
-    it(`should return an object`, () => {
+    it('should return an object', () => {
       expect(Hook())
         .to
         .be

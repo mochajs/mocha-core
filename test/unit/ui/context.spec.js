@@ -3,7 +3,7 @@
 import Context from '../../../src/ui/context';
 
 describe('ui/context', () => {
-  describe(`Context()`, () => {
+  describe('Context()', () => {
     it('should be a function', () => {
       expect(Context)
         .to
@@ -11,7 +11,7 @@ describe('ui/context', () => {
         .a('function');
     });
 
-    it(`should return an object`, () => {
+    it('should return an object', () => {
       expect(Context())
         .to
         .be

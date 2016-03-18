@@ -4,7 +4,7 @@ import Mocha from '../../src/mocha';
 import Reporter from '../../src/reporter';
 import UI from '../../src/ui';
 
-describe(`mocha`, () => {
+describe('mocha', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -15,8 +15,8 @@ describe(`mocha`, () => {
     sandbox.restore();
   });
 
-  describe(`Mocha`, () => {
-    describe(`init()`, () => {
+  describe('Mocha', () => {
+    describe('init()', () => {
       let mocha;
 
       beforeEach(() => {
@@ -28,7 +28,7 @@ describe(`mocha`, () => {
         mocha.emit('ready');
       });
 
-      it(`should use the default ui`, () => {
+      it('should use the default ui', () => {
         expect(mocha.use)
           .to
           .have
@@ -36,7 +36,7 @@ describe(`mocha`, () => {
           .calledWithExactly(mocha.ui);
       });
 
-      it(`should create a "rootSuite"`, () => {
+      it('should create a "rootSuite"', () => {
         const mocha = Mocha();
         expect(mocha.rootSuite)
           .to
@@ -45,7 +45,7 @@ describe(`mocha`, () => {
       });
     });
 
-    describe(`method`, () => {
+    describe('method', () => {
       let mocha;
 
       beforeEach(() => {
@@ -57,15 +57,15 @@ describe(`mocha`, () => {
         mocha.emit('ready');
       });
 
-      describe(`createAPI()`, () => {
-        it(`should return an object`, () => {
+      describe('createAPI()', () => {
+        it('should return an object', () => {
           expect(mocha.createAPI())
             .to
             .be
             .an('object');
         });
 
-        it(`should call the "API" param with an object containing a delegate value`,
+        it('should call the "API" param with an object containing a delegate value',
           () => {
             const stub = sandbox.stub();
             mocha.createAPI(stub);
@@ -76,7 +76,7 @@ describe(`mocha`, () => {
               .calledWithExactly({delegate: mocha});
           });
 
-        it(`should not override any delegate option`, () => {
+        it('should not override any delegate option', () => {
           const stub = sandbox.stub();
           const delegate = {};
           mocha.createAPI(stub, {delegate});
@@ -88,12 +88,12 @@ describe(`mocha`, () => {
         });
       });
 
-      describe(`createReporter()`, () => {
+      describe('createReporter()', () => {
         beforeEach(() => {
           sandbox.stub(mocha, 'createAPI');
         });
 
-        it(`should defer to createAPI using "Reporter" API`, () => {
+        it('should defer to createAPI using "Reporter" API', () => {
           mocha.createReporter();
           expect(mocha.createAPI)
             .to
@@ -103,12 +103,12 @@ describe(`mocha`, () => {
         });
       });
 
-      describe(`createUI()`, () => {
+      describe('createUI()', () => {
         beforeEach(() => {
           sandbox.stub(mocha, 'createAPI');
         });
 
-        it(`should defer to createAPI using "UI" API`, () => {
+        it('should defer to createAPI using "UI" API', () => {
           mocha.createUI();
           expect(mocha.createAPI)
             .to
@@ -117,7 +117,7 @@ describe(`mocha`, () => {
             .calledWith(UI);
         });
 
-        it(`should call createAPI w/ a "rootSuite" object`, () => {
+        it('should call createAPI w/ a "rootSuite" object', () => {
           mocha.createUI();
           expect(mocha.createAPI)
             .to

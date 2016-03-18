@@ -4,7 +4,7 @@ import {EventEmittable, Graphable} from '../../../src/core';
 import Plugin from '../../../src/plugins';
 import noop from 'lodash/noop';
 
-describe(`core/plugin`, () => {
+describe('core/plugin', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -15,8 +15,8 @@ describe(`core/plugin`, () => {
     sandbox.restore();
   });
 
-  describe(`Plugin()`, () => {
-    it(`should not throw if "dependencies" is a string value`, () => {
+  describe('Plugin()', () => {
+    it('should not throw if "dependencies" is a string value', () => {
       const graph = Graphable();
       graph.addNode('bar');
       expect(() => Plugin({
@@ -31,7 +31,7 @@ describe(`core/plugin`, () => {
         .throw();
     });
 
-    it(`should not throw if "dependencies" is an Array value`, () => {
+    it('should not throw if "dependencies" is an Array value', () => {
       const graph = Graphable();
       graph.addNode('bar');
       graph.addNode('baz');
@@ -50,7 +50,7 @@ describe(`core/plugin`, () => {
         .throw();
     });
 
-    it(`should not throw if no "dependencies" are passed`, () => {
+    it('should not throw if no "dependencies" are passed', () => {
       expect(() => Plugin({
         name: 'foo',
         func: noop,
@@ -63,7 +63,7 @@ describe(`core/plugin`, () => {
         .throw();
     });
 
-    it(`should throw if a circular dependency is detected`, () => {
+    it('should throw if a circular dependency is detected', () => {
       // this is unlikely to happen, but if it does, fail fast
       const graph = Graphable();
       Plugin({
@@ -84,7 +84,7 @@ describe(`core/plugin`, () => {
         .throw(Error, /cyclic/i);
     });
 
-    describe(`member`, () => {
+    describe('member', () => {
       let plugin;
       let func;
       let api;
@@ -104,16 +104,16 @@ describe(`core/plugin`, () => {
         plugin.func = func;
       });
 
-      describe(`method`, () => {
-        // describe(`install()`, () => {
-        //   it(`should return the Plugin instance`, () => {
+      describe('method', () => {
+        // describe('install()', () => {
+        //   it('should return the Plugin instance', () => {
         //     expect(plugin.install())
         //       .to
         //       .equal(plugin);
         //   });
         //
-        //   describe(`if not installed`, () => {
-        //     it(`should install`, () => {
+        //   describe('if not installed', () => {
+        //     it('should install', () => {
         //       plugin.func = sandbox.stub();
         //       plugin.install();
         //       expect(plugin.func)
@@ -123,25 +123,25 @@ describe(`core/plugin`, () => {
         //         .calledWithExactly(plugin.api, plugin.opts);
         //     });
         //
-        //     it(`should emit "waiting"`, () => {
+        //     it('should emit "waiting"', () => {
         //       expect(() => plugin.install())
         //         .to
         //         .emitFrom(plugin, 'waiting');
         //     });
         //
-        //     it(`should emit "installing"`, () => {
+        //     it('should emit "installing"', () => {
         //       expect(() => plugin.install())
         //         .to
         //         .emitFrom(plugin, 'installing');
         //     });
         //
-        //     it(`should emit "installed"`, () => {
+        //     it('should emit "installed"', () => {
         //       expect(() => plugin.install())
         //         .to
         //         .emitFrom(plugin, 'installed');
         //     });
         //
-        //     it(`should set state to "installed"`, () => {
+        //     it('should set state to "installed"', () => {
         //       plugin.install();
         //       expect(plugin.state)
         //         .to
@@ -150,12 +150,12 @@ describe(`core/plugin`, () => {
         //     });
         //   });
         //
-        //   describe(`if already installed`, () => {
+        //   describe('if already installed', () => {
         //     beforeEach(() => {
         //       plugin.state = 'installed';
         //     });
         //
-        //     it(`should throw`, () => {
+        //     it('should throw', () => {
         //       plugin.func = sandbox.stub();
         //       expect(() => plugin.install())
         //         .to

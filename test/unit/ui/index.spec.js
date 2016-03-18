@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import UI, {Suite} from '../../../src/ui';
 
-describe(`ui`, () => {
+describe('ui', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -14,8 +14,8 @@ describe(`ui`, () => {
     sandbox.restore();
   });
 
-  describe(`UI()`, () => {
-    it(`should call setContext()`, () => {
+  describe('UI()', () => {
+    it('should call setContext()', () => {
       const rootSuite = Suite();
       sandbox.stub(UI.fixed.methods, 'setContext');
       const ui = UI({rootSuite});
@@ -26,8 +26,8 @@ describe(`ui`, () => {
         .calledWithExactly(rootSuite);
     });
 
-    describe(`if not given a rootSuite property`, () => {
-      it(`should call setContext()`, () => {
+    describe('if not given a rootSuite property', () => {
+      it('should call setContext()', () => {
         const ui = UI.methods({
           setContext: sandbox.spy(UI.fixed.methods.setContext)
         })();
@@ -39,7 +39,7 @@ describe(`ui`, () => {
       });
     });
 
-    describe(`method`, () => {
+    describe('method', () => {
       let ui;
       let parent;
 
@@ -48,8 +48,8 @@ describe(`ui`, () => {
         parent = Suite();
       });
 
-      describe(`setContext()`, () => {
-        it(`should set the Suite prop to be a factory having parent ref`,
+      describe('setContext()', () => {
+        it('should set the Suite prop to be a factory having parent ref',
           () => {
             ui.setContext(parent);
             expect(ui.Suite.fixed.refs.parent)
@@ -57,7 +57,7 @@ describe(`ui`, () => {
               .equal(parent);
           });
 
-        it(`should subscribe to the Suite's "execute:pre" event`, () => {
+        it('should subscribe to the Suite\'s "execute:pre" event', () => {
           ui.setContext(parent);
           expect(ui.Suite.fixed.refs.onceEvents['execute:pre'])
             .to
@@ -65,12 +65,12 @@ describe(`ui`, () => {
             .a('function');
         });
 
-        describe(`when the UI is recursive`, () => {
+        describe('when the UI is recursive', () => {
           beforeEach(() => {
             ui.setContext(parent);
           });
 
-          it(`should subscribe to the Suite's "execute:post" event`, () => {
+          it('should subscribe to the Suite\'s "execute:post" event', () => {
             expect(ui.Suite.fixed.refs.onceEvents['execute:post'])
               .to
               .be
@@ -78,18 +78,18 @@ describe(`ui`, () => {
           });
         });
 
-        describe(`when the UI is not recursive`, () => {
+        describe('when the UI is not recursive', () => {
           beforeEach(() => {
             ui.recursive = false;
             ui.setContext(parent);
           });
 
-          it(`should not subscribe to the Suite's "execute:post" event`, () => {
+          it('should not subscribe to the Suite\'s "execute:post" event', () => {
             expect(ui.Suite.fixed.refs.onceEvents['execute:post']).to.be.undefined;
           });
         });
 
-        it(`should set the Test prop to be a factory having suite ref`, () => {
+        it('should set the Test prop to be a factory having suite ref', () => {
           ui.setContext(parent);
           expect(ui.Test.fixed.refs.suite)
             .to
@@ -97,7 +97,7 @@ describe(`ui`, () => {
         });
       });
 
-      describe(`createTest()`, () => {
+      describe('createTest()', () => {
         let testDef;
 
         beforeEach(() => {
@@ -108,14 +108,14 @@ describe(`ui`, () => {
           };
         });
 
-        it(`should return a Test`, () => {
+        it('should return a Test', () => {
           expect(ui.createTest(testDef))
             .to
             .be
             .an('object');
         });
 
-        it(`should instantiate a Test`, () => {
+        it('should instantiate a Test', () => {
           sandbox.spy(ui, 'Test');
           ui.createTest(testDef);
           expect(ui.Test)
@@ -126,7 +126,7 @@ describe(`ui`, () => {
         });
       });
 
-      describe(`createSuite()`, () => {
+      describe('createSuite()', () => {
         let suiteDef;
 
         beforeEach(() => {
@@ -139,14 +139,14 @@ describe(`ui`, () => {
           sandbox.stub(ui, 'setContext');
         });
 
-        it(`should return a Suite`, () => {
+        it('should return a Suite', () => {
           expect(ui.createSuite(suiteDef))
             .to
             .be
             .an('object');
         });
 
-        it(`should instantiate a Suite`, () => {
+        it('should instantiate a Suite', () => {
           ui.createSuite(suiteDef);
           expect(ui.Suite)
             .to

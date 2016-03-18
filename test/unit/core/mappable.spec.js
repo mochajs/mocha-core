@@ -2,25 +2,25 @@
 
 import Mappable from '../../../src/core/mappable';
 
-describe(`core/mappable`, () => {
-  describe(`Mappable()`, () => {
+describe('core/mappable', () => {
+  describe('Mappable()', () => {
     let map;
 
-    it(`should return a Map`, () => {
+    it('should return a Map', () => {
       expect(Mappable())
         .to
         .be
         .a(global.Map ? 'Map' : 'Object');
     });
 
-    it(`should instantiate the Map with the instance object`, () => {
+    it('should instantiate the Map with the instance object', () => {
       map = Mappable({foo: 'bar'});
       expect(map.get('foo'))
         .to
         .equal('bar');
     });
 
-    it(`should support custom methods`, () => {
+    it('should support custom methods', () => {
       map = Mappable.methods({
         foo () {
         }
@@ -31,23 +31,23 @@ describe(`core/mappable`, () => {
         .a('function');
     });
 
-    it(`should support "refs()"`, () => {
+    it('should support "refs()"', () => {
       map = Mappable.refs({foo: 'bar'})();
       expect(map.foo)
         .to
         .equal('bar');
     });
 
-    it(`should support "props()"`, () => {
+    it('should support "props()"', () => {
       map = Mappable.props({foo: 'bar'})({foo: 'baz'});
       expect(map.foo)
         .to
         .equal('bar');
     });
 
-    describe(`method`, () => {
-      describe(`toJSON()`, () => {
-        it(`should return a plain object representation ready for JSON`, () => {
+    describe('method', () => {
+      describe('toJSON()', () => {
+        it('should return a plain object representation ready for JSON', () => {
           expect(Mappable({foo: 'bar'})
             .toJSON())
             .to

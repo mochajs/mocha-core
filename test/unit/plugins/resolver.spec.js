@@ -5,7 +5,7 @@ import fsm from 'fsm';
 import _, {noop} from 'lodash';
 import pkg from '../../../src/options/package';
 
-describe(`plugins/resolver`, () => {
+describe('plugins/resolver', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -16,50 +16,50 @@ describe(`plugins/resolver`, () => {
     sandbox.restore();
   });
 
-  describe(`load()`, () => {
-    describe(`when called without a parameter`, () => {
-      it(`should not throw`, () => {
+  describe('load()', () => {
+    describe('when called without a parameter', () => {
+      it('should not throw', () => {
         expect(load)
           .not
           .to
           .throw();
       });
 
-      it(`should return nothing`, () => {
+      it('should return nothing', () => {
         expect(load()).to.be.undefined;
       });
     });
 
-    describe(`when called with a non-Array parameter`, () => {
-      it(`should not throw`, () => {
+    describe('when called with a non-Array parameter', () => {
+      it('should not throw', () => {
         expect(() => load('foo'))
           .not
           .to
           .throw();
       });
 
-      it(`should return nothing`, () => {
+      it('should return nothing', () => {
         expect(load('foo')).to.be.undefined;
       });
     });
 
-    describe(`when called with an Array`, () => {
-      describe(`containing no items`, () => {
-        it(`should not throw`, () => {
+    describe('when called with an Array', () => {
+      describe('containing no items', () => {
+        it('should not throw', () => {
           expect(() => load([]))
             .not
             .to
             .throw();
         });
 
-        it(`should return nothing`, () => {
+        it('should return nothing', () => {
           expect(load([])).to.be.undefined;
         });
       });
 
-      describe(`containing a single item`, () => {
-        describe(`which is an existent module path`, () => {
-          it(`should successfully require() the module`, () => {
+      describe('containing a single item', () => {
+        describe('which is an existent module path', () => {
+          it('should successfully require() the module', () => {
             expect(load(['fsm']))
               .to
               .be
@@ -67,23 +67,23 @@ describe(`plugins/resolver`, () => {
           });
         });
 
-        describe(`which is an existent non-module path`, () => {
-          it(`should not throw`, () => {
+        describe('which is an existent non-module path', () => {
+          it('should not throw', () => {
             expect(() => load(['fsm/README.md']))
               .not
               .to
               .throw();
           });
 
-          it(`should return nothing`, () => {
+          it('should return nothing', () => {
             expect(load(['fsm/README.md'])).to.be.undefined;
           });
         });
       });
 
-      describe(`containing multiple items`, () => {
-        describe(`which are existent non-module paths`, () => {
-          it(`should not throw`, () => {
+      describe('containing multiple items', () => {
+        describe('which are existent non-module paths', () => {
+          it('should not throw', () => {
             expect(() => load([
               'fsm/README.md',
               'chai/README.md'
@@ -93,7 +93,7 @@ describe(`plugins/resolver`, () => {
               .throw();
           });
 
-          it(`should return nothing`, () => {
+          it('should return nothing', () => {
             expect(load([
               'fsm/README.md',
               'chai/README.md'
@@ -101,8 +101,8 @@ describe(`plugins/resolver`, () => {
           });
         });
 
-        describe(`which are existent module paths`, () => {
-          it(`should return the result of calling require() upon the first`,
+        describe('which are existent module paths', () => {
+          it('should return the result of calling require() upon the first',
             () => {
               expect(load([
                 'fsm',
@@ -113,9 +113,9 @@ describe(`plugins/resolver`, () => {
             });
         });
 
-        describe(`which contains a mix of existent module and non-module paths`,
+        describe('which contains a mix of existent module and non-module paths',
           () => {
-            it(`should return the result of require() upon the first valid module`,
+            it('should return the result of require() upon the first valid module',
               () => {
                 expect(load([
                   'fsm/README.md',
@@ -129,29 +129,29 @@ describe(`plugins/resolver`, () => {
     });
   });
 
-  describe(`resolver()`, () => {
-    describe(`when called without a parameter`, () => {
-      it(`should not throw`, () => {
+  describe('resolver()', () => {
+    describe('when called without a parameter', () => {
+      it('should not throw', () => {
         expect(resolver)
           .not
           .to
           .throw();
       });
 
-      it(`should return nothing`, () => {
+      it('should return nothing', () => {
         expect(resolver()).to.be.undefined;
       });
     });
 
-    describe(`when called with a Function parameter`, () => {
-      it(`should return the function`, () => {
+    describe('when called with a Function parameter', () => {
+      it('should return the function', () => {
         expect(resolver(noop))
           .to
           .equal(noop);
       });
     });
 
-    describe(`when called with a string parameter`, () => {
+    describe('when called with a string parameter', () => {
       const stubs = {};
 
       beforeEach(() => {
@@ -169,7 +169,7 @@ describe(`plugins/resolver`, () => {
         resolver.__ResetDependency__('resolveDep');
       });
 
-      it(`should ask resolve-dep to find the module, which could be a plugin`,
+      it('should ask resolve-dep to find the module, which could be a plugin',
         () => {
           resolver('lodash');
           expect(stubs.resolveDep)
@@ -182,7 +182,7 @@ describe(`plugins/resolver`, () => {
             ]);
         });
 
-      it(`should pass the result to load()`, () => {
+      it('should pass the result to load()', () => {
         resolver('lodash');
         expect(stubs.load)
           .to
@@ -191,7 +191,7 @@ describe(`plugins/resolver`, () => {
           .calledWithExactly('lodash');
       });
 
-      it(`should return the result of load()`, () => {
+      it('should return the result of load()', () => {
         expect(resolver('lodash'))
           .to
           .equal(_);

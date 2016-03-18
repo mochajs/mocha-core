@@ -2,24 +2,24 @@
 
 import {Result} from '../../../src/runner/results';
 
-describe(`ui/result`, () => {
-  describe(`Result()`, () => {
-    it(`should return an object`, () => {
+describe('ui/result', () => {
+  describe('Result()', () => {
+    it('should return an object', () => {
       expect(Result())
         .to
         .be
         .an('object');
     });
 
-    describe(`method`, () => {
+    describe('method', () => {
       let result;
 
       beforeEach(() => {
         result = Result({fulfilled: 'skipped'});
       });
 
-      describe(`toJSON()`, () => {
-        it(`should return an object without null, undefined, or Function values`,
+      describe('toJSON()', () => {
+        it('should return an object without null, undefined, or Function values',
           () => {
             expect(result.toJSON())
               .to

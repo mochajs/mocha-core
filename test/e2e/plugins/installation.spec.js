@@ -3,11 +3,11 @@
 import {Pluggable} from '../../../src/plugins';
 import {Graphable} from '../../../src/core';
 
-describe(`e2e/plugins/installation`, () => {
+describe('e2e/plugins/installation', () => {
   let pluggable;
   let plugin;
 
-  describe(`when using a plugin with no dependencies`, () => {
+  describe('when using a plugin with no dependencies', () => {
     beforeEach(() => {
       pluggable = Pluggable({depGraph: Graphable()});
       plugin = function () {
@@ -19,7 +19,7 @@ describe(`e2e/plugins/installation`, () => {
       pluggable.emit('ready');
     });
 
-    it(`should install the plugin`, () => {
+    it('should install the plugin', () => {
       pluggable.use(plugin);
       expect(pluggable.plugins.get(plugin.attributes.name))
         .to
@@ -32,7 +32,7 @@ describe(`e2e/plugins/installation`, () => {
     });
   });
 
-  describe(`when using a plugin with dependencies`, () => {
+  describe('when using a plugin with dependencies', () => {
     let dep;
 
     beforeEach(() => {
@@ -55,14 +55,14 @@ describe(`e2e/plugins/installation`, () => {
       pluggable.emit('ready');
     });
 
-    describe(`when the deps are not installed`, () => {
-      it(`should not immediately install the plugin if the deps are not installed`,
+    describe('when the deps are not installed', () => {
+      it('should not immediately install the plugin if the deps are not installed',
         () => {
           pluggable.use(plugin);
           expect(pluggable.plugins.has(plugin.attributes.name)).to.be.false;
         });
 
-      it(`should not emit "installed"`, () => {
+      it('should not emit "installed"', () => {
         expect(() => pluggable.use(plugin))
           .not
           .to
@@ -70,15 +70,15 @@ describe(`e2e/plugins/installation`, () => {
       });
     });
 
-    describe(`when the deps are installed`, () => {
-      it(`should emit "installed"`, () => {
+    describe('when the deps are installed', () => {
+      it('should emit "installed"', () => {
         pluggable.use(plugin);
         expect(() => pluggable.use(dep))
           .to
           .emitFrom(pluggable, 'installed');
       });
 
-      it(`should put the installed plugin into the "plugins" Mappable`, () => {
+      it('should put the installed plugin into the "plugins" Mappable', () => {
         pluggable.use(plugin);
         pluggable.use(dep);
 

@@ -3,7 +3,7 @@
 import {Pluggable} from '../../../src/plugins';
 import {Graphable} from '../../../src/core';
 
-describe(`core/pluggable`, () => {
+describe('core/pluggable', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe(`core/pluggable`, () => {
     sandbox.restore();
   });
 
-  describe(`Pluggable()`, () => {
+  describe('Pluggable()', () => {
     let pluggable;
 
     beforeEach(() => {
@@ -23,7 +23,7 @@ describe(`core/pluggable`, () => {
       pluggable = Pluggable({depGraph: Graphable()});
     });
 
-    it(`should return an object`, () => {
+    it('should return an object', () => {
       expect(pluggable)
         .to
         .be
@@ -38,10 +38,10 @@ describe(`core/pluggable`, () => {
       return plugin;
     }
 
-    describe(`property`, () => {
-      describe(`loadStream`, () => {
-        describe(`when an error is emitted`, () => {
-          it(`should emit an error on the Pluggable`, () => {
+    describe('property', () => {
+      describe('loadStream', () => {
+        describe('when an error is emitted', () => {
+          it('should emit an error on the Pluggable', () => {
             expect(() => pluggable.loadStream._emit('error', new Error()))
               .to
               .emitFrom(pluggable, 'error');
@@ -50,25 +50,25 @@ describe(`core/pluggable`, () => {
       });
     });
 
-    describe(`method`, () => {
+    describe('method', () => {
       let plugin;
 
       beforeEach(() => {
         plugin = makePlugin({name: 'foo'});
       });
 
-      describe(`use()`, () => {
+      describe('use()', () => {
         afterEach(() => {
           pluggable.emit('ready');
         });
 
-        it(`should emit "error" if no pattern supplied`, () => {
+        it('should emit "error" if no pattern supplied', () => {
           expect(() => pluggable.use())
             .to
             .emitFrom(pluggable, 'error');
         });
 
-        it(`should emit "use"`, () => {
+        it('should emit "use"', () => {
           expect(() => pluggable.use(plugin))
             .to
             .emitFrom(pluggable, 'use', {
@@ -79,7 +79,7 @@ describe(`core/pluggable`, () => {
             });
         });
 
-        it(`should return the instance`, () => {
+        it('should return the instance', () => {
           expect(pluggable.use(plugin))
             .to
             .equal(pluggable);

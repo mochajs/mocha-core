@@ -2,17 +2,17 @@
 
 import Decoratable from '../../../src/core/decoratable';
 
-describe(`core/decoratable`, () => {
-  describe(`Decoratable()`, () => {
-    it(`should return an Object with an Object "delegate" property`, () => {
+describe('core/decoratable', () => {
+  describe('Decoratable()', () => {
+    it('should return an Object with an Object "delegate" property', () => {
       expect(Decoratable().delegate)
         .to
         .be
         .an('object');
     });
 
-    describe(`method`, () => {
-      describe(`decorate()`, () => {
+    describe('method', () => {
+      describe('decorate()', () => {
         let decoratable;
 
         beforeEach(() => {
@@ -25,30 +25,30 @@ describe(`core/decoratable`, () => {
           });
         });
 
-        it(`should return the decoratable`, () => {
+        it('should return the decoratable', () => {
           expect(decoratable.decorate('foo', function () {
           }))
             .to
             .equal(decoratable);
         });
 
-        describe(`when passed a name, func and opts`, () => {
-          it(`should decorate the delegate with a func by name`, () => {
+        describe('when passed a name, func and opts', () => {
+          it('should decorate the delegate with a func by name', () => {
             expect(decoratable.delegate.foo)
               .to
               .be
               .a('function');
           });
 
-          it(`should bind the function to the Decoratable`, () => {
+          it('should bind the function to the Decoratable', () => {
             decoratable.delegate.foo();
             expect(decoratable.bar)
               .to
               .equal('baz');
           });
         });
-        describe(`when passed an array of objects`, () => {
-          it(`should decorate the delegate with all of them`, () => {
+        describe('when passed an array of objects', () => {
+          it('should decorate the delegate with all of them', () => {
             decoratable.decorate([
               {
                 name: 'foo',
@@ -89,9 +89,10 @@ describe(`core/decoratable`, () => {
               .equal('foo');
           });
         });
-        
-        describe(`when passed an object`, () => {
-          it(`should use the keys as names and values as funcs (with default options)`,
+
+        describe('when passed an object', () => {
+          it(
+            'should use the keys as names and values as funcs (with default options)',
             () => {
               decoratable.decorate({
                 foo (baz) {
