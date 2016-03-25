@@ -3,7 +3,7 @@
 import {Pluggable} from '../../../src/plugins';
 import {Graphable} from '../../../src/core';
 
-describe('e2e/plugins/installation', () => {
+describe.skip('e2e/plugins/installation', () => {
   let pluggable;
   let plugin;
 
