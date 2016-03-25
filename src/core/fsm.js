@@ -2,16 +2,9 @@
 
 import StateMachine from 'fsm-as-promised';
 import stampit from 'stampit';
-import {pick, flatten, startsWith} from 'lodash/fp';
+import {flatten, startsWith} from 'lodash/fp';
 import is from 'check-more-types';
 import assert from 'lazy-ass';
-
-const getStateMachineProps = pick([
-  'events',
-  'callbacks',
-  'initial',
-  'final'
-]);
 
 const startsWithOn = startsWith('on');
 
@@ -31,14 +24,8 @@ const isConditionalEvent = is.schema({
 const isEvent = is.or(isBasicEvent, isConditionalEvent);
 
 const FSM = stampit({
-  refs: {
-    callbacks: {}
-  },
   props: {
     events: []
-  },
-  init () {
-    StateMachine(getStateMachineProps(this), this);
   },
   static: {
     initial (state) {
@@ -78,6 +65,6 @@ const FSM = stampit({
       return this.refs({callbacks});
     }
   }
-});
+}).compose(StateMachine);
 
 export default FSM;
