@@ -38,18 +38,6 @@ describe('core/pluggable', () => {
       return plugin;
     }
 
-    describe('property', () => {
-      describe('loadStream', () => {
-        describe('when an error is emitted', () => {
-          it('should emit an error on the Pluggable', () => {
-            expect(() => pluggable.loadStream._emit('error', new Error()))
-              .to
-              .emitFrom(pluggable, 'error');
-          });
-        });
-      });
-    });
-
     describe('method', () => {
       let plugin;
 
@@ -58,6 +46,10 @@ describe('core/pluggable', () => {
       });
 
       describe('use()', () => {
+        beforeEach(() => {
+          sandbox.stub(pluggable.loader, 'load');
+        });
+
         afterEach(() => {
           pluggable.emit('ready');
         });
@@ -69,14 +61,13 @@ describe('core/pluggable', () => {
         });
 
         it('should emit "use"', () => {
-          expect(() => pluggable.use(plugin))
-            .to
-            .emitFrom(pluggable, 'use', {
-              pattern: plugin,
-              opts: {},
-              depGraph: pluggable.depGraph,
-              api: pluggable
-            });
+          pluggable.use(plugin);
+          expect(pluggable.loader.load).to.have.been.calledWithExactly({
+            pattern: plugin,
+            opts: {},
+            depGraph: pluggable.depGraph,
+            api: pluggable
+          });
         });
 
         it('should return the instance', () => {

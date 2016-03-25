@@ -1,11 +1,16 @@
 'use strict';
 
-import * as Loader from '../../../src/plugins/loader';
+import Loader, {
+  resolve,
+  assertResolved,
+  normalize,
+  assertAttributes,
+  assertUnused,
+  build
+} from '../../../src/plugins/loader';
 import {EventEmittable} from '../../../src/core';
-import {Pluggable} from '../../../src/plugins';
-const {resolve, assertResolved, normalize, assertAttributes, assertUnused, build} = Loader;
 
-describe.skip(`plugins/loader`, () => {
+describe('plugins/loader', () => {
   const stubs = {usedPlugins: {}};
   let sandbox;
   let noop;
@@ -33,14 +38,14 @@ describe.skip(`plugins/loader`, () => {
     sandbox.restore();
   });
 
-  describe(`resolve()`, () => {
+  describe('resolve()', () => {
     let opts;
 
     beforeEach(() => {
       opts = {pattern: 'foo'};
     });
 
-    it(`should an object having "func" property as returned by resolver()`,
+    it('should an object having "func" property as returned by resolver()',
       () => {
         expect(resolve(opts))
           .to
@@ -48,7 +53,7 @@ describe.skip(`plugins/loader`, () => {
           .property('func', noop);
       });
 
-    it(`should not return the identity`, () => {
+    it('should not return the identity', () => {
       expect(resolve(opts))
         .not
         .to
@@ -56,26 +61,26 @@ describe.skip(`plugins/loader`, () => {
     });
   });
 
-  describe(`assertResolve()`, () => {
+  describe('assertResolve()', () => {
     let opts;
 
     beforeEach(() => {
       opts = {func: noop};
     });
 
-    it(`should return the identity`, () => {
+    it('should return the identity', () => {
       expect(assertResolved(opts))
         .to
         .equal(opts);
     });
 
-    it(`should throw an error if "func" is not present`, () => {
+    it('should throw an error if "func" is not present', () => {
       expect(assertResolved)
         .to
         .throw(Error, /could not resolve/i);
     });
 
-    it(`should not change the value of "func"`, () => {
+    it('should not change the value of "func"', () => {
       expect(() => assertResolved(opts))
         .not
         .to
@@ -83,8 +88,8 @@ describe.skip(`plugins/loader`, () => {
     });
   });
 
-  describe(`normalize()`, () => {
-    it(`should return the identity`, () => {
+  describe('normalize()', () => {
+    it('should return the identity', () => {
       const opts = {
         func: {
           attributes: {
@@ -98,7 +103,7 @@ describe.skip(`plugins/loader`, () => {
         .equal(opts);
     });
 
-    it(`should modify the attributes in place`, () => {
+    it('should modify the attributes in place', () => {
       const opts = {
         func: {
           attributes: {
@@ -111,7 +116,7 @@ describe.skip(`plugins/loader`, () => {
         .change(opts.func, 'attributes');
     });
 
-    it(`should create Array prop "dependencies"`, () => {
+    it('should create Array prop "dependencies"', () => {
       const opts = {
         func: {
           attributes: {
@@ -126,7 +131,7 @@ describe.skip(`plugins/loader`, () => {
         .an('array');
     });
 
-    it(`should coerce string "dependencies" into an Array`, () => {
+    it('should coerce string "dependencies" into an Array', () => {
       const opts = {
         func: {
           attributes: {
@@ -142,8 +147,8 @@ describe.skip(`plugins/loader`, () => {
         .an('array');
     });
 
-    describe(`if property "pkg" is present`, () => {
-      it(`should pull property "name"`, () => {
+    describe('if property "pkg" is present', () => {
+      it('should pull property "name"', () => {
         const opts = {
           func: {
             attributes: {
@@ -161,7 +166,7 @@ describe.skip(`plugins/loader`, () => {
           .property('func.attributes.name', 'foo');
       });
 
-      it(`should pull property "description"`, () => {
+      it('should pull property "description"', () => {
         const opts = {
           func: {
             attributes: {
@@ -179,7 +184,7 @@ describe.skip(`plugins/loader`, () => {
           .property('func.attributes.description', 'foo');
       });
 
-      it(`should pull property "version"`, () => {
+      it('should pull property "version"', () => {
         const opts = {
           func: {
             attributes: {
@@ -197,8 +202,8 @@ describe.skip(`plugins/loader`, () => {
           .property('func.attributes.version', 'foo');
       });
 
-      describe(`if a "name" field is already present`, () => {
-        it(`should not overwrite it`, () => {
+      describe('if a "name" field is already present', () => {
+        it('should not overwrite it', () => {
           const opts = {
             func: {
               attributes: {
@@ -220,8 +225,8 @@ describe.skip(`plugins/loader`, () => {
     });
   });
 
-  describe(`assertAttributes()`, () => {
-    it(`should return the identity`, () => {
+  describe('assertAttributes()', () => {
+    it('should return the identity', () => {
       const opts = {func: noop};
       opts.func.attributes = {name: 'foo'};
 
@@ -230,7 +235,7 @@ describe.skip(`plugins/loader`, () => {
         .equal(opts);
     });
 
-    it(`should throw if no string "func.attributes.name" prop in "opts" parameter`,
+    it('should throw if no string "func.attributes.name" prop in "opts" parameter',
       () => {
         const opts = {func: noop};
         opts.func.attributes = {name: {}};
@@ -239,7 +244,7 @@ describe.skip(`plugins/loader`, () => {
           .throw(Error, /"name" property/i);
       });
 
-    it(`should not throw if string "func.attributes.name" prop is present in "opts" parameter`,
+    it('should not throw if string "func.attributes.name" prop is present in "opts" parameter',
       () => {
         const opts = {func: noop};
         opts.func.attributes = {name: 'foo'};
@@ -249,7 +254,7 @@ describe.skip(`plugins/loader`, () => {
           .throw();
       });
 
-    it(`should not change the value of "func"`, () => {
+    it('should not change the value of "func"', () => {
       const opts = {func: noop};
       opts.func.attributes = {name: 'foo'};
       expect(() => assertAttributes(opts))
@@ -259,7 +264,7 @@ describe.skip(`plugins/loader`, () => {
     });
   });
 
-  describe(`assertUnused()`, () => {
+  describe('assertUnused()', () => {
     let opts;
 
     beforeEach(() => {
@@ -269,14 +274,14 @@ describe.skip(`plugins/loader`, () => {
       };
     });
 
-    it(`should not throw if the plugin is not already loaded`, () => {
+    it('should not throw if the plugin is not already loaded', () => {
       expect(() => assertUnused(stubs.usedPlugins, opts))
         .not
         .to
         .throw(Error, /already used/i);
     });
 
-    it(`should throw if the plugin is already loaded`, () => {
+    it('should throw if the plugin is already loaded', () => {
       stubs.usedPlugins = new Set();
       stubs.usedPlugins.add(opts.func.attributes.name);
       expect(() => assertUnused(stubs.usedPlugins, opts))
@@ -284,14 +289,14 @@ describe.skip(`plugins/loader`, () => {
         .throw(Error, /already used/i);
     });
 
-    it(`should return the identity`, () => {
+    it('should return the identity', () => {
       expect(assertUnused(stubs.usedPlugins, opts))
         .to
         .equal(opts);
     });
   });
 
-  describe(`build()`, () => {
+  describe('build()', () => {
     let PluginStub;
     let opts;
 
@@ -310,14 +315,14 @@ describe.skip(`plugins/loader`, () => {
       Loader.__ResetDependency__('Plugin');
     });
 
-    it(`should not return the identity`, () => {
+    it('should not return the identity', () => {
       expect(build(stubs.usedPlugins, opts))
         .not
         .to
         .equal(opts);
     });
 
-    it(`should defer to Plugin()`, () => {
+    it('should defer to Plugin()', () => {
       build(stubs.usedPlugins, opts);
       expect(PluginStub)
         .to
@@ -330,7 +335,7 @@ describe.skip(`plugins/loader`, () => {
         });
     });
 
-    it(`should add the "name" value to "usedPlugins"`, () => {
+    it('should add the "name" value to "usedPlugins"', () => {
       build(stubs.usedPlugins, opts);
       expect(stubs.usedPlugins.add)
         .to
@@ -340,7 +345,7 @@ describe.skip(`plugins/loader`, () => {
     });
   });
 
-  describe(`loader()`, () => {
+  describe('Loader()', () => {
     beforeEach(() => {
       [
         resolve,
@@ -360,35 +365,6 @@ describe.skip(`plugins/loader`, () => {
         assertAttributes,
         assertUnused
       ].forEach(fn => Loader.__ResetDependency__(fn.name));
-    });
-
-    describe(`when passed a Pluggable which emits "use"`, () => {
-      let pluggable;
-      let plugin;
-
-      beforeEach(() => {
-        pluggable = Pluggable();
-        plugin = function () {
-        };
-        plugin.attributes = {
-          name: 'foo'
-        };
-      });
-
-      afterEach(() => {
-        pluggable.emit('ready');
-      });
-
-      it(`should return a stream of Plugin instances`, done => {
-        Loader.default(pluggable)
-          .onValue(value => expect(value.state)
-            .to
-            .equal('installed'))
-          .onValue(() => done());
-        pluggable.emit('use', {
-          func: plugin
-        });
-      });
     });
   });
 });

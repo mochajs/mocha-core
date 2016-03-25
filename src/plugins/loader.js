@@ -2,9 +2,12 @@
 
 import resolver from './resolver';
 import Plugin from './index';
-import {isString, isFunction, get, flow, negate, every, curry} from 'lodash/fp';
+import {get, flow, negate, every, curry} from 'lodash/fp';
 import {remove} from '../util';
 import {Kefir} from 'kefir';
+import stampit from 'stampit';
+import {EventEmittable, Mappable} from '../core';
+import is from 'check-more-types';
 
 let usedPlugins = new Set();
 
@@ -18,7 +21,7 @@ export function resolve (opts = {}) {
 }
 
 export function assertResolved (opts = {}) {
-  if (!isFunction(opts.func)) {
+  if (is.not.function(opts.func)) {
     throw new Error(`Could not resolve plugin by pattern "${opts.pattern}"`);
   }
   return opts;
@@ -34,8 +37,8 @@ export function normalize (opts = {}) {
 }
 
 export function assertAttributes (opts = {}) {
-  if (!isString(helpers.getName(opts))) {
-    throw new Error(`Plugin must have a "name" property in its "attributes" object`);
+  if (is.not.string(helpers.getName(opts))) {
+    throw new Error('Plugin must have a "name" property in its "attributes" object');
   }
   return opts;
 }
@@ -54,64 +57,71 @@ export const build = curry(function build (usedPlugins, opts) {
   return plugin;
 });
 
-export default function loader (pluggable) {
-  const pluginReady = flow(get('dependencies'),
-    every(dep => pluggable.plugins.has(dep)));
-  const pluginNotReady = negate(pluginReady);
+const PluginLoader = stampit({
+  props: {
+    streams: {}
+  },
+  init () {
+    this.plugins = Mappable();
 
-  const preprocess = flow(resolve,
-    assertResolved,
-    normalize,
-    assertAttributes,
-    assertUnused(usedPlugins));
+    const pluginReady = flow(get('dependencies'),
+      every(dep => this.plugins.has(dep)));
+    const pluginNotReady = negate(pluginReady);
+    const loadStream = Kefir.stream(this.createLoadStream.bind(this))
+      .map(build(usedPlugins));
+    const withoutDeps = loadStream.filter(pluginReady);
 
-  function activateUseStream (emitter) {
-    function onUse (opts = {}) {
-      try {
-        emitter.emit(preprocess(opts));
-      } catch (err) {
-        emitter.error(err);
+    // TODO make this more efficient with reduce-like function (try scan()?)
+    const withDeps = loadStream.filter(pluginNotReady)
+      .sampledBy(withoutDeps, plugin => pluginReady(plugin) && plugin)
+      .filter();
+
+    withoutDeps.merge(withDeps)
+      .takeErrors(1)
+      .onError(err => this.emit('error', err))
+      .onValue(plugin => {
+        plugin.install();
+        this.plugins.set(plugin.name, plugin);
+      })
+      .onEnd(() => this.emit('done', this.plugins));
+  },
+  methods: {
+    createLoadStream (emitter) {
+      const preprocess = flow(resolve,
+        assertResolved,
+        normalize,
+        assertAttributes,
+        assertUnused(usedPlugins));
+
+      const onLoad = (opts = {}) => {
+        try {
+          emitter.emit(preprocess(opts));
+        } catch (err) {
+          emitter.error(err);
+        }
+      };
+
+      function onDump () {
+        emitter.end();
+        usedPlugins = new Set();
       }
+
+      this.on('load', onLoad);
+      this.on('dump', onDump);
+
+      return () => {
+        this.removeListener('load', onLoad);
+        this.removeListener('dump', onDump);
+      };
+    },
+    load (opts = {}) {
+      this.emit('load', opts);
+    },
+    dump () {
+      this.emit('dump');
     }
-
-    function onReady () {
-      emitter.end();
-      usedPlugins = new Set();
-    }
-
-    pluggable.on('use', onUse);
-    pluggable.on('ready', onReady);
-
-    return function deactivateUseStream () {
-      pluggable.removeListener('use', onUse);
-      pluggable.removeListener('ready', onReady);
-    };
   }
+})
+  .compose(EventEmittable);
 
-  const useStream = Kefir.stream(activateUseStream)
-    .map(build(usedPlugins));
-
-  function install (plugin) {
-    plugin.install();
-    pluggable.plugins.set(plugin.name, plugin);
-    pluggable.emit('installed', plugin.name);
-  }
-
-  const withoutDeps = useStream.filter(pluginReady);
-
-  // TODO make this more efficient with reduce-like function (try scan()?)
-  const withDeps = useStream.filter(pluginNotReady)
-    .sampledBy(withoutDeps, plugin => pluginReady(plugin) && plugin)
-    .filter();
-
-  withoutDeps.merge(withDeps)
-    // .takeErrors(1)
-    // .onError(err => {
-    //   console.log(`err count ${++errCount}: ${err}`);
-    //   err.message += ` ** ${errCount}`;
-    //   pluggable.emit('error', err);
-    // })
-    .onValue(install);
-
-  return useStream;
-}
+export default PluginLoader;

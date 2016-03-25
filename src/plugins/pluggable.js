@@ -1,26 +1,22 @@
 'use strict';
 
 import stampit from 'stampit';
-import {Graphable, EventEmittable, Mappable} from '../core';
-import loader from './loader';
-import {isEmpty, isString, isFunction} from 'lodash/fp';
+import {Graphable, EventEmittable} from '../core';
+import PluginLoader from './loader';
+import is from 'check-more-types';
 
 const Pluggable = stampit({
   refs: {
     depGraph: Graphable()
   },
   init () {
-    this.plugins = Mappable();
-    this.loadStream = loader(this)
-      .takeErrors(1)
-      .onError(err => {
-        this.emit('error', err);
-      });
+    this.loader = PluginLoader()
+      .on('error', err => this.emit('error', err));
   },
   methods: {
     use (pattern, opts = {}) {
-      if (!isEmpty(pattern) && (isString(pattern) || isFunction(pattern))) {
-        this.emit('use', {
+      if (is.not.empty(pattern) && is.or(is.string, is.function)(pattern)) {
+        this.loader.load({
           pattern,
           opts,
           depGraph: this.depGraph,
@@ -32,6 +28,9 @@ const Pluggable = stampit({
     }
   }
 })
-  .compose(EventEmittable);
+  .compose(EventEmittable)
+  .once('ready', function onceReady () {
+    this.plugins = this.loader.dump();
+  });
 
 export default Pluggable;
