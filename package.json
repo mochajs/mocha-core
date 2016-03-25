@@ -49,8 +49,8 @@
     "test": "npm run lint && nyc --require babel-core/register npm run test:node && npm run test:browser",
     "test:browser": "karma start .karma.conf.js --single-run",
     "test:node": "npm run test:node:unit && npm run test:node:e2e",
-    "test:node:e2e": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --timeout 0 --recursive test/e2e/",
-    "test:node:unit": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --timeout 0 --recursive test/unit/",
+    "test:node:e2e": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --recursive test/e2e/",
+    "test:node:unit": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --recursive test/unit/",
     "test:unit": "npm run test:node:unit && npm run test:browser:unit"
   },
   "dependencies": {
@@ -111,7 +111,7 @@
     "mocha": "^2.3.4",
     "npm-parallel": "boneskull/npm-parallel#boneskull-patch-1",
     "nsp": "^2.2.0",
-    "nyc": "^6.0.0",
+    "nyc": "^6.1.1",
     "phantomjs-prebuilt": "^2.1.5",
     "pre-commit": "^1.1.2",
     "publish-please": "^1.1.0",
