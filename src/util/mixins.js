@@ -9,9 +9,3 @@ is.mixin(isNull, 'null');
 is.mixin(function isArrayOfUnemptyStrings (value) {
   return is.arrayOf(is.unemptyString, value);
 }, 'arrayOfUnemptyStrings');
-
-const isPromise = is.schema({
-  then: is.function
-});
-
-is.mixin(isPromise, 'promise');
