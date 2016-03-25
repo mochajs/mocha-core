@@ -6,11 +6,8 @@ import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import chaiEventEmitter from 'chai-eventemitter';
 import 'source-map-support/register';
-import 'trace';
-import 'clarify';
 import '../src/util/mixins';
-
-Error.stackTraceLimit = Infinity;
+import 'async-listener';
 
 global.expect = chai.expect;
 global.sinon = sinon;
@@ -18,3 +15,4 @@ global.sinon = sinon;
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
 chai.use(chaiEventEmitter);
+
