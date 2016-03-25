@@ -2,6 +2,7 @@
   "name": "mocha",
   "version": "0.0.0",
   "description": "next-gen Mocha",
+  "keywords": [],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -12,6 +13,10 @@
     "email": "boneskull@boneskull.com",
     "url": "https://mochajs.org"
   },
+  "bugs": {
+    "url": "https://github.com/boneskull/mocha3/issues"
+  },
+  "homepage": "https://github.com/boneskull/mocha3#readme",
   "main": "lib/",
   "engines": {
     "node": ">=0.10.0",
@@ -48,7 +53,6 @@
     "test:node:unit": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --timeout 0 --recursive test/unit/",
     "test:unit": "npm run test:node:unit && npm run test:browser:unit"
   },
-  "keywords": [],
   "dependencies": {
     "async-listener": "^0.5.8",
     "babel-polyfill": "^6.6.1",
