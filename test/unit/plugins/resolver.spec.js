@@ -1,7 +1,6 @@
 'use strict';
 
 import resolver, {load} from '../../../src/plugins/resolver';
-import fsm from 'fsm';
 import _, {noop} from 'lodash';
 import pkg from '../../../src/options/package';
 
@@ -60,23 +59,23 @@ describe('plugins/resolver', () => {
       describe('containing a single item', () => {
         describe('which is an existent module path', () => {
           it('should successfully require() the module', () => {
-            expect(load(['fsm']))
+            expect(load(['lodash']))
               .to
               .be
-              .an('object');
+              .a('function');
           });
         });
 
         describe('which is an existent non-module path', () => {
           it('should not throw', () => {
-            expect(() => load(['fsm/README.md']))
+            expect(() => load(['lodash/README.md']))
               .not
               .to
               .throw();
           });
 
           it('should return nothing', () => {
-            expect(load(['fsm/README.md'])).to.be.undefined;
+            expect(load(['lodash/README.md'])).to.be.undefined;
           });
         });
       });
@@ -85,7 +84,7 @@ describe('plugins/resolver', () => {
         describe('which are existent non-module paths', () => {
           it('should not throw', () => {
             expect(() => load([
-              'fsm/README.md',
+              'lodash/README.md',
               'chai/README.md'
             ]))
               .not
@@ -95,7 +94,7 @@ describe('plugins/resolver', () => {
 
           it('should return nothing', () => {
             expect(load([
-              'fsm/README.md',
+              'lodash/README.md',
               'chai/README.md'
             ])).to.be.undefined;
           });
@@ -105,11 +104,11 @@ describe('plugins/resolver', () => {
           it('should return the result of calling require() upon the first',
             () => {
               expect(load([
-                'fsm',
+                'lodash',
                 'chai'
               ]))
                 .to
-                .equal(fsm);
+                .equal(_);
             });
         });
 
@@ -118,11 +117,11 @@ describe('plugins/resolver', () => {
             it('should return the result of require() upon the first valid module',
               () => {
                 expect(load([
-                  'fsm/README.md',
-                  'fsm'
+                  'lodash/README.md',
+                  'lodash'
                 ]))
                   .to
-                  .equal(fsm);
+                  .equal(_);
               });
           });
       });
