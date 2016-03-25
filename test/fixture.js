@@ -7,7 +7,6 @@ import chaiAsPromised from 'chai-as-promised';
 import chaiEventEmitter from 'chai-eventemitter';
 import 'source-map-support/register';
 import '../src/util/mixins';
-import 'async-listener';
 
 global.expect = chai.expect;
 global.sinon = sinon;
