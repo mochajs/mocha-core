@@ -53,9 +53,6 @@ const Test = stampit({
         const elapsed = Date.now() - opts.start;
         opts.res = Object.assign({elapsed}, result);
         this.results.push(result);
-        console.log(`event: ${result.event}`);
-        // console.log(this[result.event]);
-
         return this[result.event]();
       });
   });
