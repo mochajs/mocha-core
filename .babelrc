@@ -2,19 +2,18 @@
   "presets": [
     "es2015"
   ],
+  "sourceMaps": "inline",
   "env": {
     "dist": {
       "sourceMaps": true
     },
     "jetbrains": {
-      "sourceMaps": "inline",
       "plugins": [
         "rewire"
       ],
       "retainLines": true
     },
     "development": {
-      "sourceMaps": "both",
       "plugins": [
         "rewire"
       ]

@@ -24,4 +24,4 @@ rules:
     - as-needed
 
 globals:
-  zone: false
+  Zone: false
