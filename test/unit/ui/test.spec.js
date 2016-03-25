@@ -1,16 +1,15 @@
 'use strict';
-
 import {Test, Suite} from '../../../src/ui';
-import noop from 'lodash/noop';
+import {noop} from 'lodash';
 
-describe(`ui/test`, () => {
+describe('ui/test', () => {
   let sandbox;
 
   beforeEach(() => sandbox = sinon.sandbox.create('ui/test'));
 
   afterEach(() => sandbox.restore());
 
-  describe(`Test()`, () => {
+  describe('Test()', () => {
     let suite;
     let parent;
     beforeEach(() => {
@@ -21,23 +20,23 @@ describe(`ui/test`, () => {
       });
     });
 
-    describe(`when not instantiated w/ a "suite" prop`, () => {
-      it(`should throw`, () => {
+    describe('when not instantiated w/ a "suite" prop', () => {
+      it('should throw', () => {
         expect(Test)
           .to
           .throw(Error, /suite/i);
       });
     });
 
-    describe(`when instantiated with a "suite" prop`, () => {
-      it(`should not throw`, () => {
+    describe('when instantiated with a "suite" prop', () => {
+      it('should not throw', () => {
         expect(() => Test({suite}))
           .not
           .to
           .throw();
       });
 
-      it(`should return an object`, () => {
+      it('should return an object', () => {
         expect(Test({suite}))
           .to
           .be
@@ -45,22 +44,22 @@ describe(`ui/test`, () => {
       });
     });
 
-    describe(`property`, () => {
-      describe(`pending`, () => {
-        describe(`getter`, () => {
-          describe(`when the test has no function`, () => {
+    describe('property', () => {
+      describe('pending', () => {
+        describe('getter', () => {
+          describe('when the test has no function', () => {
             let test;
 
             beforeEach(() => {
               test = Test({suite});
             });
 
-            it(`should be true`, () => {
+            it('should be true', () => {
               expect(test.pending).to.be.true;
             });
           });
 
-          describe(`when the Suite is pending`, () => {
+          describe('when the Suite is pending', () => {
             let test;
 
             beforeEach(() => {
@@ -71,12 +70,12 @@ describe(`ui/test`, () => {
               });
             });
 
-            it(`should be true`, () => {
+            it('should be true', () => {
               expect(test.pending).to.be.true;
             });
           });
 
-          describe(`when the test has a function`, () => {
+          describe('when the test has a function', () => {
             let test;
 
             beforeEach(() => {
@@ -86,16 +85,16 @@ describe(`ui/test`, () => {
               });
             });
 
-            describe(`and the Suite is not pending`, () => {
-              it(`should be false`, () => {
+            describe('and the Suite is not pending', () => {
+              it('should be false', () => {
                 expect(test.pending).to.be.false;
               });
             });
           });
         });
 
-        describe(`setter`, () => {
-          describe(`when the Test has an initial function`, () => {
+        describe('setter', () => {
+          describe('when the Test has an initial function', () => {
             let test;
 
             beforeEach(() => {
@@ -105,36 +104,36 @@ describe(`ui/test`, () => {
               });
             });
 
-            describe(`and it is supplied a truthy value`, () => {
+            describe('and it is supplied a truthy value', () => {
               beforeEach(() => {
                 test.pending = true;
               });
 
-              it(`should be pending`, () => {
+              it('should be pending', () => {
                 expect(test.pending).to.be.true;
               });
 
-              describe(`and is subsequently supplied a falsy value`, () => {
+              describe('and is subsequently supplied a falsy value', () => {
                 beforeEach(() => {
                   test.pending = false;
                 });
 
-                it(`should not be pending`, () => {
+                it('should not be pending', () => {
                   expect(test.pending).to.be.false;
                 });
               });
             });
           });
 
-          describe(`when the Test has no initial function`, () => {
+          describe('when the Test has no initial function', () => {
             let test;
 
             beforeEach(() => {
               test = Test({suite});
             });
 
-            describe(`and it is supplied a falsy value`, () => {
-              it(`should have no effect`, () => {
+            describe('and it is supplied a falsy value', () => {
+              it('should have no effect', () => {
                 expect(() => test.pending = false).not.to.change(test, 'pending');
               });
             });
@@ -143,7 +142,7 @@ describe(`ui/test`, () => {
       });
     });
 
-    describe(`method`, () => {
+    describe('method', () => {
       let test;
 
       beforeEach(() => {
@@ -153,13 +152,13 @@ describe(`ui/test`, () => {
         });
       });
 
-      describe(`run()`, () => {
-        describe(`when the test is pending`, () => {
-          it(`should end in state "skipped"`, () => {
+      describe('run()', () => {
+        describe('when the test is pending', () => {
+          it('should end in state "skipped"', () => {
             return expect(test.run()).to.eventually.be.fulfilled;
           });
 
-          it(`should return a "skipped" result`, () => {
+          it('should return a "skipped" result', () => {
             return expect(test.run())
               .to
               .eventually
@@ -178,50 +177,52 @@ describe(`ui/test`, () => {
               .least(0);
           });
 
-          describe(`if no longer pending`, () => {
+          describe('if no longer pending', () => {
             beforeEach(() => {
               return test.run()
                 .then(() => test.func = noop);
             });
 
-            it(`should be allowed to run`, () => {
+            it('should be allowed to run', () => {
               return expect(test.run()).to.eventually.be.fulfilled;
             });
           });
         });
 
-        describe(`when the test is not pending`, () => {
-          describe(`and the test is synchronous`, () => {
+        describe('when the test is not pending', () => {
+          describe('and the test is synchronous', () => {
             beforeEach(() => {
               test.func = sandbox.spy();
             });
 
-            describe(`and the function does not throw an error`, () => {
+            describe('and the function does not throw an error', () => {
               let result;
 
               beforeEach(() => {
                 return test.run()
                   .then(res => {
                     result = res
+                    console.log(result);
+
                   });
               });
 
-              it(`should run the function`, () => {
+              it('should run the function', () => {
                 expect(test.func).to.have.been.calledOnce;
               });
 
-              it(`should end in state "passed"`, () => {
+              it('should end in state "passed"', () => {
                 expect(test.current)
                   .to
                   .equal('passed');
               });
 
-              it(`should return an "passed" result`, () => {
+              it('should return an "passed" result', () => {
                 expect(result.passed).to.be.true;
               });
 
-              describe(`when rerun`, () => {
-                it(`should reject`, () => {
+              describe('when rerun', () => {
+                it('should reject', () => {
                   return expect(test.run())
                     .to
                     .eventually
@@ -232,8 +233,8 @@ describe(`ui/test`, () => {
             });
           });
 
-          describe(`and the test is asynchronous`, () => {
-            describe(`and when the function does not throw an error`, () => {
+          describe('and the test is asynchronous', () => {
+            describe('and when the function does not throw an error', () => {
               let funcUnderTest;
 
               beforeEach(() => {
@@ -245,20 +246,20 @@ describe(`ui/test`, () => {
                   }, 50);
                 };
 
-                return test.run().then(res => console.log(res));
+                return test.run();
               });
 
-              it(`should run the function`, () => {
+              it('should run the function', () => {
                 expect(funcUnderTest).to.have.been.calledOnce;
               });
 
-              it(`should end in state "passed"`, () => {
+              it('should end in state "passed"', () => {
                 expect(test.current)
                   .to
                   .equal('passed');
               });
 
-              it(`should reject if rerun`, () => {
+              it('should reject if rerun', () => {
                 return expect(test.run())
                   .to
                   .eventually
@@ -267,24 +268,24 @@ describe(`ui/test`, () => {
               });
             });
 
-            describe(`and when the function throws an error`, () => {
+            describe('and when the function throws an error', function () {
               beforeEach(() => {
                 test.func = () => {
                   setTimeout(function bzzt () {
                     throw new Error('foo');
-                  }, 50);
+                  }, 500);
                 };
 
-                return test.run();
+                return test.run().then(res => console.log(res));
               });
 
-              it(`should end in state "failed"`, () => {
+              it('should end in state "failed"', () => {
                 expect(test.current)
                   .to
                   .equal('failed');
               });
 
-              it(`should allow the test to be rerun`, () => {
+              it('should allow the test to be rerun', () => {
                 expect(test.run()).to.eventually.be.resolved;
               });
             });
