@@ -2,7 +2,7 @@
 
 import stampit from 'stampit';
 import {FSM, Taggable} from '../core';
-import Executable from '../runner/executable';
+import Executable from './executable';
 
 const Test = stampit({
   props: {

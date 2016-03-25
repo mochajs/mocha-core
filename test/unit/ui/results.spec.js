@@ -1,6 +1,6 @@
 'use strict';
 
-import {Result} from '../../../src/runner/results';
+import {Result} from '../../../src/ui/helpers/results';
 
 describe('ui/result', () => {
   describe('Result()', () => {

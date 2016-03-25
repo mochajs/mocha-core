@@ -16,7 +16,7 @@ const resultTypes = [
 const Result = stampit({
   static: {
     fulfilledWith (fulfilled) {
-      return Result.props({fulfilled});
+      return this.props({fulfilled});
     }
   },
   props: {
@@ -30,11 +30,11 @@ const Result = stampit({
     event: null
   },
   methods: {
-    cleanup () {
+    complete () {
       Object.freeze(this);
       return this.toJSON();
     },
-    complete (err) {
+    finish (err) {
       this.completed = true;
       this.async =
         this.fulfilled === 'callback' || this.fulfilled === 'promise';
@@ -42,14 +42,14 @@ const Result = stampit({
       this.passed = !err;
       this.event = this.failed ? 'fail' : 'pass';
       this.error = err;
-      return this.cleanup();
+      return this.complete();
     },
     abort (err) {
       this.aborted = true;
       this.error = err;
       this.skipped = !err;
       this.event = this.skipped ? 'skip' : 'error';
-      return this.cleanup();
+      return this.complete();
     },
     toJSON () {
       return flow(omitBy(is.null),

@@ -3,12 +3,11 @@
 import stampit from 'stampit';
 import is from 'check-more-types';
 import {Unique} from '../core';
-import results from './results';
+import results from './helpers/results';
 import {last} from 'lodash/fp';
-import executionContext from './execution-context';
+import * as executionContext from './helpers/execution-context';
 
 const Executable = stampit({
-  refs: {executionContext},
   init () {
     if (is.not.object(this.suite)) {
       throw new Error('Missing "suite" property');
@@ -17,37 +16,39 @@ const Executable = stampit({
     // this is intended to be "sticky".  if you set it, then you
     // must unset it if you want to run anything.  if the function is missing,
     // "pending" is *implied* via the getter.
-    let pending = this.pending;
+    let pending = Boolean(this.pending);
 
     Object.defineProperties(this, {
       pending: {
         get () {
-          return Boolean(this.suite.pending ||
-            pending ||
-            is.not.function(this.func));
+          return this.suite.pending || pending || is.not.function(this.func);
         },
         set (value) {
-          pending = Boolean(value && is.function(this.func));
+          pending = Boolean(value) && is.function(this.func);
         }
       }
     });
   },
   methods: {
-    execute (opts) {
+    execute (opts = {}) {
+      const func = this.func;
       return new Promise(resolve => {
         if (this.pending) {
           return resolve(results.skipped()
             .abort());
         }
+        let async = false;
 
-        const func = this.func;
-        this.async = Boolean(func.length);
-
-        this.executionContext.enable({
-          onAddTask: () => this.async = true,
+        executionContext.enable({
+          onCreate () {
+            async = true;
+          },
           onError (...args) {
-            resolve(results.async()
-              .complete(last(args)));
+            const err = last(args);
+            setImmediate(() => {
+              resolve(results.async()
+                .finish(err));
+            });
             return true;
           }
         });
@@ -59,20 +60,20 @@ const Executable = stampit({
             executionContext.run(func,
               this.suite.context,
               err => resolve(results.userCallback()
-                .complete(err)));
+                .finish(err)));
         } catch (err) {
           return resolve(results.sync()
-            .complete(err));
+            .finish(err));
         }
-
+        
         if (is.object(retval) && is.function(retval.then)) {
           const result = results.promise();
           retval
-            .then(() => resolve(result.complete()),
-              err => resolve(result.complete(err)));
-        } else if (!this.async) {
+            .then(() => resolve(result.finish()),
+              err => resolve(result.finish(err)));
+        } else if (!async) {
           resolve(results.sync()
-            .complete());
+            .finish());
         }
       })
         .catch(err => {
@@ -80,7 +81,7 @@ const Executable = stampit({
             .abort(err);
         })
         .then(result => {
-          this.executionContext.disable();
+          executionContext.disable();
           return Object.assign(opts, {result});
         });
     }
