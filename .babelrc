@@ -5,6 +5,9 @@
   "sourceMaps": "inline",
   "env": {
     "dist": {
+      "plugins": [
+        "lodash"
+      ],
       "sourceMaps": true
     },
     "jetbrains": {
