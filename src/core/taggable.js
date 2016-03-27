@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 
 function tag (...tags) {

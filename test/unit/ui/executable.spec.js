@@ -1,5 +1,3 @@
-'use strict';
-
 import {Executable, Suite} from '../../../src/ui';
 import {noop} from 'lodash';
 
@@ -289,7 +287,6 @@ describe('ui/executable', () => {
                 return expect(executable.execute()).to.eventually.be.resolved;
               });
             });
-
           });
         });
       });

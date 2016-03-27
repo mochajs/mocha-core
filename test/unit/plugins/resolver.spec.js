@@ -1,5 +1,3 @@
-'use strict';
-
 import resolver, {load} from '../../../src/plugins/resolver';
 import _, {noop} from 'lodash';
 import pkg from '../../../src/options/package';

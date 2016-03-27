@@ -1,5 +1,3 @@
-'use strict';
-
 import Singleton from '../../../src/core/singleton';
 
 describe('core/singleton', () => {

@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import {defaults} from 'lodash/fp';
 

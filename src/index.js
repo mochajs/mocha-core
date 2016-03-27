@@ -1,5 +1,3 @@
-'use strict';
-
 import 'source-map-support/register';
 import 'babel-polyfill';
 import Mocha from './mocha';

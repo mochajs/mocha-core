@@ -1,6 +1,4 @@
-'use strict';
-
-import {fromPairs} from 'lodash';
+import {fromPairs} from 'lodash/fp';
 import Collectable from './collectable';
 
 const Mappable = Collectable.constructor(Map)

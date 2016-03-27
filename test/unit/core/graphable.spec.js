@@ -1,5 +1,3 @@
-'use strict';
-
 import {DepGraph} from 'dependency-graph';
 import _ from 'lodash';
 import Graphable from '../../../src/core/graphable';

@@ -1,9 +1,7 @@
-'use strict';
-
-import {isFunction} from 'lodash';
+import is from 'check-more-types';
 
 export default function resolver (pattern) {
-  if (isFunction(pattern)) {
+  if (is.function(pattern)) {
     return pattern;
   }
 }

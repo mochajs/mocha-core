@@ -1,4 +1,3 @@
-'use strict';
 
 import noop from '../../../node_modules/lodash/noop';
 

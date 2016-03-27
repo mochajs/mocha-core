@@ -1,5 +1,3 @@
-'use strict';
-
 import resolver from './resolver';
 import Plugin from './index';
 import {get, flow, negate, every, curry} from 'lodash/fp';

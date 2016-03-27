@@ -1,9 +1,7 @@
-'use strict';
-
 import stampit from 'stampit';
-import {
-  isFunction, omit, omitBy, clone, defaults, mixin, assign, toPairs
-} from 'lodash';
+import is from 'check-more-types';
+// TODO use lodash/fp
+import _ from 'lodash';
 
 const Collectable = stampit({
   static: {
@@ -14,16 +12,15 @@ const Collectable = stampit({
     }
   },
   init ({stamp, instance}) {
-    const props = omitBy(instance,
-      (value, key) => isFunction(value) || key === 'constructor');
+    const props = _.omitBy(instance,
+      (value, key) => is.function(value) || key === 'constructor');
 
-    const retval = new this.constructor(Array.isArray(instance)
-      ? props
-      : toPairs(props));
+    const retval = new this.constructor(is.array(instance) ? props : _.toPairs(
+      props));
 
-    mixin(retval, stamp.fixed.methods, {chain: false});
-    defaults(retval, omit(stamp.fixed.refs, 'constructor'));
-    return assign(retval, clone(stamp.fixed.props));
+    _.mixin(retval, stamp.fixed.methods, {chain: false});
+    _.defaults(retval, _.omit(stamp.fixed.refs, 'constructor'));
+    return Object.assign(retval, _.cloneDeep(stamp.fixed.props));
   }
 });
 

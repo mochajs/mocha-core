@@ -1,6 +1,4 @@
-'use strict';
-
-import {isString, isFunction} from 'lodash';
+import is from 'check-more-types';
 import resolveDep from 'resolve-dep';
 import pkg from '../options/package';
 
@@ -18,14 +16,14 @@ export function load (pluginPaths = []) {
 }
 
 export default function resolver (pattern) {
-  if (isString(pattern)) {
+  if (is.string(pattern)) {
     const result = resolveDep([
       pattern,
       `${pkg.name}-*-${pattern}`
     ]);
     return load(result);
   }
-  if (isFunction(pattern)) {
+  if (is.function(pattern)) {
     return pattern;
   }
 }

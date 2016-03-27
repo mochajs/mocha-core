@@ -1,9 +1,12 @@
-'use strict';
-
 import {EventEmitter} from 'events';
 import stampit from 'stampit';
-import {forEach, isError} from 'lodash';
+import is from 'check-more-types';
+import {forEach, curry} from 'lodash/fp';
 import {collapse} from '../util';
+
+const subscriber = curry(function subscriber (obj, type, events) {
+  return forEach((action, event) => obj[type](event, action), events);
+});
 
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
@@ -32,7 +35,7 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
 
         function done (result) {
           clearTimeout(t);
-          if (isError(result)) {
+          if (is.error(result)) {
             return reject(result);
           }
           resolve(result);
@@ -58,8 +61,9 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
     }
   })
   .init(function initEventEmittable () {
-    forEach(this.onEvents, (action, event) => this.on(event, action));
-    forEach(this.onceEvents, (action, event) => this.once(event, action));
+    const subscribe = subscriber(this);
+    subscribe('on', this.onEvents);
+    subscribe('once', this.onceEvents);
   });
 
 export default EventEmittable;

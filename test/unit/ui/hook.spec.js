@@ -1,5 +1,3 @@
-'use strict';
-
 import Hook from '../../../src/ui/hook';
 
 describe('ui/hook', () => {

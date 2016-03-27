@@ -1,10 +1,11 @@
-'use strict';
-
 import is from 'check-more-types';
-import {isFunction, isNull} from 'lodash/fp';
+import _ from 'lodash';
 
-is.mixin(isFunction, 'function');
-is.mixin(isNull, 'null');
+is.mixin(_.isFunction, 'function');
+
+is.mixin(_.isNull, 'null');
+
+is.mixin(_.isError, 'error');
 
 is.mixin(function isArrayOfUnemptyStrings (value) {
   return is.arrayOf(is.unemptyString, value);

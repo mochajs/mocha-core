@@ -1,5 +1,3 @@
-'use strict';
-
 import Context from '../../../src/ui/context';
 
 describe('ui/context', () => {

@@ -1,5 +1,3 @@
-'use strict';
-
 import Loader, {
   resolve,
   assertResolved,

@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import is from 'check-more-types';
 import {Unique} from '../core';
@@ -65,8 +63,8 @@ const Executable = stampit({
           return resolve(results.sync()
             .finish(err));
         }
-        
-        if (is.object(retval) && is.function(retval.then)) {
+
+        if (is.promise(retval)) {
           const result = results.promise();
           retval
             .then(() => resolve(result.finish()),

@@ -1,6 +1,6 @@
-'use strict';
-
-import {curry, isEmpty} from 'lodash/fp';
+import './mixins';
+import {curry} from 'lodash/fp';
+import is from 'check-more-types';
 
 export const remove = curry(function remove (prop, obj) {
   delete obj[prop];
@@ -8,7 +8,7 @@ export const remove = curry(function remove (prop, obj) {
 });
 
 export function collapse (value) {
-  if (!isEmpty(value)) {
+  if (is.not.empty(value)) {
     return value;
   }
 }

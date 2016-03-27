@@ -1,5 +1,3 @@
-'use strict';
-
 import {Pluggable} from '../../../src/plugins';
 import {Graphable} from '../../../src/core';
 

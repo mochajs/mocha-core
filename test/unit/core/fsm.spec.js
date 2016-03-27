@@ -1,5 +1,3 @@
-'use strict';
-
 import FSM from '../../../src/core/fsm';
 
 describe('core/fsm', () => {

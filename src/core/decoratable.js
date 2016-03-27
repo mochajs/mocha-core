@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import {forEach, defaults} from 'lodash/fp';
 import is from 'check-more-types';

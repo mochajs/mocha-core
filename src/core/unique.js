@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import {v4} from 'uuid';
 

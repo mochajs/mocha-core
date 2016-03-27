@@ -1,5 +1,3 @@
-'use strict';
-
 import Taggable from '../../../src/core/taggable';
 
 const SET = global.Set ? 'Set' : 'Object';

@@ -1,5 +1,3 @@
-'use strict';
-
 import StateMachine from 'fsm-as-promised';
 import stampit from 'stampit';
 import {flatten, startsWith} from 'lodash/fp';

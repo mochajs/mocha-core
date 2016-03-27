@@ -1,8 +1,7 @@
-'use strict';
-
 import stampit from 'stampit';
 import {Unique, EventEmittable} from '../core';
-import {defaults, create, get, isFunction} from 'lodash';
+import is from 'check-more-types';
+import _ from 'lodash';
 
 const Suite = stampit({
   refs: {
@@ -19,13 +18,13 @@ const Suite = stampit({
       return this;
     },
     execute () {
-      if (!this.pending && isFunction(this.func)) {
+      if (!this.pending && is.function(this.func)) {
         this.func();
       }
     }
   },
   init () {
-    defaults(this, {
+    _.defaults(this, {
       children: [],
       tests: []
     });
@@ -34,7 +33,7 @@ const Suite = stampit({
       this.parent.addChildSuite(this);
     }
 
-    this.context = create(get(this, 'parent.context', {}));
+    this.context = _.create(_.get(this, 'parent.context', {}));
 
     const func = this.func;
 
@@ -53,11 +52,11 @@ const Suite = stampit({
       pending: {
         get () {
           return Boolean(this.parent) &&
-            (this.parent.pending || !isFunction(this.func));
+            (this.parent.pending || is.not.function(this.func));
         },
         set (value) {
           if (this.parent) {
-            if (isFunction(this.func)) {
+            if (is.function(this.func)) {
               if (value) {
                 this.func = null;
               }

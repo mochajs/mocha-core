@@ -1,5 +1,3 @@
-'use strict';
-
 import Mocha from '../../src/mocha';
 import Reporter from '../../src/reporter';
 import UI from '../../src/ui';

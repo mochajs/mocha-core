@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import {Mappable, Singleton} from '../core';
 

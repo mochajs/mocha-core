@@ -1,5 +1,3 @@
-'use strict';
-
 import Mappable from '../../../src/core/mappable';
 
 describe('core/mappable', () => {

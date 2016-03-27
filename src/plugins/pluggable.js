@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import {Graphable, EventEmittable} from '../core';
 import PluginLoader from './loader';

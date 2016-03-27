@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import Suite from './suite';
 import Test from './test';

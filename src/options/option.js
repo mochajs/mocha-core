@@ -1,9 +1,5 @@
-'use strict';
-
 import stampit from 'stampit';
-import identity from 'lodash/identity';
-import noop from 'lodash/noop';
-import every from 'lodash/every';
+import {identity, every, noop} from 'lodash/fp';
 import OptionMap from './index';
 
 const Option = stampit({
@@ -23,7 +19,10 @@ const Option = stampit({
     string: false,
     array: false,
     store: undefined,
-    check: identity,
+    transform: identity,
+    check () {
+      return true;
+    },
     choices: [],
     length: undefined,
     options: undefined,
@@ -46,7 +45,7 @@ const Option = stampit({
       }
       if (this.implies) {
         const implies = [].concat(this.implies || []);
-        if (!every(implies, optionName => optionMap.has(optionName))) {
+        if (!every(optionName => optionMap.has(optionName), implies)) {
           throw new Error(`option "${this.name}" requires options to be set: ${this.implies}`);
         }
       }

@@ -1,5 +1,3 @@
-'use strict';
-
 import EventEmittable from '../../../src/core/eventemittable';
 
 describe('core/eventemittable', () => {

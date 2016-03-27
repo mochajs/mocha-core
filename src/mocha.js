@@ -1,10 +1,8 @@
-'use strict';
-
 import stampit from 'stampit';
 import {Pluggable} from './plugins';
 import UI, {Suite} from './ui';
 import Reporter from './reporter';
-import {defaults} from 'lodash';
+import {defaults} from 'lodash/fp';
 import {API} from './core';
 
 const Mocha = stampit({
@@ -16,9 +14,9 @@ const Mocha = stampit({
   },
   methods: {
     createUI (properties = {}) {
-      return this.createAPI(UI, defaults(properties, {
+      return this.createAPI(UI, defaults({
         rootSuite: this.rootSuite
-      }));
+      }, properties));
     },
     createReporter (properties = {}) {
       return this.createAPI(Reporter, properties);

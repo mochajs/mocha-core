@@ -1,5 +1,3 @@
-'use strict';
-
 import Decoratable from '../../../src/core/decoratable';
 
 describe('core/decoratable', () => {

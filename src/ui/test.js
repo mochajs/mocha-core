@@ -1,5 +1,3 @@
-'use strict';
-
 import stampit from 'stampit';
 import {FSM, Taggable} from '../core';
 import Executable from './executable';

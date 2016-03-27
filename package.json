@@ -17,7 +17,7 @@
     "url": "https://github.com/boneskull/mocha3/issues"
   },
   "homepage": "https://github.com/boneskull/mocha3#readme",
-  "main": "lib/",
+  "main": "lib/index.js",
   "engines": {
     "node": ">=0.10.0",
     "npm": ">=1.7.4"
@@ -32,7 +32,7 @@
     "build:browser": "mkdirp dist && parallel build:browser:main build:browser:min",
     "build:browser:main": "BABEL_ENV=dist browserify --debug --standalone mocha --transform [ babelify --sourceMapRelative . ] --plugin [ bannerify --file .banner.ejs --pkg package.json ] src | exorcist dist/mocha.js.map > dist/mocha.js",
     "build:browser:min": "BABEL_ENV=dist browserify --debug --standalone mocha --transform [ babelify --sourceMapRelative . ] --plugin [ bannerify --file .banner.ejs --pkg package.json ] --plugin [ minifyify --map dist/mocha.min.js.map --output dist/mocha.min.js.map ] src > dist/mocha.min.js",
-    "build:node": "BABEL_ENV=dist rimraf lib && babel src --out-dir lib",
+    "build:node": "rimraf lib && BABEL_ENV=dist babel --ignore **/*.browser.js --out-dir lib src",
     "bump:major": "npm version major -m 'Release v%s'",
     "bump:minor": "npm version minor -m 'Release v%s'",
     "bump:patch": "npm version patch -m 'Release v%s'",
@@ -55,8 +55,8 @@
   },
   "dependencies": {
     "async-listener": "^0.6.0",
-    "babel-polyfill": "^6.6.1",
-    "check-more-types": "^2.12.0",
+    "babel-polyfill": "^6.7.4",
+    "check-more-types": "^2.13.0",
     "debug": "^2.2.0",
     "dependency-graph": "^0.4.1",
     "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
-    "babel-core": "^6.7.0",
+    "babel-core": "^6.7.4",
     "babel-eslint": "^5.0.0",
     "babel-plugin-lodash": "^2.2.1",
     "babel-plugin-rewire": "^1.0.0-rc-1",
@@ -86,11 +86,11 @@
     "chai-as-promised": "^5.1.0",
     "chai-eventemitter": "^1.1.1",
     "dependency-check": "^2.5.1",
-    "eslint": "^2.4.0",
-    "eslint-config-import": "^0.9.1",
+    "eslint": "^2.5.1",
+    "eslint-config-mocha": "0.0.0",
     "eslint-config-standard": "^5.1.0",
     "eslint-plugin-babel": "^3.0.0",
-    "eslint-plugin-import": "^0.12.1",
+    "eslint-plugin-import": "^1.3.0",
     "eslint-plugin-mocha-only": "0.0.3",
     "eslint-plugin-no-class": "^0.1.0",
     "eslint-plugin-promise": "^1.1.0",
@@ -101,7 +101,7 @@
     "gutil": "^1.6.4",
     "karma": "^0.13.22",
     "karma-browserify": "^5.0.1",
-    "karma-chrome-launcher": "^0.2.2",
+    "karma-chrome-launcher": "^0.2.3",
     "karma-mocha": "^0.2.1",
     "karma-mocha-clean-reporter": "0.0.1",
     "karma-phantomjs-launcher": "^1.0.0",
@@ -112,7 +112,7 @@
     "npm-parallel": "boneskull/npm-parallel#boneskull-patch-1",
     "nsp": "^2.2.0",
     "nyc": "^6.1.1",
-    "phantomjs-prebuilt": "^2.1.5",
+    "phantomjs-prebuilt": "^2.1.7",
     "pre-commit": "^1.1.2",
     "publish-please": "^1.1.0",
     "rimraf": "^2.4.4",
@@ -126,7 +126,6 @@
     "./src/util/execution-context.js": "./src/util/execution-context.browser.js",
     "./src/plugins/resolver.js": "./src/plugins/resolver.browser.js",
     "./src/options/rc.js": "./src/options/rc.browser.js",
-    "trace": false,
-    "clarify": false
+    "./lib/index.js": "./dist/mocha.js"
   }
 }

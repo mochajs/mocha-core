@@ -1,5 +1,3 @@
-'use strict';
-
 import {Test, Suite} from '../../../src/ui';
 import {noop} from 'lodash';
 

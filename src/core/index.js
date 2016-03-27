@@ -1,5 +1,3 @@
-'use strict';
-
 export {default as Collectable} from './collectable';
 export {default as Decoratable} from './decoratable';
 export {default as EventEmittable} from './eventemittable';

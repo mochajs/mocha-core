@@ -1,5 +1,3 @@
-'use strict';
-
 import Suite from '../../../src/ui/suite';
 import _ from 'lodash';
 

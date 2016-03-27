@@ -1,11 +1,2 @@
-env:
-  mocha: true
-plugins:
-  - mocha-only
-globals:
-  expect: true
-  sinon: true
-rules:
-  mocha-only/mocha-only: 2
-  import/namespace: 0
-  no-return-assign: 0
+---
+extends: mocha/test
