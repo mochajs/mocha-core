@@ -1,5 +1,5 @@
 import {Executable, Suite} from '../../../src/ui';
-import {noop} from 'lodash';
+import noop from 'lodash/noop';
 
 describe('ui/executable', () => {
   let sandbox;
@@ -146,12 +146,17 @@ describe('ui/executable', () => {
 
     describe('method', () => {
       let executable;
+      let testCount = 0;
 
       beforeEach(() => {
         executable = Executable({
           suite,
-          title: 'my test'
+          title: `test#${testCount}`
         });
+      });
+
+      afterEach(() => {
+        testCount++;
       });
 
       describe('execute()', () => {
@@ -208,6 +213,7 @@ describe('ui/executable', () => {
 
               beforeEach(() => {
                 func = sandbox.stub();
+
                 executable.func = testDone => {
                   setTimeout(() => {
                     func();
@@ -236,12 +242,10 @@ describe('ui/executable', () => {
 
               beforeEach(() => {
                 func = sandbox.stub();
-                executable.func = () => {
-                  return new Promise(resolve => {
-                    func();
-                    resolve();
-                  });
-                };
+                executable.func = () => new Promise(resolve => {
+                  func();
+                  resolve();
+                });
 
                 return executable.execute()
                   .then(opts => result = opts.result);

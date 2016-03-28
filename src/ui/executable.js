@@ -19,7 +19,9 @@ const Executable = stampit({
     Object.defineProperties(this, {
       pending: {
         get () {
-          return this.suite.pending || pending || is.not.function(this.func);
+          return Boolean(this.suite.pending) ||
+            pending ||
+            is.not.function(this.func);
         },
         set (value) {
           pending = Boolean(value) && is.function(this.func);
@@ -30,15 +32,17 @@ const Executable = stampit({
   methods: {
     execute (opts = {}) {
       const func = this.func;
+
       return new Promise(resolve => {
         if (this.pending) {
           return resolve(results.skipped()
             .abort());
         }
-        let async = false;
+        let async;
 
         executionContext.enable({
-          onCreate () {
+          name: this.title,
+          onAsync () {
             async = true;
           },
           onError (...args) {
