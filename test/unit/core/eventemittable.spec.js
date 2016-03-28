@@ -1,4 +1,4 @@
-import EventEmittable from '../../../src/core/eventemittable';
+import {EventEmittable} from '../../../src/core';
 
 describe('core/eventemittable', () => {
   let sandbox;
@@ -61,26 +61,20 @@ describe('core/eventemittable', () => {
 
     describe('method', () => {
       let ee;
-      let t;
 
       beforeEach(() => {
         ee = EventEmittable();
       });
 
-      afterEach(() => {
-        clearTimeout(t);
-      });
-
       describe('waitOn()', () => {
         it('should return a Promise which is resolved when an event is emitted',
           () => {
-            t = setTimeout(() => ee.emit('bar'));
+            setTimeout(() => ee.emit('bar'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
               .be
-              .undefined
-              .then(() => clearTimeout(t));
+              .undefined;
           });
 
         describe('if a finite "timeout" option is supplied', () => {
@@ -106,18 +100,17 @@ describe('core/eventemittable', () => {
 
         describe('if the event emits a single parameter', () => {
           it('should return the parameter', () => {
-            t = setTimeout(() => ee.emit('bar', 'baz'));
+            setTimeout(() => ee.emit('bar', 'baz'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
-              .equal('baz')
-              .then(() => clearTimeout(t));
+              .equal('baz');
           });
         });
 
         describe('if the event emits multiple parameters', () => {
           it('should return them as an array', () => {
-            t = setTimeout(() => ee.emit('bar', 'baz', 'quux'));
+            setTimeout(() => ee.emit('bar', 'baz', 'quux'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually
@@ -130,7 +123,7 @@ describe('core/eventemittable', () => {
 
         describe('if the event emits no parameters', () => {
           it('should return nothing', () => {
-            t = setTimeout(() => ee.emit('bar'));
+            setTimeout(() => ee.emit('bar'));
             return expect(ee.waitOn('bar'))
               .to
               .eventually

@@ -1,8 +1,7 @@
 import {EventEmitter} from 'events';
 import stampit from 'stampit';
 import is from 'check-more-types';
-import {forEach, curry} from 'lodash/fp';
-import {collapse} from '../util';
+import {head, forEach, curry} from 'lodash/fp';
 
 const subscriber = curry(function subscriber (obj, type, events) {
   return forEach((action, event) => obj[type](event, action), events);
@@ -27,29 +26,35 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
     waitOn (event, opts = {}) {
       // jumping through a lot of hoops here to avoid depending on bluebird
       return new Promise((resolve, reject) => {
-        let t;
+        let fulfilled;
 
-        function listener (...args) {
-          return args.length === 1 ? done(...args) : done(collapse(args));
-        }
+        function listener (...results) {
+          fulfilled = true;
 
-        function done (result) {
-          clearTimeout(t);
-          if (is.error(result)) {
-            return reject(result);
+          if (is.empty(results)) {
+            return resolve();
           }
-          resolve(result);
+
+          if (is.singularArray(results)) {
+            results = head(results);
+            if (is.error(results)) {
+              return reject(results);
+            }
+          }
+
+          resolve(results);
         }
 
         this.once(event, listener);
 
         const timeout = opts.timeout;
-        if (isFinite(timeout) && timeout > 0) {
-          t = setTimeout(() => {
+
+        setTimeout(() => {
+          if (!fulfilled && is.finite(timeout) && is.positiveNumber(timeout)) {
             this.removeListener(event, listener);
             reject(new Error(`Timed out while waiting for "${event} (${timeout}ms)"`));
-          }, timeout);
-        }
+          }
+        }, timeout);
       });
     }
   })
