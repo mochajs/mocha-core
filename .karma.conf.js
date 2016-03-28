@@ -6,9 +6,9 @@ var globby = require('globby');
 module.exports = function (config) {
   config.set({
     frameworks: [
-      'mocha',
+      'source-map-support',
       'browserify',
-      'source-map-support'
+      'mocha'
     ],
     files: globby.sync([
       'node_modules/babel-polyfill/dist/polyfill.min.js',
@@ -16,7 +16,7 @@ module.exports = function (config) {
       './test/**/*.js',
       '!./test/unit/plugins/resolver.spec.js',
       '!./src/index.js',
-      '!./src/util/execution-context.js',
+      '!./src/ui/helpers/execution-context.js',
       '!./src/plugins/resolver.js',
       '!./src/options/rc.js'
     ]),
@@ -30,7 +30,7 @@ module.exports = function (config) {
         [
           'babelify',
           {
-            sourceMapRelative: '.'
+            sourceMapRelative: __dirname
           }
         ]
       ]
