@@ -38,7 +38,7 @@
     "bump:patch": "npm version patch -m 'Release v%s'",
     "check": "parallel nsp deps",
     "deps": "npm run build:node && parallel deps:missing deps:extra",
-    "deps:extra": "dependency-check package.json --extra --no-dev -i debug -i mocha-ui-bdd -i rc-yaml -i zone.js -i graceful-fs",
+    "deps:extra": "dependency-check package.json --extra --no-dev -i debug -i mocha-ui-bdd -i rc-yaml -i zone.js",
     "deps:missing": "dependency-check package.json --missing",
     "deps:update": "updtr",
     "lint": "eslint src/ test/ .*.js",
@@ -46,12 +46,10 @@
     "prepublish": "npm run build",
     "preversion": "npm run test",
     "publish-please": "publish-please",
-    "test": "npm run lint && nyc --require babel-core/register npm run test:node && npm run test:browser",
+    "test": "npm run lint && npm run test:node && npm run test:browser",
     "test:browser": "karma start .karma.conf.js --single-run",
-    "test:node": "npm run test:node:unit && npm run test:node:e2e",
-    "test:node:e2e": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --recursive test/e2e/",
-    "test:node:unit": "mocha --compilers=js:babel-core/register --color --require ./test/fixture --recursive test/unit/",
-    "test:unit": "npm run test:node:unit && npm run test:browser:unit"
+    "test:browser:dev": "karma start .karma.conf.js --browsers=Chrome",
+    "test:node": "nyc --require babel-core/register mocha --require ./test/fixture --recursive"
   },
   "dependencies": {
     "async-listener": "^0.6.0",
@@ -60,9 +58,7 @@
     "debug": "^2.2.0",
     "dependency-graph": "^0.4.1",
     "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
-    "graceful-fs": "^4.1.2",
     "kefir": "^3.2.1",
-    "lazy-ass": "^1.4.0",
     "lodash": "^4.6.1",
     "mocha-ui-bdd": "boneskull/mocha-ui-bdd",
     "rc-yaml": "^0.1.0",
@@ -70,7 +66,7 @@
     "source-map-support": "^0.4.0",
     "stampit": "^2.1.1",
     "uuid": "^2.0.1",
-    "zone.js": "^0.6.4"
+    "zone.js": "~0.5.15"
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
@@ -123,7 +119,7 @@
     "watchify": "^3.7.0"
   },
   "browser": {
-    "./src/util/execution-context.js": "./src/util/execution-context.browser.js",
+    "./src/ui/helpers/execution-context.js": "./src/ui/helpers/execution-context.browser.js",
     "./src/plugins/resolver.js": "./src/plugins/resolver.browser.js",
     "./src/options/rc.js": "./src/options/rc.browser.js",
     "./lib/index.js": "./dist/mocha.js"

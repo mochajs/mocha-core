@@ -35,26 +35,9 @@ describe('core/fsm', () => {
               .property('initial', 'start');
           });
         });
-
-        describe('when not supplied a nonempty string', () => {
-          it('should throw', () => {
-            expect(() => FSM.initial())
-              .to
-              .throw(Error);
-          });
-        });
       });
 
       describe('final()', () => {
-        describe('when not supplied a nonempty string or array of nonempty strings',
-          () => {
-            it('should throw', () => {
-              expect(FSM.final)
-                .to
-                .throw(Error);
-            });
-          });
-
         describe('when supplied a nonempty string', () => {
           it('should set the final state of the FSM', () => {
             expect(FSM.final('end').fixed.props)
@@ -92,26 +75,6 @@ describe('core/fsm', () => {
       });
 
       describe('event()', () => {
-        describe('when not supplied a parameter', () => {
-          it('should throw', () => {
-            expect(FSM.event)
-              .to
-              .throw(Error);
-          });
-        });
-
-        describe('when not supplied an event object matching the schema',
-          () => {
-            it('should throw', () => {
-              expect(() => FSM.event({
-                name: 'foo',
-                bar: 'baz'
-              }))
-                .to
-                .throw(Error);
-            });
-          });
-
         describe('when supplied a valid event object', () => {
           it('should add an event to the array of events', () => {
             const event = {
@@ -166,18 +129,6 @@ describe('core/fsm', () => {
                 });
 
                 describe('and an array of unempty strings "to" prop', () => {
-                  describe('and no "condition" function', () => {
-                    it('should throw', () => {
-                      expect(() => FSM.event({
-                        name: 'foo',
-                        from: ['bar'],
-                        to: ['baz']
-                      }))
-                        .to
-                        .throw(Error);
-                    });
-                  });
-
                   describe('and a "condition" function', () => {
                     it('should not throw', () => {
                       expect(() => FSM.event({
@@ -199,14 +150,6 @@ describe('core/fsm', () => {
       });
 
       describe('events()', () => {
-        describe('when supplied no parameters', () => {
-          it('should throw', () => {
-            expect(FSM.events)
-              .to
-              .throw(Error);
-          });
-        });
-
         describe('when supplied valid parameters', () => {
           it('should add the event(s) to the array events prop', () => {
             const events = [
@@ -261,22 +204,6 @@ describe('core/fsm', () => {
       });
 
       describe('callback()', () => {
-        describe('when not supplied parameters', () => {
-          it('should throw', () => {
-            expect(FSM.callback)
-              .to
-              .throw();
-          });
-        });
-
-        describe('when supplied an unempty string but no function', () => {
-          it('should throw', () => {
-            expect(() => FSM.callback('foo'))
-              .to
-              .throw(Error);
-          });
-        });
-
         describe('when supplied an unempty string and a function', () => {
           it('should not throw', () => {
             expect(() => FSM.callback('foo', () => {
@@ -327,14 +254,6 @@ describe('core/fsm', () => {
       });
 
       describe('callbacks()', () => {
-        describe('when not supplied an object parameter', () => {
-          it('should throw', () => {
-            expect(FSM.callbacks)
-              .to
-              .throw();
-          });
-        });
-
         describe('when supplied an object parameter', () => {
           it('should not throw', () => {
             expect(() => FSM.callbacks({}))

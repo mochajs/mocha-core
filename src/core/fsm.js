@@ -1,25 +1,8 @@
 import StateMachine from 'fsm-as-promised';
 import stampit from 'stampit';
 import {flatten, startsWith} from 'lodash/fp';
-import is from 'check-more-types';
-import assert from 'lazy-ass';
 
 const startsWithOn = startsWith('on');
-
-const isBasicEvent = is.schema({
-  name: is.unemptyString,
-  from: is.or(is.unemptyString, is.arrayOfUnemptyStrings),
-  to: is.maybe.unemptyString
-});
-
-const isConditionalEvent = is.schema({
-  name: is.unemptyString,
-  from: is.or(is.unemptyString, is.arrayOfUnemptyStrings),
-  to: is.arrayOfUnemptyStrings,
-  condition: is.function
-});
-
-const isEvent = is.or(isBasicEvent, isConditionalEvent);
 
 const FSM = stampit({
   props: {
@@ -27,26 +10,20 @@ const FSM = stampit({
   },
   static: {
     initial (state) {
-      assert(is.unemptyString(state));
       return this.props({initial: state});
     },
     final (...args) {
       args = flatten(args);
-      assert(is.arrayOfUnemptyStrings(args));
       return this.props({final: args});
     },
     events (...args) {
       args = flatten(args);
-      assert(is.arrayOf(isEvent, args));
       return this.props({events: this.fixed.props.events.concat(args)});
     },
     event (obj) {
-      assert(isEvent(obj));
       return this.props({events: this.fixed.props.events.concat(obj)});
     },
     callback (name, func) {
-      assert(is.unemptyString(name));
-      assert(is.function(func));
       if (!startsWithOn(name)) {
         name = `on${name}`;
       }
@@ -57,7 +34,6 @@ const FSM = stampit({
       return this.refs({callbacks});
     },
     callbacks (obj) {
-      assert(is.object(obj));
       // TODO validate
       const callbacks = Object.assign({}, this.fixed.refs.callbacks, obj);
       return this.refs({callbacks});
