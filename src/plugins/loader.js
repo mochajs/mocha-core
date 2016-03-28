@@ -7,8 +7,6 @@ import stampit from 'stampit';
 import {EventEmittable, Mappable} from '../core';
 import is from 'check-more-types';
 
-let usedPlugins = new Set();
-
 export const helpers = {
   removePkg: remove('pkg'),
   getName: get('func.attributes.name')
@@ -41,17 +39,18 @@ export function assertAttributes (opts = {}) {
   return opts;
 }
 
-export const assertUnused = curry(function assertUnused (usedPlugins, opts) {
+export const assertUnused = curry(function assertUnused (unloadedPlugins,
+  opts) {
   const name = helpers.getName(opts);
-  if (usedPlugins.has(name)) {
+  if (unloadedPlugins.has(name)) {
     throw new Error(`Plugin with name "${name}" is already used`);
   }
   return opts;
 });
 
-export const build = curry(function build (usedPlugins, opts) {
+export const build = curry(function build (unloadedPlugins, opts) {
   const plugin = Plugin(Object.assign({}, opts.func.attributes, opts));
-  usedPlugins.add(plugin.name);
+  unloadedPlugins.add(plugin.name);
   return plugin;
 });
 
@@ -60,13 +59,17 @@ const PluginLoader = stampit({
     streams: {}
   },
   init () {
-    this.plugins = Mappable();
+    this.loadedPlugins = Mappable();
+    this.seenPlugins = new Set();
+    this.unloadedPlugins = new Set();
 
     const pluginReady = flow(get('dependencies'),
-      every(dep => this.plugins.has(dep)));
+      every(dep => this.loadedPlugins.has(dep)));
     const pluginNotReady = negate(pluginReady);
-    const loadStream = Kefir.stream(this.createLoadStream.bind(this))
-      .map(build(usedPlugins));
+    const loadStream = this.loadStream =
+      Kefir.stream(this.createLoadStream.bind(this))
+        .map(build(this.seenPlugins))
+        .onValue(plugin => this.unloadedPlugins.add(plugin.name));
     const withoutDeps = loadStream.filter(pluginReady);
 
     // TODO make this more efficient with reduce-like function (try scan()?)
@@ -75,13 +78,21 @@ const PluginLoader = stampit({
       .filter();
 
     withoutDeps.merge(withDeps)
-      .takeErrors(1)
-      .onError(err => this.emit('error', err))
       .onValue(plugin => {
         plugin.install();
-        this.plugins.set(plugin.name, plugin);
+        this.unloadedPlugins.delete(plugin.name);
+        this.loadedPlugins.set(plugin.name, plugin);
       })
-      .onEnd(() => this.emit('done', this.plugins));
+      .takeErrors(1)
+      .onError(err => this.onDone(err))
+      .onEnd(() => {
+        let err = null;
+        if (this.unloadedPlugins.size) {
+          err = new Error(`Dependencies not satisfied for plugin(s): ${Array.from(
+              this.unloadedPlugins)}`);
+        }
+        this.onDone(err, this.loadedPlugins);
+      });
   },
   methods: {
     createLoadStream (emitter) {
@@ -89,7 +100,7 @@ const PluginLoader = stampit({
         assertResolved,
         normalize,
         assertAttributes,
-        assertUnused(usedPlugins));
+        assertUnused(this.unloadedPlugins));
 
       const onLoad = (opts = {}) => {
         try {
@@ -99,24 +110,29 @@ const PluginLoader = stampit({
         }
       };
 
-      function onDump () {
+      function onceDump () {
         emitter.end();
-        usedPlugins = new Set();
+        this.unloadedPlugins = new Set();
       }
 
       this.on('load', onLoad);
-      this.on('dump', onDump);
+      this.once('dump', onceDump);
 
       return () => {
         this.removeListener('load', onLoad);
-        this.removeListener('dump', onDump);
+        this.removeListener('dump', onceDump);
       };
     },
     load (opts = {}) {
       this.emit('load', opts);
     },
     dump () {
+      let plugins;
+      this.once('done', loadedPlugins => {
+        plugins = loadedPlugins;
+      });
       this.emit('dump');
+      return plugins;
     }
   }
 })

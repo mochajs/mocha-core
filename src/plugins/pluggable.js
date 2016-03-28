@@ -1,5 +1,5 @@
 import stampit from 'stampit';
-import {Graphable, EventEmittable} from '../core';
+import {Mappable, Graphable, EventEmittable} from '../core';
 import PluginLoader from './loader';
 import is from 'check-more-types';
 
@@ -8,7 +8,16 @@ const Pluggable = stampit({
     depGraph: Graphable()
   },
   init () {
-    this.loader = PluginLoader()
+    this.plugins = Mappable();
+    this.loader = PluginLoader({
+      onDone: (err, loadedPlugins) => {
+        if (err) {
+          return this.emit('error', err);
+        }
+        loadedPlugins.forEach(plugin => this.plugins.set(plugin.name, plugin));
+        this.emit('done');
+      }
+    })
       .on('error', err => this.emit('error', err));
   },
   methods: {
@@ -23,12 +32,12 @@ const Pluggable = stampit({
         return this;
       }
       this.emit('error', new Error('Function or path to plugin required'));
+    },
+    ready () {
+      this.loader.dump();
     }
   }
 })
-  .compose(EventEmittable)
-  .once('ready', function onceReady () {
-    this.plugins = this.loader.dump();
-  });
+  .compose(EventEmittable);
 
 export default Pluggable;
