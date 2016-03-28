@@ -51,7 +51,8 @@ module.exports = function wallabyConfig (wallaby) {
       entryPatterns: [
         'test/fixture.js',
         'test/unit/**/*.spec.js'
-      ]
+      ],
+      ignore: 'test/unit/plugins/resolver.spec.js'
     }),
     testFramework: 'mocha',
     bootstrap: function bootstrap () {
