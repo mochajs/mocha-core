@@ -1,14 +1,27 @@
-# Mocha
+# mocha-core
 
-## Plugin Architecture
+> Mocha's guts
 
-Mocha is built around plugins.  Mocha's programmatic API supplies methods to expose new functionality or modify existing functionality.
+To be installed as a dependency of the `mocha` package, alongside `mocha-cli`, `mocha-ui-bdd` (default UI), `mocha-reporter-spec` & `mocha-reporter-html` (default reporters), and default runner(s) (TBD).
 
-If you are familiar with [Hapi](http://hapijs.com), a Mocha plugin looks very similar.  A Mocha plugin is simply a module which exports a function.  In addition, module must export an `attributes` property, which is an object having a `name` property (at minimum).
+## Testing
 
-A plugin may depend on other plugins.  In the `attributes` object, providing a `String` or `Array` `dependencies` property, with the name of one or more plugin dependencies, will ensure those dependencies are loaded first.
+See `package.json`'s `scripts` field for more info.
 
-A plugin's function is called with two parameters: an API object, and an object of options to the plugin (if supplied).  This function will either return a `Promise` or be synchronous.
+- All tests: `npm test`
+  - Includes lint checks
+  - Includes extra/missing/security dependency checks
+- Node.js tests only: `npm test:node`
+- Browser tests only: `npm test:browser`
 
-The API object will supply methods to help the plugin do whatever it needs to do.
+## Building
 
+- `npm run build`
+  - Compiles `src/` into `lib/` for Node.js
+  - Compiles `src/` into `dist/` for browsers
+
+Must be run as part of `prepublish` as neither `lib/` nor `dist/` are under VCS.
+
+## License
+
+Apache-2.0, unless you have a better idea.
