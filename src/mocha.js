@@ -7,7 +7,8 @@ import {API} from './core';
 
 const Mocha = stampit({
   refs: {
-    ui: 'bdd'
+    ui: 'bdd',
+    plugins: {}
   },
   props: {
     reporters: []
