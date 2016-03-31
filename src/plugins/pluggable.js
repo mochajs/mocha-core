@@ -8,13 +8,11 @@ const Pluggable = stampit({
     depGraph: Graphable()
   },
   init () {
-    this.plugins = Mappable();
+    this.loadedPlugins = Mappable();
     this.loader = PluginLoader({
-      onDone: (err, loadedPlugins) => {
-        if (err) {
-          return this.emit('error', err);
-        }
-        loadedPlugins.forEach(plugin => this.plugins.set(plugin.name, plugin));
+      onDone: loadedPlugins => {
+        loadedPlugins.forEach(
+          plugin => this.loadedPlugins.set(plugin.name, plugin));
         this.emit('done');
       }
     })

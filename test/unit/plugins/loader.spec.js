@@ -1,12 +1,8 @@
-import Loader, {
-  resolve,
-  assertResolved,
-  normalize,
-  assertAttributes,
-  assertUnused,
-  build
+import PluginLoader, {
+  resolve, assertResolved, normalize, assertAttributes, assertUnused, build
 } from '../../../src/plugins/loader';
 import {EventEmittable} from '../../../src/core';
+import {Kefir} from 'kefir';
 
 describe('plugins/loader', () => {
   const stubs = {usedPlugins: {}};
@@ -23,16 +19,16 @@ describe('plugins/loader', () => {
     stubs.usedPlugins.has = sandbox.stub()
       .returns(false);
 
-    Loader.__Rewire__('resolver', stubs.resolver);
-    Loader.__Rewire__('usedPlugins', {
+    PluginLoader.__Rewire__('resolver', stubs.resolver);
+    PluginLoader.__Rewire__('usedPlugins', {
       add: stubs.usedPlugins.add,
       has: stubs.usedPlugins.has
     });
   });
 
   afterEach(() => {
-    Loader.__ResetDependency__('resolver');
-    Loader.__ResetDependency__('usedPlugins');
+    PluginLoader.__ResetDependency__('resolver');
+    PluginLoader.__ResetDependency__('usedPlugins');
     sandbox.restore();
   });
 
@@ -233,7 +229,8 @@ describe('plugins/loader', () => {
         .equal(opts);
     });
 
-    it('should throw if no string "func.attributes.name" prop in "opts" parameter',
+    it(
+      'should throw if no string "func.attributes.name" prop in "opts" parameter',
       () => {
         const opts = {func: noop};
         opts.func.attributes = {name: {}};
@@ -242,7 +239,8 @@ describe('plugins/loader', () => {
           .throw(Error, /"name" property/i);
       });
 
-    it('should not throw if string "func.attributes.name" prop is present in "opts" parameter',
+    it(
+      'should not throw if string "func.attributes.name" prop is present in "opts" parameter',
       () => {
         const opts = {func: noop};
         opts.func.attributes = {name: 'foo'};
@@ -306,11 +304,11 @@ describe('plugins/loader', () => {
       opts.func.attributes = {name: 'foo'};
       PluginStub = sandbox.stub()
         .returns(EventEmittable(Object.assign({}, opts.func.attributes, opts)));
-      Loader.__Rewire__('Plugin', PluginStub);
+      PluginLoader.__Rewire__('Plugin', PluginStub);
     });
 
     afterEach(() => {
-      Loader.__ResetDependency__('Plugin');
+      PluginLoader.__ResetDependency__('Plugin');
     });
 
     it('should not return the identity', () => {
@@ -343,26 +341,186 @@ describe('plugins/loader', () => {
     });
   });
 
-  describe('Loader()', () => {
+  describe('PluginLoader()', () => {
+    let loader;
+
     beforeEach(() => {
-      [
-        resolve,
-        normalize,
-        assertResolved,
-        assertAttributes,
-        assertUnused
-      ].forEach(fn => Loader.__Rewire__(fn.name, sandbox.stub()
-        .returnsArg(0)));
+      loader = PluginLoader();
     });
 
-    afterEach(() => {
-      [
-        resolve,
-        normalize,
-        assertResolved,
-        assertAttributes,
-        assertUnused
-      ].forEach(fn => Loader.__ResetDependency__(fn.name));
+    it('should call reset()', () => {
+      sandbox.spy(PluginLoader.fixed.methods, 'reset');
+      PluginLoader();
+      expect(PluginLoader.fixed.methods.reset).to.have.been.calledOnce;
+    });
+
+    it('should create Stream prop "loadStream"', () => {
+      expect(loader.loadStream)
+        .to
+        .be
+        .an
+        .instanceOf(Kefir.Stream);
+    });
+
+    it('should create Stream Emitter "loadEmitter"', () => {
+      expect(loader.loadEmitter)
+        .to
+        .be
+        .an('object')
+        .with
+        .keys('value', 'error', 'end', 'event', 'emit', 'emitEvent');
+    });
+
+    it('should listen for the "done" event', () => {
+      sandbox.stub(PluginLoader.fixed.methods, 'once');
+      PluginLoader();
+      expect(PluginLoader.fixed.methods.once)
+        .to
+        .have
+        .been
+        .calledWith('done');
+    });
+
+    describe('property', () => {
+      describe('loadStream', () => {
+        describe('when it encounters an error', () => {
+          it('should emit "error" from the Pluginloader', () => {
+            const err = new Error('foo');
+            expect(() => loader.loadEmitter.error(err))
+              .to
+              .emitFrom(loader, 'error', err);
+          });
+        });
+
+        describe('when it ends', () => {
+          it('should emit "done" from the PluginLoader', () => {
+            expect(() => loader.loadEmitter.end())
+              .to
+              .emitFrom(loader, 'done', loader.loadedPlugins);
+          });
+        });
+      });
+    });
+
+    describe('event', () => {
+      describe('done', () => {
+        const arg = 'foo';
+
+        beforeEach(() => {
+          sandbox.stub(loader, 'onDone');
+          sandbox.stub(loader, 'reset');
+          loader.emit('done', arg);
+        });
+
+        it('should call the "onDone" function', () => {
+          expect(loader.onDone)
+            .to
+            .have
+            .been
+            .calledWithExactly(arg);
+        });
+
+        it('should call reset()', () => {
+          expect(loader.reset).to.have.been.calledOnce;
+        });
+      });
+    });
+
+    describe('method', () => {
+      describe('reset', () => {
+        describe('property "loadedPlugins"', () => {
+          it('should be changed', () => {
+            expect(() => loader.reset())
+              .to
+              .change(loader, 'loadedPlugins');
+          });
+
+          it('should be a Map', () => {
+            loader.reset();
+            expect(loader)
+              .to
+              .have
+              .deep
+              .property('loadedPlugins.constructor', Map);
+          });
+        });
+
+        describe('property "seenPlugins"', () => {
+          it('should be changed', () => {
+            expect(() => loader.reset())
+              .to
+              .change(loader, 'seenPlugins');
+          });
+
+          it('should be a Set', () => {
+            expect(loader)
+              .to
+              .have
+              .deep
+              .property('seenPlugins.constructor', Set);
+          });
+        });
+
+        describe('property "unloadedPlugins"', () => {
+          it('should be changed', () => {
+            expect(() => loader.reset())
+              .to
+              .change(loader, 'unloadedPlugins');
+          });
+
+          it('should be a Set', () => {
+            expect(loader)
+              .to
+              .have
+              .deep
+              .property('unloadedPlugins.constructor', Set);
+          });
+        });
+      });
+
+      describe('load', () => {
+        beforeEach(() => {
+          sandbox.stub(loader.loadEmitter, 'emit');
+        });
+
+        describe('when supplied a parameter', () => {
+          it(
+            'should call the "emit" method of the loadEmitter with its parameter',
+            () => {
+              loader.load('foo');
+              expect(loader.loadEmitter.emit)
+                .to
+                .have
+                .been
+                .calledWithExactly('foo');
+            });
+        });
+
+        describe('when not supplied a parameter', () => {
+          it(
+            'should call the "emit" method of the loadEmitter with an empty object',
+            () => {
+              const obj = {};
+              loader.load(obj);
+              expect(loader.loadEmitter.emit)
+                .to
+                .have
+                .been
+                .calledWithExactly(obj);
+            });
+        });
+      });
+
+      describe('dump', () => {
+        beforeEach(() => {
+          sandbox.stub(loader.loadEmitter, 'end');
+        });
+
+        it('should call the "end" method of the loadEmitter', () => {
+          loader.dump();
+          expect(loader.loadEmitter.end).to.have.been.calledOnce;
+        });
+      });
     });
   });
 });

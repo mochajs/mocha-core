@@ -17,7 +17,7 @@ describe('e2e/plugins/installation', () => {
       it('should install the plugin', () => {
         pluggable.use(plugin);
         pluggable.ready();
-        expect(pluggable.plugins.get(plugin.attributes.name))
+        expect(pluggable.loadedPlugins.get(plugin.attributes.name))
           .to
           .be
           .an('object')
@@ -59,7 +59,7 @@ describe('e2e/plugins/installation', () => {
     describe('and when the deps are not installed', () => {
       it('should not immediately install the plugin', () => {
         pluggable.use(plugin);
-        expect(pluggable.plugins.size)
+        expect(pluggable.loadedPlugins.size)
           .to
           .equal(0);
       });
@@ -87,22 +87,22 @@ describe('e2e/plugins/installation', () => {
           .emitFrom(pluggable, 'done');
       });
 
-      it('should put the installed plugin into the "plugins" Mappable', () => {
+      it('should put the installed plugin into the "loadedPlugins" Mappable', () => {
         pluggable.use(plugin)
           .use(dep);
         pluggable.ready();
-        expect(pluggable.plugins.get(plugin.attributes.name))
+        expect(pluggable.loadedPlugins.get(plugin.attributes.name))
           .to
           .have
           .property('name', plugin.attributes.name);
       });
 
-      it('should put the installed dependency into the "plugins" Mappable',
+      it('should put the installed dependency into the "loadedPlugins" Mappable',
         () => {
           pluggable.use(plugin)
             .use(dep);
           pluggable.ready();
-          expect(pluggable.plugins.get(dep.attributes.name))
+          expect(pluggable.loadedPlugins.get(dep.attributes.name))
             .to
             .have
             .property('name', dep.attributes.name);
