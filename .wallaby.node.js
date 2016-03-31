@@ -7,11 +7,7 @@ module.exports = function wallabyConfig (wallaby) {
     files: [
       'src/**/*.js',
       'test/fixture.js',
-      'package.json',
-      {
-        pattern: 'node_modules/mocha-ui-bdd/lib/**',
-        instrument: false
-      }
+      'package.json'
     ],
     tests: [
       'test/**/*.spec.js'
