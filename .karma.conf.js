@@ -12,10 +12,10 @@ module.exports = function (config) {
     ],
     files: globby.sync([
       'node_modules/babel-polyfill/dist/polyfill.min.js',
+      'node_modules/mocha-ui-bdd/dist/mocha-ui-bdd.js',
       './src/**/*.js',
       './test/**/*.js',
       '!./test/unit/plugins/resolver.spec.js',
-      '!./src/index.js',
       '!./src/ui/helpers/execution-context.js',
       '!./src/plugins/resolver.js',
       '!./src/options/rc.js'
