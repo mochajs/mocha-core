@@ -1,12 +1,9 @@
 import stampit from 'stampit';
-import {Mappable, Graphable, EventEmittable} from '../core';
+import {Mappable, EventEmittable} from '../core';
 import PluginLoader from './loader';
 import is from 'check-more-types';
 
 const Pluggable = stampit({
-  refs: {
-    depGraph: Graphable()
-  },
   init () {
     this.loadedPlugins = Mappable();
     this.loader = PluginLoader({
@@ -24,7 +21,6 @@ const Pluggable = stampit({
         this.loader.load({
           pattern,
           opts,
-          depGraph: this.depGraph,
           api: this
         });
         return this;

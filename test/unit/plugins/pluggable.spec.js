@@ -1,5 +1,4 @@
 import {Pluggable} from '../../../src/plugins';
-import {Graphable} from '../../../src/core';
 
 describe('core/pluggable', () => {
   let sandbox;
@@ -18,7 +17,7 @@ describe('core/pluggable', () => {
     beforeEach(() => {
       // depGraph is a singular object across all instances;
       // this ensures we get a new one each time.
-      pluggable = Pluggable({depGraph: Graphable()});
+      pluggable = Pluggable();
     });
 
     it('should return an object', () => {
@@ -63,7 +62,6 @@ describe('core/pluggable', () => {
           expect(pluggable.loader.load).to.have.been.calledWithExactly({
             pattern: plugin,
             opts: {},
-            depGraph: pluggable.depGraph,
             api: pluggable
           });
         });

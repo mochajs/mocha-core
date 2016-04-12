@@ -1,5 +1,4 @@
 import {Pluggable} from '../../../src/plugins';
-import {Graphable} from '../../../src/core';
 
 describe('e2e/plugins/installation', () => {
   let pluggable;
@@ -7,7 +6,7 @@ describe('e2e/plugins/installation', () => {
 
   describe('when using a plugin with no dependencies', () => {
     beforeEach(() => {
-      pluggable = Pluggable({depGraph: Graphable()});
+      pluggable = Pluggable();
       plugin = function myPlugin () {
       };
       plugin.attributes = {name: 'foo'};
@@ -33,7 +32,7 @@ describe('e2e/plugins/installation', () => {
     let dep;
 
     beforeEach(() => {
-      pluggable = Pluggable({depGraph: Graphable()});
+      pluggable = Pluggable();
       plugin = function myPlugin () {
       };
       plugin.attributes = {

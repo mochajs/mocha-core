@@ -45,7 +45,6 @@
     "babel-polyfill": "^6.7.4",
     "check-more-types": "^2.13.0",
     "debug": "^2.2.0",
-    "dependency-graph": "^0.4.1",
     "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
     "kefir": "^3.2.1",
     "lodash": "^4.6.1",

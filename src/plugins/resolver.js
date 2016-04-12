@@ -1,28 +1,28 @@
 import is from 'check-more-types';
-import resolveDep from 'resolve-dep';
+import resolve from 'resolve-dep';
+import {find} from 'lodash/fp';
 import pkg from '../options/package';
 
-export function load (pluginPaths = []) {
-  if (Array.isArray(pluginPaths)) {
-    const pluginPath = pluginPaths.shift();
-    if (pluginPath) {
-      try {
-        return require(pluginPath);
-      } catch (ignored) {
-        return load(pluginPaths);
-      }
-    }
+const namespace = 'mocha';
+
+const requireAny = find(pluginPath => {
+  try {
+    return require(pluginPath);
+  } catch (ignored) {
   }
-}
+});
 
 export default function resolver (pattern) {
   if (is.string(pattern)) {
-    const result = resolveDep([
+    const patterns = [
       pattern,
-      `${pkg.name}-*-${pattern}`
-    ]);
-    return load(result);
+      `${namespace}-*-${pattern}`
+    ];
+    return requireAny(resolve(patterns), {
+      config: pkg
+    });
   }
+
   if (is.function(pattern)) {
     return pattern;
   }

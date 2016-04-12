@@ -68,10 +68,10 @@ describe('plugins/loader', () => {
         .equal(opts);
     });
 
-    it('should throw an error if "func" is not present', () => {
-      expect(assertResolved)
-        .to
-        .throw(Error, /could not resolve/i);
+    it('should return an error if "func" is not present', () => {
+      expect(assertResolved())
+        .be
+        .an('Error');
     });
 
     it('should not change the value of "func"', () => {
@@ -230,24 +230,26 @@ describe('plugins/loader', () => {
     });
 
     it(
-      'should throw if no string "func.attributes.name" prop in "opts" parameter',
+      'should return an Error if no string "func.attributes.name" prop in "opts" parameter',
       () => {
         const opts = {func: noop};
         opts.func.attributes = {name: {}};
-        expect(() => assertAttributes(opts))
+        expect(assertAttributes(opts))
           .to
-          .throw(Error, /"name" property/i);
+          .be
+          .an('Error');
       });
 
     it(
-      'should not throw if string "func.attributes.name" prop is present in "opts" parameter',
+      'should not return an Error if string "func.attributes.name" prop is present in "opts" parameter',
       () => {
         const opts = {func: noop};
         opts.func.attributes = {name: 'foo'};
-        expect(() => assertAttributes(opts))
+        expect(assertAttributes(opts))
           .not
           .to
-          .throw();
+          .be
+          .an('Error');
       });
 
     it('should not change the value of "func"', () => {
@@ -270,19 +272,21 @@ describe('plugins/loader', () => {
       };
     });
 
-    it('should not throw if the plugin is not already loaded', () => {
-      expect(() => assertUnused(stubs.usedPlugins, opts))
+    it('should not return an Error if the plugin is not already loaded', () => {
+      expect(assertUnused(stubs.usedPlugins, opts))
         .not
         .to
-        .throw(Error, /already used/i);
+        .be
+        .an('Error');
     });
 
-    it('should throw if the plugin is already loaded', () => {
+    it('should return an Error if the plugin is already loaded', () => {
       stubs.usedPlugins = new Set();
       stubs.usedPlugins.add(opts.func.attributes.name);
-      expect(() => assertUnused(stubs.usedPlugins, opts))
+      expect(assertUnused(stubs.usedPlugins, opts))
         .to
-        .throw(Error, /already used/i);
+        .be
+        .an('Error');
     });
 
     it('should return the identity', () => {

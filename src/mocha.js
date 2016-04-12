@@ -4,11 +4,13 @@ import UI, {Suite} from './ui';
 import Reporter from './reporter';
 import {defaults} from 'lodash/fp';
 import {API} from './core';
+import pkg from './options/package';
 
 const Mocha = stampit({
   refs: {
     ui: 'bdd',
-    plugins: {}
+    plugins: {},
+    version: pkg.version
   },
   props: {
     reporters: []
@@ -33,4 +35,4 @@ const Mocha = stampit({
     this.use(this.ui);
   });
 
-export default Mocha;
+export default Mocha.static({Mocha});

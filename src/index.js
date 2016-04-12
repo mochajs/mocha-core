@@ -1,9 +1,7 @@
 import 'source-map-support/register';
-import 'babel-polyfill';
-import Mocha from './mocha';
-import pkg from './options/package';
+import './util/polyfill';
 import './util/mixins';
+import Mocha from './mocha';
 
-const mocha = Mocha();
-const version = pkg.version;
-export {Mocha, version, mocha as default};
+export default Mocha();
+

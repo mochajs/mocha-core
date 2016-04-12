@@ -1,5 +1,5 @@
 import resolver from './resolver';
-import Plugin from './index';
+import Plugin from './plugin';
 import {noop, get, flow, negate, every, curry} from 'lodash/fp';
 import {remove} from '../util';
 import {Kefir} from 'kefir';
@@ -9,8 +9,43 @@ import is from 'check-more-types';
 
 export const helpers = {
   removePkg: remove('pkg'),
-  getName: get('func.attributes.name')
+  getName: get('func.attributes.name'),
+  getAttributes: get('func.attributes'),
+  getFunc: get('value.func'),
+  getPattern: get('value.pattern')
 };
+
+const SyncHandler = stampit({
+  static: {
+    value (emitter, value, func) {
+      const retval = func(value);
+      if (is.error(retval)) {
+        return this.error(emitter, retval);
+      }
+      emitter.emit(retval);
+    },
+    error (emitter, value) {
+      emitter.error(value);
+    },
+    end (emitter) {
+      emitter.end();
+    }
+  },
+  methods: {
+    func: noop,
+    handle (emitter, event) {
+      return this.factory[event.type](emitter, event.value, this.func);
+    }
+  },
+  init ({stamp}) {
+    this.factory = stamp;
+    this.handle = this.handle.bind(this);
+  }
+});
+
+function syncHandler (func) {
+  return SyncHandler({func}).handle;
+}
 
 export function resolve (opts = {}) {
   return Object.assign({func: resolver(opts.pattern)}, opts);
@@ -18,7 +53,7 @@ export function resolve (opts = {}) {
 
 export function assertResolved (opts = {}) {
   if (is.not.function(opts.func)) {
-    throw new Error(`Could not resolve plugin by pattern "${opts.pattern}"`);
+    return new Error(`Could not resolve plugin by pattern "${opts.pattern}"`);
   }
   return opts;
 }
@@ -34,7 +69,7 @@ export function normalize (opts = {}) {
 
 export function assertAttributes (opts = {}) {
   if (is.not.string(helpers.getName(opts))) {
-    throw new Error('Plugin must have a "name" property in its "attributes" object');
+    return new Error('Plugin must have a "name" property in its "attributes" object');
   }
   return opts;
 }
@@ -43,13 +78,13 @@ export const assertUnused = curry(function assertUnused (unloadedPlugins,
   opts) {
   const name = helpers.getName(opts);
   if (unloadedPlugins.has(name)) {
-    throw new Error(`Plugin with name "${name}" is already used`);
+    return new Error(`Plugin with name "${name}" is already used`);
   }
   return opts;
 });
 
 export const build = curry(function build (unloadedPlugins, opts) {
-  const plugin = Plugin(Object.assign({}, opts.func.attributes, opts));
+  const plugin = Plugin(Object.assign({}, helpers.getAttributes(opts), opts));
   unloadedPlugins.add(plugin.name);
   return plugin;
 });
@@ -61,15 +96,17 @@ const PluginLoader = stampit({
     const pluginReady = flow(get('dependencies'),
       every(dep => this.loadedPlugins.has(dep)));
     const pluginNotReady = negate(pluginReady);
-
     const loadStream = this.loadStream = Kefir.stream(emitter => {
       this.loadEmitter = emitter;
+      this.on('error', () => {
+        emitter.end();
+      });
     })
       .map(resolve)
-      .map(assertResolved)
+      .withHandler(syncHandler(assertResolved))
       .map(normalize)
-      .map(assertAttributes)
-      .map(assertUnused(this.unloadedPlugins))
+      .withHandler(syncHandler(assertAttributes))
+      .withHandler(syncHandler(assertUnused(this.unloadedPlugins)))
       .map(build(this.seenPlugins))
       .onValue(plugin => this.unloadedPlugins.add(plugin.name));
 
