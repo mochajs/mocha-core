@@ -17,7 +17,7 @@
     "url": "https://github.com/boneskull/mocha-core/issues"
   },
   "homepage": "https://github.com/boneskull/mocha-core#readme",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "engines": {
     "node": ">=0.10.0",
     "npm": ">=1.7.4"
@@ -26,7 +26,6 @@
     "src/"
   ],
   "scripts": {
-    "build:node": "rimraf lib && BABEL_ENV=dist babel --ignore **/*.browser.js --out-dir lib src",
     "bump:major": "npm version major -m 'Release v%s'",
     "bump:minor": "npm version minor -m 'Release v%s'",
     "bump:patch": "npm version patch -m 'Release v%s'",
@@ -63,7 +62,6 @@
     "zone.js": "~0.5.15"
   },
   "devDependencies": {
-    "babel-cli": "^6.6.5",
     "babel-core": "^6.7.4",
     "babel-eslint": "^5.0.0",
     "babel-plugin-rewire": "^1.0.0-rc-1",
@@ -101,7 +99,6 @@
     "phantomjs-prebuilt": "^2.1.7",
     "pre-commit": "^1.1.2",
     "publish-please": "^1.1.0",
-    "rimraf": "^2.4.4",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
     "updtr": "^0.1.6",
