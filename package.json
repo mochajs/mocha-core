@@ -33,7 +33,6 @@
     "update": "updtr",
     "lint": "eslint src/ test/ .*.js",
     "nsp": "nsp check",
-    "prepublish": "npm run build",
     "preversion": "npm run test",
     "publish-please": "publish-please",
     "test": "npm run lint && npm run test:node && npm run test:browser && npm run deps",
