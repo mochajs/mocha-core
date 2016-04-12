@@ -1,7 +1,7 @@
 {
   "name": "mocha-core",
   "version": "0.0.0",
-  "description": "next-gen Mocha",
+  "description": "next-gen Mocha's guts",
   "keywords": [],
   "license": "Apache-2.0",
   "repository": {
