@@ -35,10 +35,10 @@
     "nsp": "nsp check",
     "preversion": "npm run test",
     "publish-please": "publish-please",
-    "test": "npm run lint && npm run test:node && npm run test:browser && npm run deps",
+    "test": "parallel lint test:node test:browser",
     "test:browser": "karma start .karma.conf.js --single-run",
     "test:browser:dev": "karma start .karma.conf.js --browsers=Chrome",
-    "test:node": "nyc --require babel-core/register mocha --require ./test/fixture --recursive"
+    "test:node": "nyc --require babel-core/register mocha --colors --require ./test/fixture --recursive"
   },
   "dependencies": {
     "async-listener": "^0.6.0",
