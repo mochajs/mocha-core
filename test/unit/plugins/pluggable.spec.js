@@ -42,7 +42,7 @@ describe('core/pluggable', () => {
         plugin = makePlugin({name: 'foo'});
       });
 
-      describe('use()', () => {
+      describe.skip('use()', () => {
         beforeEach(() => {
           sandbox.stub(pluggable.loader, 'load');
         });

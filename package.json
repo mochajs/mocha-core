@@ -57,7 +57,10 @@
   },
   "devDependencies": {
     "babel-core": "^6.7.4",
+    "babel-plugin-lodash": "^2.2.2",
     "babel-plugin-rewire": "^1.0.0-rc-1",
+    "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
+    "babel-plugin-transform-undefined-to-void": "^6.5.0",
     "babel-preset-es2015-loose": "^7.0.0",
     "babelify": "^7.2.0",
     "bannerify": "vekat/bannerify#feature-option",
@@ -101,5 +104,15 @@
     "./src/ui/helpers/execution-context.js": "./src/ui/helpers/execution-context.browser.js",
     "./src/plugins/resolver.js": "./src/plugins/resolver.browser.js",
     "./src/options/rc.js": "./src/options/rc.browser.js"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "sourceMapRelative": "."
+        }
+      ]
+    ]
   }
 }

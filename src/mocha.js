@@ -35,4 +35,4 @@ const Mocha = stampit({
     }
   });
 
-export default Mocha.static({Mocha});
+export default Mocha.refs({Mocha});

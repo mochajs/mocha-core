@@ -2,8 +2,40 @@
   "presets": [
     "es2015-loose"
   ],
-  "sourceMaps": "both",
-  "plugins": [
-    "rewire"
-  ]
+  "env": {
+    "development": {
+      "sourceMaps": "both",
+      "plugins": [
+        "rewire"
+      ]
+    },
+    "node": {
+      "sourceMaps": "inline",
+      "ignore": "**/*.browser.js",
+      "plugins": [
+        [
+          "transform-es2015-modules-commonjs-simple",
+          {
+            "noMangle": true,
+            "addExports": true
+          }
+        ],
+        "transform-undefined-to-void"
+      ]
+    },
+    "browser": {
+      "sourceMaps": true,
+      "plugins": [
+        [
+          "transform-es2015-modules-commonjs-simple",
+          {
+            "noMangle": true,
+            "addExports": true
+          }
+        ],
+        "transform-undefined-to-void",
+        "lodash"
+      ]
+    }
+  }
 }
