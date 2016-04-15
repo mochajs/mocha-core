@@ -85,7 +85,6 @@
     "minifyify": "^7.3.2",
     "mkdirp": "^0.5.1",
     "mocha": "^2.3.4",
-    "mocha-ui-bdd": "*",
     "npm-parallel": "boneskull/npm-parallel#boneskull-patch-1",
     "nsp": "^2.2.0",
     "nyc": "^6.1.1",

@@ -8,7 +8,6 @@ import pkg from './options/package';
 
 const Mocha = stampit({
   refs: {
-    ui: 'bdd',
     plugins: {},
     version: pkg.version
   },
@@ -31,8 +30,9 @@ const Mocha = stampit({
 })
   .compose(Pluggable, API)
   .init(function initMochaPlugins () {
-    this.reporter = new Set();
-    this.use(this.ui);
+    if (this.ui) {
+      this.use(this.ui);
+    }
   });
 
 export default Mocha.static({Mocha});

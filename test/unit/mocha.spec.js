@@ -26,12 +26,15 @@ describe('mocha', () => {
         mocha.emit('ready');
       });
 
-      it('should use the default ui', () => {
-        expect(mocha.use)
-          .to
-          .have
-          .been
-          .calledWithExactly(mocha.ui);
+      describe('when not supplied a "ui" property', () => {
+        it('should not call use()', () => {
+          expect(mocha.use)
+            .not
+            .to
+            .have
+            .been
+            .called;
+        });
       });
 
       it('should create a "rootSuite"', () => {
