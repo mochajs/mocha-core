@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "babel-core": "^6.7.4",
-    "babel-plugin-lodash": "^2.2.2",
+    "babel-plugin-lodash": "2.3.0",
     "babel-plugin-rewire": "^1.0.0-rc-1",
     "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
     "babel-plugin-transform-undefined-to-void": "^6.5.0",
@@ -92,7 +92,6 @@
     "nsp": "^2.2.0",
     "nyc": "^6.1.1",
     "phantomjs-prebuilt": "^2.1.7",
-    "pre-commit": "^1.1.2",
     "publish-please": "^1.1.0",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
