@@ -24,6 +24,9 @@ const Decoratable = stampit({
       // TODO: given an option, warn the user if a plugin blasts an existing plugin
       this.delegate[propName] = propValue.bind(opts.context, ...opts.args);
       return this;
+    },
+    alias (from, to) {
+      this.delegate[to] = this.delegate[from];
     }
   }
 });

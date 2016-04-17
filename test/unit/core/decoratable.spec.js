@@ -45,6 +45,7 @@ describe('core/decoratable', () => {
               .equal('baz');
           });
         });
+
         describe('when passed an array of objects', () => {
           it('should decorate the delegate with all of them', () => {
             decoratable.decorate([
@@ -117,6 +118,18 @@ describe('core/decoratable', () => {
                 .to
                 .equal('foo');
             });
+        });
+      });
+
+      describe('alias', () => {
+        it('should create a property alias in the delegate', () => {
+          const delegate = {foo: 'bar'};
+          const decoratable = Decoratable({delegate});
+          decoratable.alias('foo', 'baz');
+          expect(delegate)
+            .to
+            .have
+            .property('baz', delegate.foo);
         });
       });
     });
