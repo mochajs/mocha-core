@@ -1,5 +1,6 @@
 import stampit from 'stampit';
-import {forEach, defaults} from 'lodash/fp';
+import {defaults} from 'lodash/fp';
+import {forEach} from 'lodash';
 import is from 'check-more-types';
 
 const Decoratable = stampit({
@@ -9,11 +10,11 @@ const Decoratable = stampit({
   methods: {
     decorate (name, func, opts = {}) {
       if (is.array(name)) {
-        forEach(value => this.decorate(value.name, value.func, value.opts),
-          name);
+        forEach(name,
+          value => this.decorate(value.name, value.func, value.opts));
         return this;
       } else if (is.object(name)) {
-        forEach((value, key) => this.decorate(key, value), name);
+        forEach(name, (value, key) => this.decorate(key, value));
         return this;
       }
       if (is.not.function(func)) {
@@ -23,6 +24,7 @@ const Decoratable = stampit({
         args: [],
         context: this
       }, opts);
+      // TODO: given an option, warn the user if a plugin blasts an existing plugin
       this.delegate[name] = func.bind(opts.context, ...opts.args);
       return this;
     }
