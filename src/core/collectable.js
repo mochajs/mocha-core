@@ -1,6 +1,5 @@
 import stampit from 'stampit';
 import is from 'check-more-types';
-// TODO use lodash/fp
 import _ from 'lodash';
 
 const Collectable = stampit({
@@ -12,15 +11,15 @@ const Collectable = stampit({
     }
   },
   init ({stamp, instance}) {
-    const props = _.omitBy(instance,
-      (value, key) => is.function(value) || key === 'constructor');
+    // TODO use lodash/fp
+    const props = _.toPairs(_.omitBy(instance,
+      (value, key) => is.function(value) || key === 'constructor'));
 
-    const retval = new this.constructor(is.array(instance) ? props : _.toPairs(
-      props));
+    const retval = new this.constructor(props);
 
     _.mixin(retval, stamp.fixed.methods, {chain: false});
     _.defaults(retval, _.omit(stamp.fixed.refs, 'constructor'));
-    return Object.assign(retval, _.cloneDeep(stamp.fixed.props));
+    return _.assign(retval, _.cloneDeep(stamp.fixed.props));
   }
 });
 

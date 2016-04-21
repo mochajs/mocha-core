@@ -1,4 +1,5 @@
 import stampit from 'stampit';
+import {WeakMap} from '../util';
 
 const Singleton = stampit({
   static: {

@@ -1,5 +1,5 @@
 import stampit from 'stampit';
-import {omitBy, flow, map, fromPairs} from 'lodash/fp';
+import {omitBy, flow, map, fromPairs, curry} from 'lodash/fp';
 import is from 'check-more-types';
 
 const resultTypes = [
@@ -14,10 +14,10 @@ const resultTypes = [
 const Result = stampit({
   static: {
     fulfilledWith (fulfilled) {
-      return this.props({fulfilled});
+      return this.refs({fulfilled});
     }
   },
-  props: {
+  refs: {
     completed: false,
     aborted: false,
     failed: null,

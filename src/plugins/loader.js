@@ -1,7 +1,8 @@
 import resolver from './resolver';
 import Plugin from './plugin';
 import {noop, get, flow, negate, every, curry} from 'lodash/fp';
-import {remove} from '../util';
+import {assign} from 'lodash';
+import {from, remove, Set} from '../util';
 import {Kefir} from 'kefir';
 import stampit from 'stampit';
 import {EventEmittable, Mappable} from '../core';
@@ -48,7 +49,7 @@ function syncHandler (func) {
 }
 
 export function resolve (opts = {}) {
-  return Object.assign({func: resolver(opts.pattern)}, opts);
+  return assign({func: resolver(opts.pattern)}, opts);
 }
 
 export function assertResolved (opts = {}) {
@@ -63,7 +64,7 @@ export function normalize (opts = {}) {
   const {attributes} = func;
   attributes.dependencies = [].concat(attributes.dependencies || []);
   func.attributes =
-    Object.assign({}, attributes.pkg, helpers.removePkg(attributes));
+    assign({}, attributes.pkg, helpers.removePkg(attributes));
   return opts;
 }
 
@@ -83,9 +84,9 @@ export const assertUnused = curry(function assertUnused (unloadedPlugins,
   return opts;
 });
 
-export const build = curry(function build (unloadedPlugins, opts) {
-  const plugin = Plugin(Object.assign({}, helpers.getAttributes(opts), opts));
-  unloadedPlugins.add(plugin.name);
+export const build = curry(function build (seenPlugins, opts) {
+  const plugin = Plugin(assign({}, helpers.getAttributes(opts), opts));
+  seenPlugins.add(plugin.name);
   return plugin;
 });
 
@@ -128,7 +129,7 @@ const PluginLoader = stampit({
       .onEnd(() => {
         if (this.unloadedPlugins.size) {
           return this.emit('error',
-            new Error(`Dependencies not satisfied for plugin(s): ${Array.from(
+            new Error(`Dependencies not satisfied for plugin(s): ${from(
               this.unloadedPlugins)}`));
         }
         this.emit('done', this.loadedPlugins);

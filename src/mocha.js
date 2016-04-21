@@ -5,6 +5,7 @@ import Reporter from './reporter';
 import {defaults} from 'lodash/fp';
 import {API} from './core';
 import pkg from './options/package';
+import {Set} from './util';
 
 const Mocha = stampit({
   refs: {
@@ -22,6 +23,24 @@ const Mocha = stampit({
     },
     createReporter (properties = {}) {
       return this.createAPI(Reporter, properties);
+    },
+    addOnly (obj) {
+      this.only.add(obj);
+      return this;
+    },
+    removeOnly (obj) {
+      this.only.delete(obj);
+      return this;
+    },
+    addSkipped (obj) {
+      this.skipped.add(obj);
+      obj.pending = true;
+      return this;
+    },
+    removeSkipped (obj) {
+      this.skipped.remove(obj);
+      obj.pending = false;
+      return this;
     }
   },
   init () {
@@ -30,6 +49,9 @@ const Mocha = stampit({
 })
   .compose(Pluggable, API)
   .init(function initMochaPlugins () {
+    this.only = new Set();
+    this.skipped = new Set();
+
     if (this.ui) {
       this.use(this.ui);
     }

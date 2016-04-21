@@ -11,7 +11,6 @@ module.exports = function (config) {
       'mocha'
     ],
     files: globby.sync([
-      'node_modules/babel-polyfill/dist/polyfill.min.js',
       'node_modules/mocha-ui-bdd/dist/mocha-ui-bdd.js',
       './src/**/*.js',
       './test/**/*.js',

@@ -1,6 +1,7 @@
 import StateMachine from 'fsm-as-promised';
 import stampit from 'stampit';
 import {flatten, startsWith} from 'lodash/fp';
+import {assign} from 'lodash';
 
 const startsWithOn = startsWith('on');
 
@@ -28,14 +29,14 @@ const FSM = stampit({
         name = `on${name}`;
       }
       name = name.toLowerCase();
-      const callbacks = Object.assign({},
+      const callbacks = assign({},
         this.fixed.refs.callbacks,
         {[name]: func});
       return this.refs({callbacks});
     },
     callbacks (obj) {
       // TODO validate
-      const callbacks = Object.assign({}, this.fixed.refs.callbacks, obj);
+      const callbacks = assign({}, this.fixed.refs.callbacks, obj);
       return this.refs({callbacks});
     }
   }

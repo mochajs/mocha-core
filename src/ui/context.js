@@ -1,6 +1,25 @@
 import stampit from 'stampit';
 
-const Context = stampit();
+const Context = stampit({
+  props: {
+    executable: {}
+  },
+  methods: {
+    retries (num = 0) {
+      this.executable.retries = Number(num) || 0;
+    },
+    withExecutable (executable) {
+      this.executable = executable;
+      return this;
+    },
+    spawn () {
+      return this.Factory(this);
+    }
+  },
+  init ({stamp}) {
+    this.Factory = stamp;
+  }
+});
 
 export default Context;
 

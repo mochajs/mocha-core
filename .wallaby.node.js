@@ -19,6 +19,9 @@ module.exports = function wallabyConfig (wallaby) {
     compilers: {
       '**/*.js': wallaby.compilers.babel()
     },
+    workers: {
+      recycle: true
+    },
     testFramework: 'mocha',
     bootstrap: function bootstrap (wallaby) {
       wallaby.testFramework.timeout(0);

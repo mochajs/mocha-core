@@ -1,5 +1,6 @@
 import {Executable, Suite} from '../../../src/ui';
-import noop from 'lodash/noop';
+import {noop, forEach} from 'lodash';
+import {setImmediate} from '../../../src/util';
 
 describe('ui/executable', () => {
   let sandbox;
@@ -19,24 +20,16 @@ describe('ui/executable', () => {
       });
     });
 
-    describe('when not instantiated w/ a "suite" prop', () => {
-      it('should throw', () => {
-        expect(Executable)
-          .to
-          .throw(Error, /suite/i);
-      });
-    });
-
     describe('when instantiated with a "suite" prop', () => {
       it('should not throw', () => {
-        expect(() => Executable({suite}))
+        expect(() => Executable({parent: suite}))
           .not
           .to
           .throw();
       });
 
       it('should return an object', () => {
-        expect(Executable({suite}))
+        expect(Executable({parent: suite}))
           .to
           .be
           .an('object');
@@ -50,7 +43,7 @@ describe('ui/executable', () => {
             let test;
 
             beforeEach(() => {
-              test = Executable({suite});
+              test = Executable({parent: suite});
             });
 
             it('should be true', () => {
@@ -64,7 +57,7 @@ describe('ui/executable', () => {
             beforeEach(() => {
               suite.pending = true;
               test = Executable({
-                suite,
+                parent: suite,
                 func: noop
               });
             });
@@ -79,7 +72,7 @@ describe('ui/executable', () => {
 
             beforeEach(() => {
               test = Executable({
-                suite,
+                parent: suite,
                 func: noop
               });
             });
@@ -98,7 +91,7 @@ describe('ui/executable', () => {
 
             beforeEach(() => {
               test = Executable({
-                suite,
+                parent: suite,
                 func: noop
               });
             });
@@ -128,7 +121,7 @@ describe('ui/executable', () => {
             let test;
 
             beforeEach(() => {
-              test = Executable({suite});
+              test = Executable({parent: suite});
             });
 
             describe('and it is supplied a falsy value', () => {
@@ -150,8 +143,9 @@ describe('ui/executable', () => {
 
       beforeEach(() => {
         executable = Executable({
-          suite,
-          title: `test#${testCount}`
+          parent: suite,
+          title: `test#${testCount}`,
+          func: noop
         });
       });
 
@@ -161,6 +155,10 @@ describe('ui/executable', () => {
 
       describe('execute()', () => {
         describe('when the executable is pending', () => {
+          beforeEach(() => {
+            executable.pending = true;
+          });
+
           it('should return a "skipped" result', () => {
             return expect(executable.execute())
               .to
@@ -206,31 +204,48 @@ describe('ui/executable', () => {
             });
           });
 
-          describe('and the executable is asynchronous', () => {
-            describe('and when the function does not throw an error', () => {
-              let func;
-              let result;
+          forEach({
+            setTimeout: setTimeout,
+            setImmediate: setImmediate,
+            'process.nextTick': process.nextTick
+          }, (timer, timerName) => {
+            describe(`and the executable uses ${timerName}`, () => {
+              const delays = timerName === 'setTimeout' ? [
+                0,
+                50,
+                200,
+                500
+              ] : [0];
 
-              beforeEach(() => {
-                func = sandbox.stub();
+              delays.forEach(delay => {
+                describe(`with delay ${delay}`, () => {
+                  describe('and when the function does not throw an error', () => {
+                    let func;
+                    let result;
 
-                executable.func = testDone => {
-                  setTimeout(() => {
-                    func();
-                    testDone();
-                  }, 50);
-                };
+                    beforeEach(() => {
+                      func = sandbox.stub();
 
-                return executable.execute()
-                  .then(opts => result = opts.result);
-              });
+                      executable.func = testDone => {
+                        timer(() => {
+                          func();
+                          testDone();
+                        }, delay);
+                      };
 
-              it('should return a "passed" result', () => {
-                expect(result.passed).to.be.true;
-              });
+                      return executable.execute()
+                        .then(opts => result = opts.result);
+                    });
 
-              it('should run the function', () => {
-                expect(func).to.have.been.calledOnce;
+                    it('should return a "passed" result', () => {
+                      expect(result.passed).to.be.true;
+                    });
+
+                    it('should run the function', () => {
+                      expect(func).to.have.been.calledOnce;
+                    });
+                  });
+                });
               });
             });
           });
@@ -242,6 +257,7 @@ describe('ui/executable', () => {
 
               beforeEach(() => {
                 func = sandbox.stub();
+
                 executable.func = () => new Promise(resolve => {
                   func();
                   resolve();
@@ -253,6 +269,10 @@ describe('ui/executable', () => {
 
               it('should run the function', () => {
                 expect(func).to.have.been.calledOnce;
+              });
+
+              it('should not error', () => {
+                expect(result.error).to.be.undefined;
               });
 
               it('should return a "passed" result', () => {

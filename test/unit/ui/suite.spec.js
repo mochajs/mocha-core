@@ -117,15 +117,93 @@ describe('ui/suite', () => {
         });
       });
 
-      describe('execute()', () => {
-        it('should execute the "func" property in the suite\'s context', () => {
-          const suite = Suite({func});
-          suite.execute();
-          expect(func)
+      describe('run()', () => {
+        let suite;
+
+        beforeEach(() => {
+          suite = Suite({func});
+        });
+
+        it('should execute the "func" property in the Suite\'s context', () => {
+          return suite.run()
+            .then(() => {
+              expect(func)
+                .to
+                .have
+                .been
+                .calledOn(suite.context);
+            });
+        });
+
+        it('should emit "will-run"', () => {
+          sandbox.stub(suite, 'emit');
+          return suite.run()
+            .then(() => {
+              expect(suite.emit)
+                .to
+                .have
+                .been
+                .calledWithExactly('will-run');
+            });
+        });
+
+        it('should emit "did-run"', () => {
+          sandbox.stub(suite, 'emit');
+          return suite.run()
+            .then(() => {
+              expect(suite.emit)
+                .to
+                .have
+                .been
+                .calledWithExactly('did-run');
+            });
+        });
+
+        it('should return the suite', () => {
+          return expect(suite.run())
             .to
-            .have
-            .been
-            .calledOn(suite);
+            .eventually
+            .equal(suite);
+        });
+
+        it('should store a result (I guess)', () => {
+          return suite.run()
+            .then(() => {
+              expect(suite)
+                .to
+                .have
+                .property('result')
+                .with
+                .property('passed', true);
+            });
+        });
+
+        it('should allow asynchronous suites', () => {
+          const spy = sandbox.spy();
+          suite.func = function (done) {
+            setTimeout(function () {
+              spy();
+              done();
+            });
+          };
+          return suite.run()
+            .then(() => {
+              expect(spy).to.have.been.calledOnce;
+            });
+        });
+
+        it('should also allow suites that return a Promise', () => {
+          const spy = sandbox.spy();
+          suite.func = function () {
+            return new Promise(resolve => {
+              spy();
+              resolve();
+            });
+          };
+          return suite.run()
+            .then(() => {
+              expect(spy).to.have.been.calledOnce;
+            });
         });
       });
     });
@@ -210,55 +288,6 @@ describe('ui/suite', () => {
 
                 it('should have a null function', () => {
                   expect(suite.func).to.be.null;
-                });
-              });
-            });
-
-            describe('and the Suite has an initial function', () => {
-              let suite;
-
-              beforeEach(() => {
-                suite =
-                  Suite({
-                    func: _.noop,
-                    parent
-                  });
-              });
-
-              describe('and the value is falsy', () => {
-                beforeEach(() => {
-                  suite.pending = false;
-                });
-
-                it('should have a "false" pending value', () => {
-                  expect(suite.pending).to.be.false;
-                });
-              });
-
-              describe('and the value is truthy', () => {
-                beforeEach(() => {
-                  suite.pending = true;
-                });
-
-                it('should nullify the function', () => {
-                  expect(suite.func).to.be.null;
-                });
-
-                it('should have a "true" pending value', () => {
-                  expect(suite.pending).to.be.true;
-                });
-
-                describe('and the value is falsy again', () => {
-                  beforeEach(() => {
-                    suite.pending = false;
-                  });
-
-                  it('should restore the function', () => {
-                    expect(suite.func)
-                      .to
-                      .be
-                      .a('function');
-                  });
                 });
               });
             });

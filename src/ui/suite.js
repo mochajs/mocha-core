@@ -1,12 +1,15 @@
 import stampit from 'stampit';
-import {Unique, EventEmittable} from '../core';
-import is from 'check-more-types';
-import _ from 'lodash';
+import Executable from './executable';
+import {EventEmittable} from '../core';
 
 const Suite = stampit({
   refs: {
     parent: null,
     func: null
+  },
+  props: {
+    children: [],
+    tests: []
   },
   methods: {
     addChildSuite (suite) {
@@ -17,25 +20,20 @@ const Suite = stampit({
       this.tests.push(test);
       return this;
     },
-    execute () {
-      if (!this.pending && is.function(this.func)) {
-        this.func();
-      }
+    run () {
+      this.emit('will-run');
+      return this.execute({force: true})
+        .then(({result}) => {
+          this.result = result;
+          this.emit('did-run');
+          return this;
+        });
     }
   },
   init () {
-    _.defaults(this, {
-      children: [],
-      tests: []
-    });
-
     if (this.parent) {
       this.parent.addChildSuite(this);
     }
-
-    this.context = _.create(_.get(this, 'parent.context', {}));
-
-    const func = this.func;
 
     Object.defineProperties(this, {
       fullTitle: {
@@ -48,31 +46,10 @@ const Suite = stampit({
           }
           return fullTitle.join(' ');
         }
-      },
-      pending: {
-        get () {
-          return Boolean(this.parent) &&
-            (this.parent.pending || is.not.function(this.func));
-        },
-        set (value) {
-          if (this.parent) {
-            if (is.function(this.func)) {
-              if (value) {
-                this.func = null;
-              }
-            } else if (!value) {
-              this.func = func;
-            }
-          }
-        }
       }
     });
-
-    this.emit('execute:pre', this);
-    this.execute();
-    this.emit('execute:post', this);
   }
 })
-  .compose(Unique, EventEmittable);
+  .compose(Executable, EventEmittable);
 
 export default Suite;

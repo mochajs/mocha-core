@@ -2,15 +2,16 @@ import stampit from 'stampit';
 import is from 'check-more-types';
 import {Unique} from '../core';
 import results from './helpers/results';
-import {last} from 'lodash/fp';
+import {once, assign} from 'lodash';
 import * as executionContext from './helpers/execution-context';
+import Context from './context';
+import {setImmediate, Promise} from '../util';
 
 const Executable = stampit({
+  refs: {
+    context: Context()
+  },
   init () {
-    if (is.not.object(this.suite)) {
-      throw new Error('Missing "suite" property');
-    }
-
     // this is intended to be "sticky".  if you set it, then you
     // must unset it if you want to run anything.  if the function is missing,
     // "pending" is *implied* via the getter.
@@ -19,9 +20,10 @@ const Executable = stampit({
     Object.defineProperties(this, {
       pending: {
         get () {
-          return Boolean(this.suite.pending) ||
-            pending ||
-            is.not.function(this.func);
+          if (this.parent === null) {
+            return false;
+          }
+          return pending || this.parent.pending || is.not.function(this.func);
         },
         set (value) {
           pending = Boolean(value) && is.function(this.func);
@@ -34,25 +36,23 @@ const Executable = stampit({
       const func = this.func;
 
       return new Promise(resolve => {
-        if (this.pending) {
+        if (!opts.force && this.pending) {
           return resolve(results.skipped()
             .abort());
         }
         let async;
 
         executionContext.enable({
-          name: this.title,
-          onAsync () {
+          onAsync: once(function onAsync () {
             async = true;
-          },
-          onError (...args) {
-            const err = last(args);
-            setImmediate(() => {
-              resolve(results.async()
-                .finish(err));
-            });
+          }),
+          onError: once(function onError (...args) {
+            const err = args.pop();
+            setImmediate(resolve.bind(null,
+              results.async()
+                .finish(err)));
             return true;
-          }
+          })
         });
 
         let retval;
@@ -60,7 +60,7 @@ const Executable = stampit({
         try {
           retval =
             executionContext.run(func,
-              this.suite.context,
+              this.context.withExecutable(func),
               err => resolve(results.userCallback()
                 .finish(err)));
         } catch (err) {
@@ -84,7 +84,7 @@ const Executable = stampit({
         })
         .then(result => {
           executionContext.disable();
-          return Object.assign(opts, {result});
+          return assign(opts, {result});
         });
     }
   }

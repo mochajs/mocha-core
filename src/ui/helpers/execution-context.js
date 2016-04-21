@@ -1,14 +1,14 @@
 import 'async-listener';
-import _ from 'lodash';
+import {noop} from 'lodash';
 
 const listener = process.addAsyncListener({
-  create: _.noop,
-  error: _.noop
+  create: noop,
+  error: noop
 });
 
 function enable (opts = {}) {
-  listener.create = opts.onAsync || _.noop;
-  listener.error = opts.onError || _.noop;
+  listener.create = opts.onAsync || noop;
+  listener.error = opts.onError || noop;
 }
 
 function run (func, context, ...args) {
@@ -16,7 +16,7 @@ function run (func, context, ...args) {
 }
 
 function disable () {
-  listener.error = listener.create = _.noop;
+  listener.error = listener.create = noop;
 }
 
 export {enable, run, disable};

@@ -1,4 +1,5 @@
 import stampit from 'stampit';
+import {Set} from '../util';
 
 function tag (...tags) {
   return this.init(function tagInit () {

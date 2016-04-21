@@ -1,6 +1,7 @@
 import stampit from 'stampit';
 import {FSM, Taggable} from '../core';
 import Executable from './executable';
+import {assign} from 'lodash';
 
 const Test = stampit({
   props: {
@@ -9,7 +10,7 @@ const Test = stampit({
 })
   .compose(FSM, Taggable, Executable)
   .init(function initTest () {
-    this.suite.addTest(this);
+    this.parent.addTest(this);
   })
   .initial('idle')
   .final('passed', 'errored')
@@ -42,14 +43,14 @@ const Test = stampit({
     to: 'errored'
   })
   .callback('run', function run (opts) {
-    Object.assign(opts, {start: Date.now()});
+    assign(opts, {start: Date.now()});
   })
   .callback('enteredRunning', function enteredRunning (opts) {
     return this.execute(opts)
       .then(opts => {
         const {result} = opts;
         const elapsed = Date.now() - opts.start;
-        opts.res = Object.assign({elapsed}, result);
+        opts.res = assign({elapsed}, result);
         this.results.push(result);
         return this[result.event]();
       });

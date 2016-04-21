@@ -2,6 +2,8 @@ import {EventEmitter} from 'events';
 import stampit from 'stampit';
 import is from 'check-more-types';
 import {head, forEach, curry} from 'lodash/fp';
+import {assign} from 'lodash';
+import {Promise} from '../util';
 
 const subscriber = curry(function subscriber (obj, type, events) {
   return forEach((action, event) => obj[type](event, action), events);
@@ -10,13 +12,13 @@ const subscriber = curry(function subscriber (obj, type, events) {
 const EventEmittable = stampit.convertConstructor(EventEmitter)
   .static({
     on (event, action) {
-      const onEvents = Object.assign({}, this.fixed.refs.onEvents, {
+      const onEvents = assign({}, this.fixed.refs.onEvents, {
         [event]: action
       });
       return this.refs({onEvents});
     },
     once (event, action) {
-      const onceEvents = Object.assign({}, this.fixed.refs.onceEvents, {
+      const onceEvents = assign({}, this.fixed.refs.onceEvents, {
         [event]: action
       });
       return this.refs({onceEvents});
