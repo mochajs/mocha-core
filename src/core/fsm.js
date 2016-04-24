@@ -29,9 +29,7 @@ const FSM = stampit({
         name = `on${name}`;
       }
       name = name.toLowerCase();
-      const callbacks = assign({},
-        this.fixed.refs.callbacks,
-        {[name]: func});
+      const callbacks = assign({}, this.fixed.refs.callbacks, {[name]: func});
       return this.refs({callbacks});
     },
     callbacks (obj) {
@@ -40,6 +38,7 @@ const FSM = stampit({
       return this.refs({callbacks});
     }
   }
-}).compose(StateMachine);
+})
+  .compose(StateMachine);
 
 export default FSM;
