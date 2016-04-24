@@ -2,7 +2,7 @@ import resolver from './resolver';
 import Plugin from './plugin';
 import {noop, get, flow, negate, every, curry} from 'lodash/fp';
 import {assign} from 'lodash';
-import {from, remove, Set} from '../util';
+import {remove, Set} from '../util';
 import {Kefir} from 'kefir';
 import stampit from 'stampit';
 import {EventEmittable, Mappable} from '../core';
@@ -16,6 +16,7 @@ export const helpers = {
   getPattern: get('value.pattern')
 };
 
+// TODO move this?
 const SyncHandler = stampit({
   static: {
     value (emitter, value, func) {
@@ -27,9 +28,6 @@ const SyncHandler = stampit({
     },
     error (emitter, value) {
       emitter.error(value);
-    },
-    end (emitter) {
-      emitter.end();
     }
   },
   methods: {
@@ -92,66 +90,54 @@ export const build = curry(function build (seenPlugins, opts) {
 
 const PluginLoader = stampit({
   init () {
-    this.reset();
+    const unloadedPlugins = this.unloadedPlugins = new Set();
+    this.seenPlugins = new Set();
+    this.loadedPlugins = Mappable();
 
     const pluginReady = flow(get('dependencies'),
       every(dep => this.loadedPlugins.has(dep)));
     const pluginNotReady = negate(pluginReady);
     const loadStream = this.loadStream = Kefir.stream(emitter => {
       this.loadEmitter = emitter;
-      this.on('error', () => {
-        emitter.end();
-      });
     })
       .map(resolve)
       .withHandler(syncHandler(assertResolved))
       .map(normalize)
       .withHandler(syncHandler(assertAttributes))
-      .withHandler(syncHandler(assertUnused(this.unloadedPlugins)))
+      .withHandler(syncHandler(assertUnused(unloadedPlugins)))
       .map(build(this.seenPlugins))
-      .onValue(plugin => this.unloadedPlugins.add(plugin.name));
+      .onValue(plugin => unloadedPlugins.add(plugin.name));
 
     const withoutDeps = loadStream.filter(pluginReady);
 
     // TODO make this more efficient with reduce-like function (try scan()?)
     const withDeps = loadStream.filter(pluginNotReady)
+      .onValue(plugin => {
+        this.emit('plugin-not-loaded', plugin.pattern);
+      })
       .sampledBy(withoutDeps, plugin => pluginReady(plugin) && plugin)
       .filter();
 
     withoutDeps.merge(withDeps)
       .onValue(plugin => {
-        plugin.install();
-        this.unloadedPlugins.delete(plugin.name);
+        try {
+          plugin.install();
+        } catch (err) {
+          return this.emit('error', err);
+        }
         this.loadedPlugins.set(plugin.name, plugin);
+        this.emit('plugin-loaded', plugin);
+        unloadedPlugins.delete(plugin.name);
+        if (!this.unloadedPlugins.size) {
+          this.emit('ready');
+        }
       })
       .takeErrors(1)
-      .onError(err => this.emit('error', err))
-      .onEnd(() => {
-        if (this.unloadedPlugins.size) {
-          return this.emit('error',
-            new Error(`Dependencies not satisfied for plugin(s): ${from(
-              this.unloadedPlugins)}`));
-        }
-        this.emit('done', this.loadedPlugins);
-      });
-
-    this.once('done', (...args) => {
-      this.onDone(...args);
-      this.reset();
-    });
+      .onError(err => this.emit('error', err));
   },
   methods: {
-    onDone: noop,
-    reset () {
-      this.unloadedPlugins = new Set();
-      this.seenPlugins = new Set();
-      this.loadedPlugins = Mappable();
-    },
     load (opts = {}) {
       this.loadEmitter.emit(opts);
-    },
-    dump () {
-      this.loadEmitter.end();
     }
   }
 })

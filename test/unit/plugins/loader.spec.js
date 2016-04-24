@@ -4,7 +4,7 @@ import PluginLoader, {
 import {EventEmittable} from '../../../src/core';
 import {Kefir} from 'kefir';
 
-describe.skip('plugins/loader', () => {
+describe('plugins/loader', () => {
   const stubs = {usedPlugins: {}};
   let sandbox;
   let noop;
@@ -352,12 +352,6 @@ describe.skip('plugins/loader', () => {
       loader = PluginLoader();
     });
 
-    it('should call reset()', () => {
-      sandbox.spy(PluginLoader.fixed.methods, 'reset');
-      PluginLoader();
-      expect(PluginLoader.fixed.methods.reset).to.have.been.calledOnce;
-    });
-
     it('should create Stream prop "loadStream"', () => {
       expect(loader.loadStream)
         .to
@@ -375,16 +369,6 @@ describe.skip('plugins/loader', () => {
         .keys('value', 'error', 'end', 'event', 'emit', 'emitEvent');
     });
 
-    it('should listen for the "done" event', () => {
-      sandbox.stub(PluginLoader.fixed.methods, 'once');
-      PluginLoader();
-      expect(PluginLoader.fixed.methods.once)
-        .to
-        .have
-        .been
-        .calledWith('done');
-    });
-
     describe('property', () => {
       describe('loadStream', () => {
         describe('when it encounters an error', () => {
@@ -395,93 +379,10 @@ describe.skip('plugins/loader', () => {
               .emitFrom(loader, 'error', err);
           });
         });
-
-        describe('when it ends', () => {
-          it('should emit "done" from the PluginLoader', () => {
-            expect(() => loader.loadEmitter.end())
-              .to
-              .emitFrom(loader, 'done', loader.loadedPlugins);
-          });
-        });
-      });
-    });
-
-    describe('event', () => {
-      describe('done', () => {
-        const arg = 'foo';
-
-        beforeEach(() => {
-          sandbox.stub(loader, 'onDone');
-          sandbox.stub(loader, 'reset');
-          loader.emit('done', arg);
-        });
-
-        it('should call the "onDone" function', () => {
-          expect(loader.onDone)
-            .to
-            .have
-            .been
-            .calledWithExactly(arg);
-        });
-
-        it('should call reset()', () => {
-          expect(loader.reset).to.have.been.calledOnce;
-        });
       });
     });
 
     describe('method', () => {
-      describe('reset', () => {
-        describe('property "loadedPlugins"', () => {
-          it('should be changed', () => {
-            expect(() => loader.reset())
-              .to
-              .change(loader, 'loadedPlugins');
-          });
-
-          it('should be a Map', () => {
-            loader.reset();
-            expect(loader)
-              .to
-              .have
-              .deep
-              .property('loadedPlugins.constructor', Map);
-          });
-        });
-
-        describe('property "seenPlugins"', () => {
-          it('should be changed', () => {
-            expect(() => loader.reset())
-              .to
-              .change(loader, 'seenPlugins');
-          });
-
-          it('should be a Set', () => {
-            expect(loader)
-              .to
-              .have
-              .deep
-              .property('seenPlugins.constructor', Set);
-          });
-        });
-
-        describe('property "unloadedPlugins"', () => {
-          it('should be changed', () => {
-            expect(() => loader.reset())
-              .to
-              .change(loader, 'unloadedPlugins');
-          });
-
-          it('should be a Set', () => {
-            expect(loader)
-              .to
-              .have
-              .deep
-              .property('unloadedPlugins.constructor', Set);
-          });
-        });
-      });
-
       describe('load', () => {
         beforeEach(() => {
           sandbox.stub(loader.loadEmitter, 'emit');
@@ -512,17 +413,6 @@ describe.skip('plugins/loader', () => {
                 .been
                 .calledWithExactly(obj);
             });
-        });
-      });
-
-      describe('dump', () => {
-        beforeEach(() => {
-          sandbox.stub(loader.loadEmitter, 'end');
-        });
-
-        it('should call the "end" method of the loadEmitter', () => {
-          loader.dump();
-          expect(loader.loadEmitter.end).to.have.been.calledOnce;
         });
       });
     });

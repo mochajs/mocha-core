@@ -91,29 +91,12 @@ describe('core/plugin', () => {
                 .calledWith(plugin.api);
             });
 
-            it('should emit "installing"', () => {
-              expect(() => plugin.install())
-                .to
-                .emitFrom(plugin, 'installing');
-            });
-
-            it('should emit "installed"', () => {
-              expect(() => plugin.install())
-                .to
-                .emitFrom(plugin, 'installed');
-            });
-
-            it('should set state to "installed"', () => {
+            it('should set "installed" to be true', () => {
               plugin.install();
               expect(plugin)
                 .to
                 .have
-                .property('state', 'installed');
-            });
-
-            it('should set "installed" flag to true', () => {
-              plugin.install();
-              expect(plugin.installed).to.be.true;
+                .property('installed', true);
             });
           });
         });

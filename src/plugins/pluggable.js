@@ -4,39 +4,52 @@ import PluginLoader from './loader';
 import is from 'check-more-types';
 
 const Pluggable = stampit({
-  init () {
+  static: {
+    isPluginLike (pattern) {
+      return is.not.empty(pattern) && is.or(is.string, is.function)(pattern);
+    }
+  },
+  refs: {
+    ready: true
+  },
+  init ({stamp}) {
+    this.factory = this.factory || stamp;
     this.loadedPlugins = Mappable();
   },
   methods: {
-    use (pattern, opts = {}) {
+    load (opts = {}) {
+      let loader = this.loader;
+      this.ready = false;
+
       if (!this.loader) {
-        this.loader = PluginLoader({
-          onDone: loadedPlugins => {
-            loadedPlugins.forEach(
-              plugin => this.loadedPlugins.set(plugin.name, plugin));
-            this.emit('done');
-          }
-        })
-          .on('error', err => this.emit('error', err));
+        loader = this.loader = PluginLoader()
+          .on('error', err => this.emit('error', err))
+          .on('plugin-loaded', plugin => {
+            this.loadedPlugins.set(plugin.name, plugin);
+          })
+          .on('plugin-not-loaded', plugin => {
+            // debug here?
+          })
+          .on('ready', () => {
+            this.ready = true;
+          });
       }
-      if (is.not.empty(pattern) && is.or(is.string, is.function)(pattern)) {
-        this.loader.load({
+
+      loader.load(opts);
+    },
+    use (pattern, opts = {}) {
+      if (this.factory.isPluginLike(pattern)) {
+        this.load({
           pattern,
           opts,
           api: this
         });
         return this;
       }
-      this.emit('error', new Error('Function or path to plugin required'));
-    },
-    ready () {
-      this.loader.dump();
+      throw new Error('Function or path to plugin required');
     }
   }
 })
-  .compose(EventEmittable)
-  .on('done', function onDone () {
-    delete this.loader;
-  });
+  .compose(EventEmittable);
 
 export default Pluggable;
