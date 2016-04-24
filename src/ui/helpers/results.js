@@ -1,6 +1,5 @@
 import stampit from 'stampit';
-import {omitBy, flow, map, fromPairs, curry} from 'lodash/fp';
-import is from 'check-more-types';
+import {reduce, includes} from 'lodash/fp';
 
 const resultTypes = [
   'skipped',
@@ -12,48 +11,48 @@ const resultTypes = [
 ];
 
 const Result = stampit({
-  static: {
-    fulfilledWith (fulfilled) {
-      return this.refs({fulfilled});
-    }
-  },
-  refs: {
-    completed: false,
-    aborted: false,
-    failed: null,
-    error: null,
-    skipped: null,
-    async: null,
-    explicit: false,
-    event: null
+  init () {
+    Object.defineProperties(this, {
+      async: {
+        get () {
+          return includes(this.fulfilled, [
+            'async',
+            'userCallback',
+            'promise'
+          ]);
+        }
+      },
+      passed: {
+        get () {
+          return !(this.aborted || this.failed);
+        }
+      }
+    });
   },
   methods: {
-    complete () {
+    finalize () {
       Object.freeze(this);
-      return this.toJSON();
+      return this;
     },
-    finish (err) {
-      this.completed = true;
-      this.async =
-        this.fulfilled === 'callback' || this.fulfilled === 'promise';
-      this.failed = Boolean(err);
-      this.passed = !err;
-      this.event = this.failed ? 'fail' : 'pass';
-      this.error = err;
-      return this.complete();
+    complete (err) {
+      this.aborted = false;
+      if (err) {
+        this.failed = true;
+        this.error = err;
+      } else {
+        this.failed = false;
+      }
+      return this.finalize();
     },
     abort (err) {
       this.aborted = true;
-      this.error = err;
-      this.skipped = !err;
-      this.event = this.skipped ? 'skip' : 'error';
-      return this.complete();
-    },
-    toJSON () {
-      return flow(omitBy(is.null),
-        omitBy(is.not.defined),
-        omitBy(is.function))(
-        this);
+      if (err) {
+        this.skipped = false;
+        this.error = err;
+      } else {
+        this.skipped = true;
+      }
+      return this.finalize();
     },
     toString () {
       return JSON.stringify(this);
@@ -61,10 +60,14 @@ const Result = stampit({
   }
 });
 
-const results = flow(map(value => [
-  value,
-  Result.fulfilledWith(value)
-]), fromPairs)(resultTypes);
+const results = reduce((acc, fulfilled) => {
+  Object.defineProperty(acc, fulfilled, {
+    get () {
+      return Result({fulfilled});
+    }
+  });
+  return acc;
+}, {}, resultTypes);
 
 export {Result, resultTypes};
 export default results;

@@ -37,8 +37,7 @@ const Executable = stampit({
 
       return new Promise(resolve => {
         if (!opts.force && this.pending) {
-          return resolve(results.skipped()
-            .abort());
+          return resolve(results.skipped.abort());
         }
         let async;
 
@@ -49,8 +48,7 @@ const Executable = stampit({
           onError: once(function onError (...args) {
             const err = args.pop();
             setImmediate(resolve.bind(null,
-              results.async()
-                .finish(err)));
+              results.async.complete(err)));
             return true;
           })
         });
@@ -61,29 +59,26 @@ const Executable = stampit({
           retval =
             executionContext.run(func,
               this.context.withExecutable(func),
-              err => resolve(results.userCallback()
-                .finish(err)));
+              err => resolve(results.userCallback.complete(err)));
         } catch (err) {
-          return resolve(results.sync()
-            .finish(err));
+          return resolve(results.sync.complete(err));
         }
 
         if (is.promise(retval)) {
-          const result = results.promise();
+          const result = results.promise;
           retval
-            .then(() => resolve(result.finish()),
-              err => resolve(result.finish(err)));
+            .then(() => resolve(result.complete()),
+              err => resolve(result.complete(err)));
         } else if (!async) {
-          resolve(results.sync()
-            .finish());
+          resolve(results.sync.complete());
         }
       })
         .catch(err => {
-          return results.error()
-            .abort(err);
+          return results.error.abort(err);
         })
         .then(result => {
           executionContext.disable();
+          opts.result = result;
           return assign(opts, {result});
         });
     }

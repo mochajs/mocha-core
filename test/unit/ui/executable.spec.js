@@ -1,6 +1,5 @@
 import {Executable, Suite} from '../../../src/ui';
 import {noop, forEach} from 'lodash';
-import {setImmediate} from '../../../src/util';
 
 describe('ui/executable', () => {
   let sandbox;
@@ -219,32 +218,75 @@ describe('ui/executable', () => {
 
               delays.forEach(delay => {
                 describe(`with delay ${delay}`, () => {
-                  describe('and when the function does not throw an error', () => {
-                    let func;
-                    let result;
+                  describe('and when the function does not throw an error',
+                    () => {
+                      let func;
+                      let result;
 
-                    beforeEach(() => {
-                      func = sandbox.stub();
+                      beforeEach(() => {
+                        func = sandbox.spy();
 
-                      executable.func = testDone => {
-                        timer(() => {
-                          func();
-                          testDone();
-                        }, delay);
-                      };
+                        executable.func = testDone => {
+                          timer(() => {
+                            func();
+                            testDone();
+                          }, delay);
+                        };
 
-                      return executable.execute()
-                        .then(opts => result = opts.result);
+                        return executable.execute()
+                          .then(opts => result = opts.result);
+                      });
+
+                      describe('result', () => {
+                        it('should have "passed"', () => {
+                          expect(result)
+                            .to
+                            .have
+                            .property('passed', true);
+                        });
+
+                        it('should not have "aborted"', () => {
+                          expect(result)
+                            .to
+                            .have
+                            .property('aborted', false);
+                        });
+
+                        it('should not have "failed"', () => {
+                          expect(result)
+                            .to
+                            .have
+                            .property('failed', false);
+                        });
+
+                        it('should not have an "error"', () => {
+                          expect(result)
+                            .not
+                            .to
+                            .have
+                            .property('error');
+                        });
+
+                        it('should not have been "skipped"', () => {
+                          expect(result)
+                            .not
+                            .to
+                            .have
+                            .property('skipped');
+                        });
+
+                        it('should have been "async"', () => {
+                          expect(result)
+                            .to
+                            .have
+                            .property('async', true);
+                        });
+                      });
+
+                      it('should run the function', () => {
+                        expect(func).to.have.been.calledOnce;
+                      });
                     });
-
-                    it('should return a "passed" result', () => {
-                      expect(result.passed).to.be.true;
-                    });
-
-                    it('should run the function', () => {
-                      expect(func).to.have.been.calledOnce;
-                    });
-                  });
                 });
               });
             });

@@ -1,14 +1,27 @@
 import stampit from 'stampit';
-import {FSM, Taggable} from '../core';
+import {EventEmittable, FSM, Taggable} from '../core';
 import Executable from './executable';
 import {assign} from 'lodash';
 
 const Test = stampit({
   props: {
     results: []
+  },
+  methods: {
+    doneRunning (opts) {
+      const {result} = opts;
+      this.results.push(result);
+      this.emit('result', result);
+      if (result.aborted && result.skipped) {
+        return this.skip();
+      } else if (!result.aborted) {
+        return result.failed ? this.fail() : this.pass();
+      }
+      return this.error(result.error || new Error('Unknown error!'));
+    }
   }
 })
-  .compose(FSM, Taggable, Executable)
+  .compose(FSM, Taggable, Executable, EventEmittable)
   .init(function initTest () {
     this.parent.addTest(this);
   })
@@ -16,7 +29,10 @@ const Test = stampit({
   .final('passed', 'errored')
   .events({
     name: 'skip',
-    from: ['idle', 'running'],
+    from: [
+      'idle',
+      'running'
+    ],
     to: 'skipped'
   }, {
     name: 'run',
@@ -51,8 +67,7 @@ const Test = stampit({
         const {result} = opts;
         const elapsed = Date.now() - opts.start;
         opts.res = assign({elapsed}, result);
-        this.results.push(result);
-        return this[result.event]();
+        return this.doneRunning(opts);
       });
   });
 

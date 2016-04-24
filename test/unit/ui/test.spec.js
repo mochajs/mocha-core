@@ -1,6 +1,5 @@
 import {Test, Suite} from '../../../src/ui';
 import {noop, forEach} from 'lodash';
-import {setImmediate} from '../../../src/util';
 
 describe('ui/test', () => {
   let sandbox;
