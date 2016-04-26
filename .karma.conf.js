@@ -11,7 +11,7 @@ module.exports = function (config) {
       'mocha'
     ],
     files: globby.sync([
-      'node_modules/mocha-ui-bdd/dist/mocha-ui-bdd.js',
+      'node_modules/core-js/client/core.js',
       './src/**/*.js',
       './test/**/*.js',
       '!./test/unit/plugins/resolver.spec.js',

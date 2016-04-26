@@ -1,11 +1,11 @@
+import resolver from '../../../src/plugins/resolver';
 import PluginLoader, {
   resolve, assertResolved, normalize, assertAttributes, assertUnused, build
 } from '../../../src/plugins/loader';
-import {EventEmittable} from '../../../src/core';
+import {Plugin} from '../../../src/plugins';
 import {Kefir} from 'kefir';
 
 describe('plugins/loader', () => {
-  const stubs = {usedPlugins: {}};
   let sandbox;
   let noop;
 
@@ -13,22 +13,11 @@ describe('plugins/loader', () => {
     noop = () => {
     };
     sandbox = sinon.sandbox.create('plugins/loader');
-    stubs.resolver = sandbox.stub()
+    sandbox.stub(resolver, 'resolve')
       .returns(noop);
-    stubs.usedPlugins.add = sandbox.stub();
-    stubs.usedPlugins.has = sandbox.stub()
-      .returns(false);
-
-    PluginLoader.__Rewire__('resolver', stubs.resolver);
-    PluginLoader.__Rewire__('usedPlugins', {
-      add: stubs.usedPlugins.add,
-      has: stubs.usedPlugins.has
-    });
   });
 
   afterEach(() => {
-    PluginLoader.__ResetDependency__('resolver');
-    PluginLoader.__ResetDependency__('usedPlugins');
     sandbox.restore();
   });
 
@@ -264,41 +253,35 @@ describe('plugins/loader', () => {
 
   describe('assertUnused()', () => {
     let opts;
+    let unloadedPlugins;
 
     beforeEach(() => {
       opts = {func: noop};
       opts.func.attributes = {
         name: 'foo'
       };
-    });
-
-    it('should not return an Error if the plugin is not already loaded', () => {
-      expect(assertUnused(stubs.usedPlugins, opts))
-        .not
-        .to
-        .be
-        .an('Error');
+      unloadedPlugins = new Set();
     });
 
     it('should return an Error if the plugin is already loaded', () => {
-      stubs.usedPlugins = new Set();
-      stubs.usedPlugins.add(opts.func.attributes.name);
-      expect(assertUnused(stubs.usedPlugins, opts))
+      unloadedPlugins.add(opts.func.attributes.name);
+      expect(assertUnused(unloadedPlugins, opts))
         .to
         .be
         .an('Error');
     });
 
     it('should return the identity', () => {
-      expect(assertUnused(stubs.usedPlugins, opts))
+      expect(assertUnused(unloadedPlugins, opts))
         .to
         .equal(opts);
     });
   });
 
   describe('build()', () => {
-    let PluginStub;
     let opts;
+    let unloadedPlugins;
+    let pluginSpy;
 
     beforeEach(() => {
       opts = {
@@ -306,38 +289,35 @@ describe('plugins/loader', () => {
         bar: 'baz'
       };
       opts.func.attributes = {name: 'foo'};
-      PluginStub = sandbox.stub()
-        .returns(EventEmittable(Object.assign({}, opts.func.attributes, opts)));
-      PluginLoader.__Rewire__('Plugin', PluginStub);
+      unloadedPlugins = new Set();
+      pluginSpy = sandbox.spy();
+      Plugin.fixed.init.push(pluginSpy);
+      sandbox.spy(unloadedPlugins, 'add');
     });
 
     afterEach(() => {
-      PluginLoader.__ResetDependency__('Plugin');
+      Plugin.fixed.init.pop();
     });
 
     it('should not return the identity', () => {
-      expect(build(stubs.usedPlugins, opts))
+      expect(build(unloadedPlugins, opts))
         .not
         .to
         .equal(opts);
     });
 
     it('should defer to Plugin()', () => {
-      build(stubs.usedPlugins, opts);
-      expect(PluginStub)
+      build(unloadedPlugins, opts);
+      expect(pluginSpy)
         .to
         .have
         .been
-        .calledWithExactly({
-          name: 'foo',
-          func: noop,
-          bar: 'baz'
-        });
+        .calledOnce;
     });
 
-    it('should add the "name" value to "usedPlugins"', () => {
-      build(stubs.usedPlugins, opts);
-      expect(stubs.usedPlugins.add)
+    it('should add the "name" value to "unloadedPlugins"', () => {
+      build(unloadedPlugins, opts);
+      expect(unloadedPlugins.add)
         .to
         .have
         .been

@@ -103,8 +103,7 @@ describe('plugins/pluggable', () => {
         let load;
 
         beforeEach(() => {
-          load = sandbox.spy();
-          Pluggable.__Rewire__('PluginLoader', PluginLoader.methods({load}));
+          sandbox.stub(PluginLoader.fixed.methods, 'load');
           opts = {};
           pluggable.load(opts);
         });
@@ -126,7 +125,7 @@ describe('plugins/pluggable', () => {
         });
 
         it('should call PluginLoader#load()', () => {
-          expect(load)
+          expect(PluginLoader.fixed.methods.load)
             .to
             .have
             .been
@@ -168,10 +167,6 @@ describe('plugins/pluggable', () => {
               .have
               .property('ready', true);
           });
-        });
-
-        afterEach(() => {
-          Pluggable.__ResetDependency__('PluginLoader');
         });
       });
     });

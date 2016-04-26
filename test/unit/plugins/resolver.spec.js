@@ -2,6 +2,7 @@ import resolver from '../../../src/plugins/resolver';
 import {noop} from 'lodash';
 
 const namespace = 'mocha';
+const resolve = resolver.resolve;
 
 describe('plugins/resolver', () => {
   let sandbox;
@@ -14,45 +15,37 @@ describe('plugins/resolver', () => {
     sandbox.restore();
   });
 
-  describe('resolver()', () => {
+  describe('resolve()', () => {
     describe('when called without a parameter', () => {
       it('should not throw', () => {
-        expect(resolver)
+        expect(resolve)
           .not
           .to
           .throw();
       });
 
       it('should return nothing', () => {
-        expect(resolver()).to.be.undefined;
+        expect(resolve()).to.be.undefined;
       });
     });
 
     describe('when called with a Function parameter', () => {
       it('should return the function', () => {
-        expect(resolver(noop))
+        expect(resolve(noop))
           .to
           .equal(noop);
       });
     });
 
     describe('when called with a string parameter', () => {
-      let resolve;
-
       beforeEach(() => {
-        resolve = sandbox.stub()
-          .returns('lodash');
-        resolver.__Rewire__('resolve', resolve);
-      });
-
-      afterEach(() => {
-        resolver.__ResetDependency__('resolve');
+        sandbox.stub(resolver, 'resolveDep');
       });
 
       it('should ask resolve-dep to find the module, which could be a plugin',
         () => {
-          resolver('lodash');
-          expect(resolve)
+          resolve('lodash');
+          expect(resolver.resolveDep)
             .to
             .have
             .been

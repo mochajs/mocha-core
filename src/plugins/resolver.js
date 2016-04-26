@@ -1,5 +1,5 @@
 import is from 'check-more-types';
-import resolve from 'resolve-dep';
+import resolveDep from 'resolve-dep';
 import {find} from 'lodash/fp';
 import pkg from '../options/package';
 
@@ -12,13 +12,15 @@ const requireAny = find(pluginPath => {
   }
 });
 
-export default function resolver (pattern) {
+const resolver = {resolveDep};
+
+resolver.resolve = function resolve (pattern) {
   if (is.string(pattern)) {
     const patterns = [
       pattern,
       `${namespace}-*-${pattern}`
     ];
-    return requireAny(resolve(patterns), {
+    return requireAny(this.resolveDep(patterns), {
       config: pkg
     });
   }
@@ -26,4 +28,6 @@ export default function resolver (pattern) {
   if (is.function(pattern)) {
     return pattern;
   }
-}
+}.bind(resolver);
+
+export default resolver;

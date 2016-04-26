@@ -92,7 +92,6 @@ describe('ui/test', () => {
                   describe('and when the function does not throw an error',
                     () => {
                       let funcUnderTest;
-                      let result;
 
                       beforeEach(() => {
                         funcUnderTest = sandbox.stub();

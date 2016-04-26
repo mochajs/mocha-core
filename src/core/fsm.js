@@ -39,6 +39,7 @@ const FSM = stampit({
     }
   }
 })
-  .compose(StateMachine);
+  .compose(StateMachine)
+  .static({FsmError: Error});
 
 export default FSM;

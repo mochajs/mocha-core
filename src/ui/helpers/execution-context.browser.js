@@ -3,6 +3,11 @@
 import noop from 'lodash/noop';
 import 'zone.js/dist/zone-microtask';
 
+// best effort
+require('_process').nextTick = function () {
+  return setImmediate.apply(null, arguments);
+};
+
 let currentZone;
 
 function enable (opts = {}) {
@@ -13,7 +18,6 @@ function enable (opts = {}) {
 }
 
 function run (func, ctx, ...args) {
-  // const boundFunc = func.bind(ctx, ...args);
   return currentZone.run(func, ctx, args);
 }
 

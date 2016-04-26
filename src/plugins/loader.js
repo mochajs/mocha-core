@@ -47,7 +47,7 @@ function syncHandler (func) {
 }
 
 export function resolve (opts = {}) {
-  return assign({func: resolver(opts.pattern)}, opts);
+  return assign({func: resolver.resolve(opts.pattern)}, opts);
 }
 
 export function assertResolved (opts = {}) {
