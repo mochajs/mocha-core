@@ -1,60 +1,47 @@
 import stampit from 'stampit';
 import {Pluggable} from './plugins';
-import UI, {Suite} from './ui';
-import Reporter from './reporter';
-import {defaults} from 'lodash/fp';
+import {UI} from './ui';
+import {Runner} from './runner';
+import {Reporter} from './reporter';
 import {API} from './core';
 import pkg from './options/package';
-import {Set} from './util';
+import {WeakSet} from './util';
+
+function bucketize (executable, opts = {}) {
+  if (opts.only) {
+    this.only.add(executable);
+  } else if (opts.skip) {
+    this.skip.add(executable);
+  }
+}
 
 const Mocha = stampit({
   refs: {
-    plugins: {},
+    only: new WeakSet(),
+    skip: new WeakSet(),
     version: pkg.version
   },
   props: {
-    reporters: []
+    plugins: {}
   },
   methods: {
     createUI (properties = {}) {
-      return this.createAPI(UI, defaults({
-        rootSuite: this.rootSuite
-      }, properties));
+      return this.createAPI(UI, properties);
+    },
+    createRunner (properties = {}) {
+      return this.createAPI(Runner, properties);
     },
     createReporter (properties = {}) {
       return this.createAPI(Reporter, properties);
-    },
-    addOnly (obj) {
-      this.only.add(obj);
-      return this;
-    },
-    removeOnly (obj) {
-      this.only.delete(obj);
-      return this;
-    },
-    addSkipped (obj) {
-      this.skipped.add(obj);
-      obj.pending = true;
-      return this;
-    },
-    removeSkipped (obj) {
-      this.skipped.remove(obj);
-      obj.pending = false;
-      return this;
     }
-  },
-  init () {
-    this.rootSuite = Suite();
   }
 })
   .compose(Pluggable, API)
-  .init(function initMochaPlugins () {
-    this.only = new Set();
-    this.skipped = new Set();
-
-    if (this.ui) {
-      this.use(this.ui);
-    }
+  .on('suite:created', bucketize)
+  .on('test:created', bucketize)
+  .init(function init () {
+    this.use(this.ui)
+      .use(this.runner);
   });
 
 export default Mocha.refs({Mocha});

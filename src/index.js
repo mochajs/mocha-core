@@ -1,4 +1,4 @@
-import 'source-map-support/register';
 import './util/mixins';
-export {default as default} from './mocha';
+import Mocha from './mocha';
+export default Mocha;
 

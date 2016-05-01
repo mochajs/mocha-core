@@ -1,6 +1,6 @@
 import Mocha from '../../src/mocha';
-import Reporter from '../../src/reporter';
-import UI from '../../src/ui';
+import {Reporter} from '../../src/reporter';
+import {UI} from '../../src/ui';
 
 describe('mocha', () => {
   let sandbox;
@@ -18,31 +18,27 @@ describe('mocha', () => {
       let mocha;
 
       beforeEach(() => {
-        sandbox.stub(Mocha.fixed.methods, 'use');
-        mocha = Mocha();
-      });
-
-      afterEach(() => {
-        mocha.emit('ready');
-      });
-
-      describe('when not supplied a "ui" property', () => {
-        it('should not call use()', () => {
-          expect(mocha.use)
-            .not
-            .to
-            .have
-            .been
-            .called;
+        sandbox.stub(Mocha.fixed.methods, 'use').returnsThis();
+        mocha = Mocha({
+          ui: 'foo',
+          runner: 'bar'
         });
       });
 
-      it('should create a "rootSuite"', () => {
-        const mocha = Mocha();
-        expect(mocha.rootSuite)
+      it('should call "use" with the value of "ui"', () => {
+        expect(mocha.use)
           .to
-          .be
-          .an('object');
+          .have
+          .been
+          .calledWithExactly('foo');
+      });
+
+      it('should call "use" with the value of "runner"', () => {
+        expect(mocha.use)
+          .to
+          .have
+          .been
+          .calledWithExactly('bar');
       });
     });
 
@@ -50,7 +46,7 @@ describe('mocha', () => {
       let mocha;
 
       beforeEach(() => {
-        sandbox.stub(Mocha.fixed.methods, 'use');
+        sandbox.stub(Mocha.fixed.methods, 'use').returnsThis();
         mocha = Mocha();
       });
 
@@ -66,7 +62,8 @@ describe('mocha', () => {
             .an('object');
         });
 
-        it('should call the "API" param with an object containing a delegate value',
+        it(
+          'should call the "API" param with an object containing a delegate value',
           () => {
             const stub = sandbox.stub();
             mocha.createAPI(stub);
@@ -90,41 +87,37 @@ describe('mocha', () => {
       });
 
       describe('createReporter()', () => {
+        let props;
         beforeEach(() => {
+          props = {};
           sandbox.stub(mocha, 'createAPI');
         });
 
         it('should defer to createAPI using "Reporter" API', () => {
-          mocha.createReporter();
+          mocha.createReporter(props);
           expect(mocha.createAPI)
             .to
             .have
             .been
-            .calledWithExactly(Reporter, {});
+            .calledWithExactly(Reporter, props);
         });
       });
 
       describe('createUI()', () => {
+        let props;
+
         beforeEach(() => {
+          props = {};
           sandbox.stub(mocha, 'createAPI');
         });
 
         it('should defer to createAPI using "UI" API', () => {
-          mocha.createUI();
+          mocha.createUI(props);
           expect(mocha.createAPI)
             .to
             .have
             .been
-            .calledWith(UI);
-        });
-
-        it('should call createAPI w/ a "rootSuite" object', () => {
-          mocha.createUI();
-          expect(mocha.createAPI)
-            .to
-            .have
-            .been
-            .calledWithExactly(UI, {rootSuite: mocha.rootSuite});
+            .calledWithExactly(UI, props);
         });
       });
     });

@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import {UI, Suite} from '../../../src/ui';
+import {EventEmittable} from '../../../src/core';
 
 describe('ui/ui', () => {
   let sandbox;
@@ -13,18 +14,10 @@ describe('ui/ui', () => {
   });
 
   describe('UI()', () => {
-    it('should throw if not passed a rootSuite', () => {
-      expect(UI)
+    it('should use the same rootSuite if none specified', () => {
+      expect(UI().rootSuite)
         .to
-        .throw(Error);
-    });
-
-    it('should set the factory prop to the stamp', () => {
-      const ui = UI({rootSuite: Suite()});
-      expect(ui)
-        .to
-        .have
-        .property('factory', UI);
+        .equal(UI().rootSuite);
     });
 
     it('should call setContext()', () => {
@@ -55,12 +48,7 @@ describe('ui/ui', () => {
       let delegate;
 
       beforeEach(() => {
-        delegate = {
-          addOnly: sandbox.spy(),
-          removeOnly: sandbox.spy(),
-          addSkipped: sandbox.spy(),
-          removeSkipped: sandbox.spy()
-        };
+        delegate = EventEmittable();
         ui = UI({
           rootSuite: Suite(),
           delegate
@@ -77,19 +65,58 @@ describe('ui/ui', () => {
               .equal(parent);
           });
 
-        it('should subscribe to the Suite\'s "will-run" event', () => {
-          ui.setContext(parent);
-          expect(ui.Suite.fixed.refs.onceEvents['will-run'])
-            .to
-            .be
-            .a('function');
+        describe('Suite prop', () => {
+          beforeEach(() => {
+            ui.setContext(parent);
+          });
+
+          describe('when instantiated', () => {
+            let suite;
+            let ctx;
+
+            beforeEach(() => {
+              ctx = {};
+              sandbox.stub(parent, 'spawnContext')
+                .returns(ctx);
+              sandbox.stub(ui.Suite.fixed.methods, 'once');
+              suite = ui.Suite();
+            });
+
+            it('should call spawnContext() on the parent suite', () => {
+              expect(parent.spawnContext).to.have.been.calledOnce;
+            });
+
+            it(
+              'should set the "context" prop to the return value of the spawnContext() call',
+              () => {
+                expect(suite.context)
+                  .to
+                  .equal(ctx);
+              });
+
+            it('should listen for event "will-execute"', () => {
+              expect(suite.once)
+                .to
+                .have
+                .been
+                .calledWith('will-execute');
+            });
+
+            it('should listen for event "did-execute"', () => {
+              expect(suite.once)
+                .to
+                .have
+                .been
+                .calledWith('did-execute');
+            });
+          });
         });
 
-        describe('and when "did-run" is emitted', () => {
+        describe('and when "will-execute" is emitted', () => {
           it('should call setContext() with the Suite', () => {
             const suite = ui.Suite();
             sandbox.stub(ui, 'setContext');
-            suite.emit('will-run', suite);
+            suite.emit('will-execute', suite);
             expect(ui.setContext)
               .to
               .have
@@ -98,48 +125,17 @@ describe('ui/ui', () => {
           });
         });
 
-        describe('and when the UI is recursive', () => {
-          beforeEach(() => {
-            ui.setContext(parent);
-          });
-
-          it('should subscribe to the Suite\'s "did-run" event', () => {
-            expect(ui.Suite.fixed.refs.onceEvents['did-run'])
+        describe('and when "did-execute" is emitted', () => {
+          it('should call setContext() with the Suite\'s parent', () => {
+            const suite = ui.Suite();
+            sandbox.stub(ui, 'setContext');
+            suite.emit('did-execute', suite);
+            expect(ui.setContext)
               .to
-              .be
-              .a('function');
+              .have
+              .been
+              .calledWithExactly(suite.parent);
           });
-
-          describe('and when "did-run" is emitted', () => {
-            it('should call setContext() with the Suite\'s parent', () => {
-              const suite = ui.Suite();
-              sandbox.stub(ui, 'setContext');
-              suite.emit('did-run', suite);
-              expect(ui.setContext)
-                .to
-                .have
-                .been
-                .calledWithExactly(suite.parent);
-            });
-          });
-        });
-
-        describe('when the UI is not recursive', () => {
-          beforeEach(() => {
-            ui.recursive = false;
-            ui.setContext(parent);
-          });
-
-          it('should not subscribe to the Suite\'s "did-run" event', () => {
-            expect(ui.Suite.fixed.refs.onceEvents['did-run']).to.be.undefined;
-          });
-        });
-
-        it('should set the Test prop to be a factory having suite ref', () => {
-          ui.setContext(parent);
-          expect(ui.Test.fixed.refs.parent)
-            .to
-            .equal(parent);
         });
       });
 
@@ -154,6 +150,7 @@ describe('ui/ui', () => {
             parent: Suite()
           };
           opts = {};
+          sandbox.stub(ui, 'broadcast');
         });
 
         it('should return a Test', () => {
@@ -173,52 +170,13 @@ describe('ui/ui', () => {
             .calledWithExactly(testDef);
         });
 
-        describe('when called with truthy "only" option', () => {
-          beforeEach(() => {
-            sandbox.stub(ui, 'addOnly');
-          });
-
-          it('should add the suite to the "only" Set', () => {
-            opts.only = true;
-            const test = ui.createTest(testDef, opts);
-            expect(ui.addOnly)
-              .to
-              .have
-              .been
-              .calledWithExactly(test);
-          });
-        });
-      });
-
-      describe('addOnly(), removeOnly(), addSkipped(), removeSkipped()', () => {
-        [
-          'addOnly',
-          'removeOnly',
-          'addSkipped',
-          'removeSkipped'
-        ].forEach(method => {
-          let obj;
-
-          beforeEach(() => {
-            obj = {};
-          });
-
-          describe(`${method}()`, () => {
-            it('should delegate to the delegate', () => {
-              ui[method](obj);
-              expect(ui.delegate[method])
-                .to
-                .have
-                .been
-                .calledWithExactly(obj);
-            });
-
-            it('should return the UI', () => {
-              expect(ui[method](obj))
-                .to
-                .equal(ui);
-            });
-          });
+        it('should broadcast on the "test" channel', () => {
+          const test = ui.createTest(testDef, opts);
+          expect(ui.broadcast)
+            .to
+            .have
+            .been
+            .calledWithExactly('test', test, opts);
         });
       });
 
@@ -227,7 +185,7 @@ describe('ui/ui', () => {
           sandbox.stub(ui.context, 'retries');
         });
 
-        it('should call the Context\'s retries()', () => {
+        it("should call the Context's retries()", () => {
           ui.retries(4);
           expect(ui.context.retries)
             .to
@@ -253,9 +211,9 @@ describe('ui/ui', () => {
             func: _.noop
           };
           opts = {};
-          sandbox.stub(ui.factory, 'enqueueSuite');
-          sandbox.stub(ui.Suite.fixed.methods, 'run')
+          sandbox.stub(ui.Suite.fixed.methods, 'execute')
             .returns(new Promise(resolve => resolve()));
+          sandbox.stub(ui, 'broadcast');
           sandbox.spy(ui, 'Suite');
           sandbox.stub(ui, 'setContext');
         });
@@ -276,29 +234,13 @@ describe('ui/ui', () => {
             .calledWithExactly(suiteDef);
         });
 
-        it('should enqueue the Suite to be run', () => {
-          const suite = ui.createSuite(suiteDef);
-          expect(ui.factory.enqueueSuite)
+        it('should broadcast on the "suite" channel', () => {
+          const suite = ui.createSuite(suiteDef, opts);
+          expect(ui.broadcast)
             .to
             .have
             .been
-            .calledWithExactly(suite);
-        });
-
-        describe('when called with truthy "only" option', () => {
-          beforeEach(() => {
-            sandbox.stub(ui, 'addOnly');
-          });
-
-          it('should add the Suite to the "only" Set', () => {
-            opts.only = true;
-            const suite = ui.createSuite(suiteDef, opts);
-            expect(ui.addOnly)
-              .to
-              .have
-              .been
-              .calledWithExactly(suite);
-          });
+            .calledWithExactly('suite', suite, opts);
         });
       });
     });

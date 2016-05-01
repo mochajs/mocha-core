@@ -1,12 +1,9 @@
 import stampit from 'stampit';
-import {EventEmittable, FSM, Taggable} from '../core';
+import {FSM, Taggable} from '../core';
 import Executable from './executable';
 import {assign} from 'lodash';
 
 const Test = stampit({
-  props: {
-    results: []
-  },
   methods: {
     doneRunning (opts) {
       const {result} = opts;
@@ -21,10 +18,7 @@ const Test = stampit({
     }
   }
 })
-  .compose(FSM, Taggable, Executable, EventEmittable)
-  .init(function initTest () {
-    this.parent.addTest(this);
-  })
+  .compose(FSM, Taggable, Executable)
   .initial('idle')
   .final('passed', 'errored')
   .events({

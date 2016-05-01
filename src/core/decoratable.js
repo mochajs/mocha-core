@@ -50,6 +50,22 @@ const Decoratable = stampit({
         }.bind(this);
       }
       return noop;
+    },
+    /**
+     * Emits an event on the delegate
+     * @param {string} event
+     * @param {...*} [args]
+     */
+    broadcast (event, ...args) {
+      return this.delegate.emit(event, ...args);
+    },
+    onBroadcast (event, handler) {
+      this.delegate.on(event, handler);
+      return this;
+    },
+    onceBroadcast (event, handler) {
+      this.delegate.once(event, handler);
+      return this;
     }
   },
   init () {

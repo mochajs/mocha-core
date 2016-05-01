@@ -17,35 +17,37 @@
     "url": "https://github.com/boneskull/mocha-core/issues"
   },
   "homepage": "https://github.com/boneskull/mocha-core#readme",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "engines": {
     "node": ">=0.10.0",
     "npm": ">=1.7.4"
   },
   "files": [
+    "lib/",
     "src/"
   ],
   "scripts": {
     "bump:major": "npm version major -m 'Release v%s'",
     "bump:minor": "npm version minor -m 'Release v%s'",
     "bump:patch": "npm version patch -m 'Release v%s'",
-    "check": "parallel nsp deps",
     "update": "updtr",
     "lint": "eslint src/ test/ .*.js",
     "nsp": "nsp check",
+    "prepublish": "rimraf lib && BABEL_ENV=node babel --out-dir=lib src",
     "preversion": "npm run test",
     "publish-please": "publish-please",
-    "test": "parallel lint test:node test:browser",
+    "test": "parallel lint nsp test:node test:browser",
     "test:browser": "karma start .karma.conf.js --single-run",
     "test:browser:dev": "karma start .karma.conf.js --browsers=Chrome",
-    "test:node": "nyc --require babel-core/register mocha --colors --require ./test/fixture --recursive",
-    "test:node:bare": "mocha --compilers js:babel-core/register --require ./test/fixture --recursive --full-trace"
+    "test:node": "nyc --require babel-register mocha --colors --require ./test/fixture --recursive",
+    "test:node:bare": "mocha --require source-map-support/register --require babel-register --require ./test/fixture --recursive --full-trace"
   },
   "dependencies": {
     "async-listener": "^0.6.0",
     "check-more-types": "^2.20.2",
     "core-js": "^2.3.0",
     "debug": "^2.2.0",
+    "errorist": "^0.1.4",
     "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
     "kefir": "^3.2.1",
     "lodash": "^4.11.1",
@@ -57,12 +59,14 @@
     "zone.js": "~0.5.15"
   },
   "devDependencies": {
+    "babel-cli": "^6.7.7",
     "babel-plugin-lodash": "2.3.0",
     "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
     "babel-plugin-transform-undefined-to-void": "^6.5.0",
     "babel-preset-es2015": "^6.6.0",
     "babel-preset-es2015-loose": "^7.0.0",
-    "babelify": "^7.2.0",
+    "babel-register": "^6.7.2",
+    "babelify": "^7.3.0",
     "bannerify": "vekat/bannerify#feature-option",
     "chai": "^3.4.0",
     "chai-as-promised": "^5.1.0",
@@ -93,6 +97,7 @@
     "nyc": "^6.4.0",
     "phantomjs-prebuilt": "^2.1.7",
     "publish-please": "^1.1.0",
+    "rimraf": "^2.5.2",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
     "updtr": "^0.1.6",

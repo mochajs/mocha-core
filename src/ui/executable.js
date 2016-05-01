@@ -1,15 +1,19 @@
 import stampit from 'stampit';
 import is from 'check-more-types';
-import {Unique} from '../core';
+import {Unique, EventEmittable} from '../core';
 import results from './helpers/results';
 import {once, assign} from 'lodash';
 import * as executionContext from './helpers/execution-context';
 import Context from './context';
 import {setImmediate, Promise} from '../util';
+import errorist from 'errorist';
 
 const Executable = stampit({
   refs: {
     context: Context()
+  },
+  props: {
+    results: []
   },
   init () {
     // this is intended to be "sticky".  if you set it, then you
@@ -35,15 +39,18 @@ const Executable = stampit({
     execute (opts = {}) {
       const func = this.func;
 
+      this.emit('will-execute', this);
+
       return new Promise(resolve => {
-        if (!opts.force && this.pending) {
+        if (this.pending) {
           return resolve(results.skipped.abort());
         }
-        let async;
+
+        let isAsync = false;
 
         executionContext.enable({
           onAsync: once(function onAsync () {
-            async = true;
+            isAsync = true;
           }),
           onError: once(function onError (...args) {
             const err = args.pop();
@@ -68,8 +75,8 @@ const Executable = stampit({
           const result = results.promise;
           retval
             .then(() => resolve(result.complete()),
-              err => resolve(result.complete(err)));
-        } else if (!async) {
+              err => resolve(result.complete(errorist(err))));
+        } else if (!isAsync) {
           resolve(results.sync.complete());
         }
       })
@@ -79,11 +86,14 @@ const Executable = stampit({
         .then(result => {
           executionContext.disable();
           opts.result = result;
+          this.lastResult = result;
+          this.results.push(result);
+          this.emit('did-execute', this);
           return assign(opts, {result});
         });
     }
   }
 })
-  .compose(Unique);
+  .compose(EventEmittable, Unique);
 
 export default Executable;

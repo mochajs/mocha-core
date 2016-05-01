@@ -106,7 +106,10 @@ const PluginLoader = stampit({
       .withHandler(syncHandler(assertAttributes))
       .withHandler(syncHandler(assertUnused(unloadedPlugins)))
       .map(build(this.seenPlugins))
-      .onValue(plugin => unloadedPlugins.add(plugin.name));
+      .onValue(plugin => {
+        unloadedPlugins.add(plugin.name);
+        this.emit('plugin-loading', plugin);
+      });
 
     const withoutDeps = loadStream.filter(pluginReady);
 

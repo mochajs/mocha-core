@@ -9,7 +9,7 @@ const Pluggable = stampit({
       return is.not.empty(pattern) && is.or(is.string, is.function)(pattern);
     }
   },
-  refs: {
+  props: {
     ready: true
   },
   init ({stamp}) {
@@ -19,11 +19,12 @@ const Pluggable = stampit({
   methods: {
     load (opts = {}) {
       let loader = this.loader;
-      this.ready = false;
 
       if (!this.loader) {
         loader = this.loader = PluginLoader()
-          .on('error', err => this.emit('error', err))
+          .on('plugin-loading', () => {
+            this.ready = false;
+          })
           .on('plugin-loaded', plugin => {
             this.loadedPlugins.set(plugin.name, plugin);
           })
@@ -32,21 +33,21 @@ const Pluggable = stampit({
           })
           .on('ready', () => {
             this.ready = true;
-          });
+          })
+          .on('error', err => this.emit('error', err));
       }
 
       loader.load(opts);
     },
     use (pattern, opts = {}) {
-      if (this.factory.isPluginLike(pattern)) {
+      if (is.defined(pattern) && this.factory.isPluginLike(pattern)) {
         this.load({
           pattern,
           opts,
           api: this
         });
-        return this;
       }
-      throw new Error('Function or path to plugin required');
+      return this;
     }
   }
 })

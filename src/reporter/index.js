@@ -1,5 +1,2 @@
-import stampit from 'stampit';
+export {default as Reporter} from './reporter';
 
-const Reporter = stampit();
-
-export default Reporter;

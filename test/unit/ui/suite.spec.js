@@ -116,96 +116,6 @@ describe('ui/suite', () => {
             .equal(child);
         });
       });
-
-      describe('run()', () => {
-        let suite;
-
-        beforeEach(() => {
-          suite = Suite({func});
-        });
-
-        it('should execute the "func" property in the Suite\'s context', () => {
-          return suite.run()
-            .then(() => {
-              expect(func)
-                .to
-                .have
-                .been
-                .calledOn(suite.context);
-            });
-        });
-
-        it('should emit "will-run"', () => {
-          sandbox.stub(suite, 'emit');
-          return suite.run()
-            .then(() => {
-              expect(suite.emit)
-                .to
-                .have
-                .been
-                .calledWithExactly('will-run');
-            });
-        });
-
-        it('should emit "did-run"', () => {
-          sandbox.stub(suite, 'emit');
-          return suite.run()
-            .then(() => {
-              expect(suite.emit)
-                .to
-                .have
-                .been
-                .calledWithExactly('did-run');
-            });
-        });
-
-        it('should return the suite', () => {
-          return expect(suite.run())
-            .to
-            .eventually
-            .equal(suite);
-        });
-
-        it('should store a result (I guess)', () => {
-          return suite.run()
-            .then(() => {
-              expect(suite)
-                .to
-                .have
-                .property('result')
-                .with
-                .property('passed', true);
-            });
-        });
-
-        it('should allow asynchronous suites', () => {
-          const spy = sandbox.spy();
-          suite.func = function (done) {
-            setTimeout(function () {
-              spy();
-              done();
-            });
-          };
-          return suite.run()
-            .then(() => {
-              expect(spy).to.have.been.calledOnce;
-            });
-        });
-
-        it('should also allow suites that return a Promise', () => {
-          const spy = sandbox.spy();
-          suite.func = function () {
-            return new Promise(resolve => {
-              spy();
-              resolve();
-            });
-          };
-          return suite.run()
-            .then(() => {
-              expect(spy).to.have.been.calledOnce;
-            });
-        });
-      });
     });
 
     describe('property', () => {
@@ -298,25 +208,39 @@ describe('ui/suite', () => {
       describe('fullTitle', () => {
         describe('getter', () => {
           describe('when the Suite has no parent', () => {
-            it('should return the title', () => {
+            it('should return the title as a single-item array', () => {
               expect(suite.fullTitle)
                 .to
-                .equal(suite.title);
+                .eql([suite.title]);
             });
           });
 
           describe('when the Suite has a parent', () => {
             let parent;
+            let stub;
 
             beforeEach(() => {
-              parent = Suite({title: 'bar'});
+              parent = Suite();
               suite.parent = parent;
+              stub = sandbox.stub()
+                .returns(['bar']);
+              Object.defineProperty(suite.parent, 'fullTitle', {
+                get: stub
+              });
             });
 
             it('should concatenate the titles', () => {
               expect(suite.fullTitle)
                 .to
-                .equal('bar foo');
+                .eql([
+                  'bar',
+                  'foo'
+                ]);
+            });
+
+            it('should ask the parent Suite for its fulltitle', () => {
+              suite.fullTitle;
+              expect(stub).to.have.been.calledOnce;
             });
           });
         });

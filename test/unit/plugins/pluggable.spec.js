@@ -48,6 +48,13 @@ describe('plugins/pluggable', () => {
         .property('loader');
     });
 
+    it('should have "ready" property "true"', () => {
+      expect(pluggable)
+        .to
+        .have
+        .property('ready', true);
+    });
+
     function makePlugin (attributes = {}) {
       function plugin () {
       }
@@ -72,10 +79,11 @@ describe('plugins/pluggable', () => {
           pluggable.emit('ready');
         });
 
-        it('should throw if no pattern supplied', () => {
+        it('should not throw if no pattern supplied', () => {
           expect(() => pluggable.use())
+            .not
             .to
-            .throw(Error, /required/);
+            .throw();
         });
 
         it('should call "load"', () => {
@@ -100,7 +108,6 @@ describe('plugins/pluggable', () => {
 
       describe('load()', () => {
         let opts;
-        let load;
 
         beforeEach(() => {
           sandbox.stub(PluginLoader.fixed.methods, 'load');
@@ -117,13 +124,6 @@ describe('plugins/pluggable', () => {
           });
         });
 
-        it('should set "ready" to false', () => {
-          expect(pluggable)
-            .to
-            .have
-            .property('ready', false);
-        });
-
         it('should call PluginLoader#load()', () => {
           expect(PluginLoader.fixed.methods.load)
             .to
@@ -132,6 +132,32 @@ describe('plugins/pluggable', () => {
             .calledWithExactly(opts);
         });
 
+        describe('when PluginLoader instance emits "plugin-loading"', () => {
+          beforeEach(() => {
+            pluggable.loader.emit('plugin-loading');
+          });
+
+          it('should set its "ready" prop to "false"', () => {
+            expect(pluggable)
+              .to
+              .have
+              .property('ready', false);
+          });
+
+          describe('then when PluginLoader instance emits "ready"', () => {
+            beforeEach(() => {
+              pluggable.loader.emit('ready');
+            });
+
+            it('should set its "ready" prop to "true"', () => {
+              expect(pluggable)
+                .to
+                .have
+                .property('ready', true);
+            });
+          });
+        });
+        
         describe('when PluginLoader instance emits "error"', () => {
           let err;
 

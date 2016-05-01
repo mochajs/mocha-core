@@ -1,6 +1,6 @@
 import stampit from 'stampit';
 import Executable from './executable';
-import {EventEmittable} from '../core';
+import is from 'check-more-types';
 
 const Suite = stampit({
   refs: {
@@ -16,18 +16,8 @@ const Suite = stampit({
       this.children.push(suite);
       return this;
     },
-    addTest (test) {
-      this.tests.push(test);
-      return this;
-    },
-    run () {
-      this.emit('will-run');
-      return this.execute({force: true})
-        .then(({result}) => {
-          this.result = result;
-          this.emit('did-run');
-          return this;
-        });
+    spawnContext () {
+      return this.context.spawn();
     }
   },
   init () {
@@ -35,21 +25,26 @@ const Suite = stampit({
       this.parent.addChildSuite(this);
     }
 
+    if (is.function(this.title)) {
+      this.func = this.title;
+      this.title = '';
+    }
+
     Object.defineProperties(this, {
+      // array for reporter to format as necessary
       fullTitle: {
         get () {
-          let suite = this;
-          const fullTitle = [];
-          while (suite && suite.title) {
-            fullTitle.unshift(suite.title);
-            suite = suite.parent;
+          const parent = this.parent;
+          if (parent) {
+            return parent.fullTitle.concat(this.title);
           }
-          return fullTitle.join(' ');
-        }
+          return [this.title];
+        },
+        configurable: true
       }
     });
   }
 })
-  .compose(Executable, EventEmittable);
+  .compose(Executable);
 
 export default Suite;
