@@ -13,9 +13,26 @@ describe('ui/suite', () => {
   });
 
   describe('Suite()', () => {
-    let func;
-    beforeEach(() => {
-      func = sandbox.spy();
+    describe('if created with a function for a title', () => {
+      let suite;
+
+      beforeEach(() => {
+        suite = Suite({title: _.noop});
+      });
+
+      it('should set the "func" prop to the "title"', () => {
+        expect(suite)
+          .to
+          .have
+          .property('func', _.noop);
+      });
+
+      it('should set the "title" prop to an empty string', () => {
+        expect(suite)
+          .to
+          .have
+          .property('title', '');
+      });
     });
 
     it('should return an object with a null "parent" prop', () => {
@@ -42,17 +59,6 @@ describe('ui/suite', () => {
       beforeEach(() => {
         rootSuite = Suite();
         parent = Suite({parent: rootSuite});
-        sandbox.stub(parent, 'addChildSuite')
-          .returns(parent);
-      });
-
-      it('should add the suite as a child of the parent', () => {
-        const suite = Suite({parent});
-        expect(parent.addChildSuite)
-          .to
-          .have
-          .been
-          .calledWithExactly(suite);
       });
 
       describe('if parent\'s "pending" prop is true', () => {
@@ -106,14 +112,30 @@ describe('ui/suite', () => {
     });
 
     describe('method', () => {
-      describe('addChild()', () => {
-        it('should add a suite to the "children" Array', () => {
-          const parent = Suite();
-          const child = Suite();
-          parent.addChildSuite(child);
-          expect(parent.children[0])
+      let suite;
+
+      beforeEach(() => {
+        suite = Suite();
+      });
+
+      describe('spawnContext()', () => {
+        let value;
+
+        beforeEach(() => {
+          value = {};
+          sandbox.stub(suite.context, 'spawn')
+            .returns(value);
+        });
+
+        it('should call the spawn() func of the "context" prop', () => {
+          suite.spawnContext();
+          expect(suite.context.spawn).to.have.been.calledOnce;
+        });
+
+        it('should return the return value of spawn()', () => {
+          expect(suite.spawnContext())
             .to
-            .equal(child);
+            .equal(value);
         });
       });
     });

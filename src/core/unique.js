@@ -3,7 +3,13 @@ import {v4} from 'uuid';
 
 const Unique = stampit({
   init () {
-    this.id = v4();
+    const id = this.id || v4();
+    Object.defineProperty(this, 'id', {
+      value: id,
+      configurable: true,
+      writable: false,
+      enumerable: true
+    });
   }
 });
 

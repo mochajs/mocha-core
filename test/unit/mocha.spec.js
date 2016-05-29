@@ -1,5 +1,4 @@
 import Mocha from '../../src/mocha';
-import {Reporter} from '../../src/reporter';
 import {UI} from '../../src/ui';
 
 describe('mocha', () => {
@@ -18,7 +17,8 @@ describe('mocha', () => {
       let mocha;
 
       beforeEach(() => {
-        sandbox.stub(Mocha.fixed.methods, 'use').returnsThis();
+        sandbox.stub(Mocha.fixed.methods, 'use')
+          .returnsThis();
         mocha = Mocha({
           ui: 'foo',
           runner: 'bar'
@@ -46,44 +46,13 @@ describe('mocha', () => {
       let mocha;
 
       beforeEach(() => {
-        sandbox.stub(Mocha.fixed.methods, 'use').returnsThis();
+        sandbox.stub(Mocha.fixed.methods, 'use')
+          .returnsThis();
         mocha = Mocha();
       });
 
       afterEach(() => {
         mocha.emit('ready');
-      });
-
-      describe('createAPI()', () => {
-        it('should return an object', () => {
-          expect(mocha.createAPI())
-            .to
-            .be
-            .an('object');
-        });
-
-        it(
-          'should call the "API" param with an object containing a delegate value',
-          () => {
-            const stub = sandbox.stub();
-            mocha.createAPI(stub);
-            expect(stub)
-              .to
-              .have
-              .been
-              .calledWithExactly({delegate: mocha});
-          });
-
-        it('should not override any delegate option', () => {
-          const stub = sandbox.stub();
-          const delegate = {};
-          mocha.createAPI(stub, {delegate});
-          expect(stub)
-            .to
-            .have
-            .been
-            .calledWithExactly({delegate});
-        });
       });
 
       describe('createReporter()', () => {
@@ -93,31 +62,95 @@ describe('mocha', () => {
           sandbox.stub(mocha, 'createAPI');
         });
 
-        it('should defer to createAPI using "Reporter" API', () => {
+        it('should defer to createAPI', () => {
           mocha.createReporter(props);
-          expect(mocha.createAPI)
-            .to
-            .have
-            .been
-            .calledWithExactly(Reporter, props);
+          expect(mocha.createAPI).to.have.been.calledOnce;
         });
       });
 
       describe('createUI()', () => {
         let props;
+        let ui;
 
         beforeEach(() => {
           props = {};
-          sandbox.stub(mocha, 'createAPI');
+          sandbox.stub(mocha, 'createAPI')
+            .returns(UI.refs({
+              delegate: mocha,
+              executable$: mocha.executable$
+            })());
+          ui = mocha.createUI(props);
         });
 
-        it('should defer to createAPI using "UI" API', () => {
-          mocha.createUI(props);
-          expect(mocha.createAPI)
+        it('should return a UI instance', () => {
+          expect(ui)
+            .to
+            .be
+            .an('object');
+        });
+
+        it('should defer to createAPI', () => {
+          expect(mocha.createAPI).to.have.been.calledOnce;
+        });
+      });
+
+      describe('createRunner()', () => {
+        let props;
+        let ui;
+
+        beforeEach(() => {
+          props = {};
+          sandbox.stub(mocha, 'createAPI')
+            .returns(UI.refs({
+              delegate: mocha,
+              executable$: mocha.executable$
+            })());
+          ui = mocha.createRunner(props);
+        });
+
+        it('should return a Runner instance', () => {
+          expect(ui)
+            .to
+            .be
+            .an('object');
+        });
+
+        it('should defer to createAPI', () => {
+          expect(mocha.createAPI).to.have.been.calledOnce;
+        });
+      });
+
+      describe('createAPI()', () => {
+        let Factory;
+
+        beforeEach(() => {
+          Factory = sandbox.stub()
+            .returns({});
+        });
+
+        it('should throw if no Factory passed', () => {
+          expect(() => mocha.createAPI())
+            .to
+            .throw(Error);
+        });
+
+        it('should return an object', () => {
+          expect(mocha.createAPI(Factory))
+            .to
+            .be
+            .an('object');
+        });
+
+        it('should call Factory with a delegate and executable$ stream', () => {
+          mocha.createAPI(Factory);
+          expect(Factory)
             .to
             .have
             .been
-            .calledWithExactly(UI, props);
+            .calledWithExactly({
+              delegate: mocha,
+              executable$: mocha.executable$
+            });
         });
       });
     });

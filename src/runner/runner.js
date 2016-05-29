@@ -1,21 +1,24 @@
 import stampit from 'stampit';
-import {Decoratable, EventEmittable} from '../core';
+import {Decoratable, EventEmittable, Streamable} from '../core';
+import {get, negate} from 'lodash/fp';
+import {Kefir} from 'kefir';
 
 const Runner = stampit({
-  methods: {
-    run (executable, opts = {}) {
-      return executable.execute(opts);
-    }
-  },
   init () {
-    this.onBroadcast('suite:created', (suite, opts = {}) => {
-      if (opts.skip) {
-        return this.emit('suite:skipped', suite);
-      }
-      this.emit('suite', suite);
-    });
+    const suites = this.suites;
+    const isExcluded = get('opts.exclude');
+    const isInclusive = get('opts.include');
+    const included = suites.filter(isInclusive);
+
+    suites.filter(isExcluded)
+      .onValue(({suite}) => this.emit('suite:exclude', suite));
+
+    suites.filter(negate(isExcluded))
+      .filter(negate(isInclusive))
+      .onValue(({suite}) => this.emit('suite:run', suite));
+
   }
 })
-  .compose(EventEmittable, Decoratable);
+  .compose(EventEmittable, Decoratable, Streamable);
 
 export default Runner;

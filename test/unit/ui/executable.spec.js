@@ -158,13 +158,12 @@ describe('ui/executable', () => {
             executable.pending = true;
           });
 
-          it('should return a "skipped" result', () => {
+          it('should return a "pending" result', () => {
             return expect(executable.execute())
               .to
               .eventually
               .have
-              .deep
-              .property('result.fulfilled', 'skipped');
+              .property('fulfilled', 'pending');
           });
 
           describe('if no longer pending', () => {
@@ -190,7 +189,7 @@ describe('ui/executable', () => {
 
               beforeEach(() => {
                 return executable.execute()
-                  .then(opts => result = opts.result);
+                  .then(_result => result = _result);
               });
 
               it('should run the function', () => {
@@ -234,7 +233,7 @@ describe('ui/executable', () => {
                         };
 
                         return executable.execute()
-                          .then(opts => result = opts.result);
+                          .then(_result => result = _result);
                       });
 
                       describe('result', () => {
@@ -243,13 +242,6 @@ describe('ui/executable', () => {
                             .to
                             .have
                             .property('passed', true);
-                        });
-
-                        it('should not have "aborted"', () => {
-                          expect(result)
-                            .to
-                            .have
-                            .property('aborted', false);
                         });
 
                         it('should not have "failed"', () => {
@@ -267,12 +259,12 @@ describe('ui/executable', () => {
                             .property('error');
                         });
 
-                        it('should not have been "skipped"', () => {
+                        it('should not have been "pending"', () => {
                           expect(result)
                             .not
                             .to
                             .have
-                            .property('skipped');
+                            .property('fulfilled', 'pending');
                         });
 
                         it('should have been "async"', () => {
@@ -306,7 +298,7 @@ describe('ui/executable', () => {
                 });
 
                 return executable.execute()
-                  .then(opts => result = opts.result);
+                  .then(_result => result = _result);
               });
 
               it('should run the function', () => {

@@ -1,39 +1,25 @@
 import stampit from 'stampit';
-import {FSM, Taggable} from '../core';
+import {FSM, Taggable, typed} from '../core';
 import Executable from './executable';
-import {assign} from 'lodash';
 
 const Test = stampit({
-  methods: {
-    doneRunning (opts) {
-      const {result} = opts;
-      this.results.push(result);
-      this.emit('result', result);
-      if (result.aborted && result.skipped) {
-        return this.skip();
-      } else if (!result.aborted) {
-        return result.failed ? this.fail() : this.pass();
-      }
-      return this.error(result.error || new Error('Unknown error!'));
-    }
-  }
 })
-  .compose(FSM, Taggable, Executable)
+  .compose(FSM, Taggable, Executable, typed('Test'))
   .initial('idle')
   .final('passed', 'errored')
   .events({
-    name: 'skip',
+    name: 'incomplete',
     from: [
       'idle',
       'running'
     ],
-    to: 'skipped'
+    to: 'pending'
   }, {
     name: 'run',
     from: [
       'idle',
       'failed',
-      'skipped'
+      'pending'
     ],
     to: 'running'
   }, {
@@ -52,16 +38,16 @@ const Test = stampit({
     ],
     to: 'errored'
   })
-  .callback('run', function run (opts) {
-    assign(opts, {start: Date.now()});
-  })
   .callback('enteredRunning', function enteredRunning (opts) {
     return this.execute(opts)
-      .then(opts => {
-        const {result} = opts;
-        const elapsed = Date.now() - opts.start;
-        opts.res = assign({elapsed}, result);
-        return this.doneRunning(opts);
+      .then(result => {
+        opts.res = result;
+        if (result.fulfilled === 'pending') {
+          return this.incomplete();
+        } else if (!result.error) {
+          return result.failed ? this.fail() : this.pass();
+        }
+        return this.error(result.error || new Error('Unknown error!'));
       });
   });
 

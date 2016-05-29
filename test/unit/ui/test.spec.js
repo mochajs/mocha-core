@@ -40,7 +40,7 @@ describe('ui/test', () => {
               .then(() => {
                 expect(test.current)
                   .to
-                  .equal('skipped');
+                  .equal('pending');
               });
           });
         });

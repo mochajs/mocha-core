@@ -1,4 +1,4 @@
-import Taggable from '../../../src/core/taggable';
+import {Taggable} from '../../../src/core';
 
 const SET = global.Set ? 'Set' : 'Object';
 

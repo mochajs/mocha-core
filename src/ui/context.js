@@ -1,4 +1,5 @@
 import stampit from 'stampit';
+import {Unique} from '../core';
 
 const Context = stampit({
   props: {
@@ -19,7 +20,7 @@ const Context = stampit({
   init ({stamp}) {
     this.Factory = stamp;
   }
-});
+}).compose(Unique);
 
 export default Context;
 

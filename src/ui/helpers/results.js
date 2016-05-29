@@ -1,8 +1,10 @@
 import stampit from 'stampit';
 import {reduce, includes} from 'lodash/fp';
+import moment from 'moment';
+import errorist from 'errorist';
 
 const resultTypes = [
-  'skipped',
+  'pending',
   'error',
   'sync',
   'async',
@@ -31,27 +33,24 @@ const Result = stampit({
   },
   methods: {
     finalize () {
+      delete this.startTime;
+      this.elapsed = moment().diff(this.startTime);
       Object.freeze(this);
       return this;
     },
     complete (err) {
-      this.aborted = false;
-      if (err) {
-        this.failed = true;
-        this.error = err;
-      } else {
-        this.failed = false;
+      if (this.fulfilled !== 'pending') {
+        if (err) {
+          this.failed = true;
+          this.reason = err;
+        } else {
+          this.failed = false;
+        }
       }
       return this.finalize();
     },
     abort (err) {
-      this.aborted = true;
-      if (err) {
-        this.skipped = false;
-        this.error = err;
-      } else {
-        this.skipped = true;
-      }
+      this.error = errorist(err);
       return this.finalize();
     },
     toString () {
@@ -60,14 +59,18 @@ const Result = stampit({
   }
 });
 
-const results = reduce((acc, fulfilled) => {
-  Object.defineProperty(acc, fulfilled, {
-    get () {
-      return Result({fulfilled});
-    }
-  });
-  return acc;
-}, {}, resultTypes);
-
 export {Result, resultTypes};
-export default results;
+
+function instrument () {
+  const startTime = moment();
+  return reduce((acc, fulfilled) => {
+    Object.defineProperty(acc, fulfilled, {
+      get () {
+        return Result({fulfilled, startTime});
+      }
+    });
+    return acc;
+  }, {}, resultTypes);
+}
+
+export default instrument;

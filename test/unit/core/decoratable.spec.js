@@ -127,14 +127,6 @@ describe('core/decoratable', () => {
                   this.bar = foo;
                 }
               });
-              expect(decoratable.delegate.foo)
-                .to
-                .be
-                .a('function');
-              expect(decoratable.delegate.quux)
-                .to
-                .be
-                .a('function');
               decoratable.delegate.foo('baz');
               expect(decoratable.bar)
                 .to

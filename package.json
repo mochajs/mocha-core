@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/boneskull/mocha-core.git"
+    "url": "https://github.com/mochajs/mocha-core.git"
   },
   "author": {
     "name": "Christopher Hiller",
@@ -14,9 +14,9 @@
     "url": "https://mochajs.org"
   },
   "bugs": {
-    "url": "https://github.com/boneskull/mocha-core/issues"
+    "url": "https://github.com/mochajs/mocha-core/issues"
   },
-  "homepage": "https://github.com/boneskull/mocha-core#readme",
+  "homepage": "https://github.com/mochajs/mocha-core#readme",
   "main": "lib/index.js",
   "engines": {
     "node": ">=0.10.0",
@@ -27,13 +27,14 @@
     "src/"
   ],
   "scripts": {
+    "build": "rimraf lib && BABEL_ENV=node babel --out-dir=lib src",
     "bump:major": "npm version major -m 'Release v%s'",
     "bump:minor": "npm version minor -m 'Release v%s'",
     "bump:patch": "npm version patch -m 'Release v%s'",
     "update": "updtr",
     "lint": "eslint src/ test/ .*.js",
     "nsp": "nsp check",
-    "prepublish": "rimraf lib && BABEL_ENV=node babel --out-dir=lib src",
+    "prepublish": "npm run build",
     "preversion": "npm run test",
     "publish-please": "publish-please",
     "test": "parallel lint nsp test:node test:browser",
@@ -51,6 +52,8 @@
     "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
     "kefir": "^3.2.1",
     "lodash": "^4.11.1",
+    "moment": "^2.13.0",
+    "nodeify": "^1.0.0",
     "rc-yaml": "^0.1.0",
     "resolve-dep": "^0.5.3",
     "source-map-support": "^0.4.0",
@@ -71,7 +74,7 @@
     "chai": "^3.4.0",
     "chai-as-promised": "^5.1.0",
     "chai-eventemitter": "^1.1.1",
-    "eslint": "^2.8.0",
+    "eslint": "^2.11.0",
     "eslint-config-mocha": "0.0.0",
     "eslint-config-standard": "^5.2.0",
     "eslint-plugin-babel": "^3.2.0",

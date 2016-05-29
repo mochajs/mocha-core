@@ -19,20 +19,13 @@ describe('ui/result', () => {
       let result;
 
       beforeEach(() => {
-        result = Result({fulfilled: 'skipped'});
+        result = Result({fulfilled: 'sync'});
       });
 
       describe('finish()', () => {
         beforeEach(() => {
           sandbox.stub(result, 'finalize')
             .returns(result);
-        });
-
-        it('should set "aborted" to "false"', () => {
-          expect(result.complete())
-            .to
-            .have
-            .property('aborted', false);
         });
 
         describe('when an error is supplied', () => {
@@ -49,11 +42,11 @@ describe('ui/result', () => {
               .property('failed', true);
           });
 
-          it('should set "error" to the error', () => {
+          it('should set "reason" to the error', () => {
             expect(result.complete(err))
               .to
               .have
-              .property('error', err);
+              .property('reason', err);
           });
         });
 
@@ -86,11 +79,11 @@ describe('ui/result', () => {
             .returns(result);
         });
 
-        it('should set "aborted" to "true"', () => {
+        it('should set an "error" property', () => {
           expect(result.abort())
             .to
             .have
-            .property('aborted', true);
+            .property('error');
         });
 
         describe('when an error is supplied', () => {
@@ -100,35 +93,11 @@ describe('ui/result', () => {
             err = new Error();
           });
 
-          it('should set "skipped" to false', () => {
-            expect(result.abort(err))
-              .to
-              .have
-              .property('skipped', false);
-          });
-
           it('should set "error" to the error', () => {
             expect(result.abort(err))
               .to
               .have
               .property('error', err);
-          });
-        });
-
-        describe('when no error is passed', () => {
-          it('should set "skipped" to true', () => {
-            expect(result.abort())
-              .to
-              .have
-              .property('skipped', true);
-          });
-
-          it('should set "error" to undefined', () => {
-            expect(result.complete())
-              .not
-              .to
-              .have
-              .property('error');
           });
         });
 

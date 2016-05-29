@@ -33,8 +33,8 @@ const Decoratable = stampit({
     /**
      * Returns a function which will execute the method at `keypath` in the
      * delegate (if it's a method), otherwise it will simply return the value.
-     * This allows plugin authors to create aliases which are not necessarily
-     * present.
+     * This allows plugin authors to create aliases to methods which are not
+     * necessarily present at time of aliasing.
      * @param {string} keypath Keypath in delegate
      * @returns {Function}
      * @private
@@ -65,6 +65,22 @@ const Decoratable = stampit({
     },
     onceBroadcast (event, handler) {
       this.delegate.once(event, handler);
+      return this;
+    },
+    relay (...events) {
+      events.forEach(event => {
+        this.delegate.on(event, (...args) => {
+          this.emit(event, ...args);
+        });
+      });
+      return this;
+    },
+    relayOnce (...events) {
+      events.forEach(event => {
+        this.delegate.once(event, (...args) => {
+          this.emit(event, ...args);
+        });
+      });
       return this;
     }
   },

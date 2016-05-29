@@ -1,183 +1,237 @@
 import _ from 'lodash';
-import {UI, Suite} from '../../../src/ui';
+import {UI as _UI, Suite, Test} from '../../../src/ui';
 import {EventEmittable} from '../../../src/core';
+import {Kefir} from 'kefir';
 
 describe('ui/ui', () => {
   let sandbox;
+  let delegate;
+  let UI;
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create('ui/ui');
+    sandbox.spy(Kefir, 'constant');
+    delegate = EventEmittable({
+      executable$: Kefir.pool()
+    });
+    UI = _UI.refs({
+      delegate,
+      executable$: delegate.executable$
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  describe('UI()', () => {
-    it('should use the same rootSuite if none specified', () => {
-      expect(UI().rootSuite)
-        .to
-        .equal(UI().rootSuite);
-    });
+  describe.only('UI()', () => {
+    describe('Observable', () => {
+      let ui;
 
-    it('should call setContext()', () => {
-      const rootSuite = Suite();
-      sandbox.stub(UI.fixed.methods, 'setContext');
-      const ui = UI({rootSuite});
-      expect(ui.setContext)
-        .to
-        .have
-        .been
-        .calledWithExactly(rootSuite);
-    });
+      beforeEach(() => {
+        // this is a safeguard; if this happens upon instantiation,
+        // something is wrong.
+        ui = UI.once('ui:suites:done', () => {
+          throw new Error('ui:suites:done prematurely emitted');
+        })();
+        // if we got this far, then we're fine, and can remove the listener.
+        ui.removeAllListeners('ui:suites:done');
+        sandbox.stub(ui.executable$, 'plug');
+      });
 
-    it('should call setContext()', () => {
-      const ui = UI.methods({
-        setContext: sandbox.spy(UI.fixed.methods.setContext)
-      })({rootSuite: Suite()});
-      expect(ui.setContext)
-        .to
-        .have
-        .been
-        .calledWithExactly(ui.Suite.fixed.refs.parent);
+      describe('suite$', () => {
+        let suite$;
+
+        beforeEach(() => {
+          suite$ = ui.suite$;
+          sandbox.stub(ui.dynamo$, 'combine')
+            .returns(Kefir.constant());
+        });
+
+        it('should have set the UI\'s "context" prop upon instantiation"',
+          () => {
+            expect(ui.context)
+              .to
+              .equal(Suite.root.context);
+          });
+
+        describe('upon first child suite', () => {
+          let suite;
+
+          beforeEach(() => {
+            suite = Suite();
+          });
+
+          it('should not emit "ui:suites:done"', () => {
+            expect(() => suite$.plug(Kefir.constant(suite)))
+              .not
+              .to
+              .emitFrom(ui, 'ui:suites:done');
+          });
+
+          it('should emit "ui:context"', () => {
+            expect(() => suite$.plug(Kefir.constant(suite)))
+              .to
+              .emitFrom(ui, 'ui:context');
+          });
+
+          it('should set the UI\'s "context" prop', () => {
+            suite$.plug(Kefir.constant(suite));
+            expect(ui.context)
+              .to
+              .equal(suite.context);
+          });
+
+          describe('and when the root suite is again in context', () => {
+            beforeEach(() => {
+              suite$.plug(Kefir.constant(suite));
+            });
+
+            it('should reset the UI\'s "context" prop to the root context',
+              () => {
+                suite$.plug(Kefir.constant(Suite.root));
+                expect(ui.context)
+                  .to
+                  .equal(Suite.root.context);
+              });
+
+            it('should emit "ui:suites:done"', () => {
+              expect(() => suite$.plug(Kefir.constant(Suite.root)))
+                .to
+                .emitFrom(ui, 'ui:suites:done');
+            });
+          });
+        });
+      });
+
+      describe('dynamo$', () => {
+        let dynamo$;
+        let Factory;
+        let opts;
+        let init;
+
+        beforeEach(() => {
+          opts = {};
+          dynamo$ = ui.dynamo$;
+          init = sandbox.spy();
+          Factory = Suite.init(init);
+        });
+
+        describe('initial state', () => {
+          describe('when plugged with a Suite', () => {
+            let suite;
+
+            beforeEach(() => {
+              dynamo$.plug(Kefir.constant({
+                Factory,
+                opts
+              }));
+              suite = _.get(init, 'lastCall.thisValue');
+            });
+
+            it('should create an Executable', () => {
+              expect(init).to.have.been.calledOnce;
+            });
+
+            it('should set the parent to the root Suite', () => {
+              expect(suite)
+                .to
+                .have
+                .property('parent', Suite.root);
+            });
+
+            it('should plug the executable into the executable$ stream', () => {
+              expect(ui.executable$.plug)
+                .to
+                .have
+                .been
+                .calledWithExactly(Kefir.constant.lastCall.returnValue);
+            });
+
+            it('should retain the parent context', () => {
+              expect(ui.context)
+                .to
+                .equal(Suite.root.context);
+            });
+
+            describe('when the new Suite begins execution', () => {
+              beforeEach(() => {
+                suite.emit('suite:execute:begin');
+              });
+
+              it("should change the context to the new Suite's", () => {
+                expect(ui.context)
+                  .to
+                  .equal(suite.context);
+              });
+
+              describe('and when the Suite ends execution', () => {
+                beforeEach(() => {
+                  suite.emit('suite:execute:end');
+                });
+
+                it('should revert the context to the parent context', () => {
+                  expect(ui.context)
+                    .to
+                    .equal(Suite.root.context);
+                });
+              });
+
+              describe('and when the new Suite has a child, and it executes',
+                () => {
+                  let child;
+
+                  beforeEach(() => {
+                    const init = sandbox.spy();
+                    dynamo$.plug(Kefir.constant({
+                      Factory: Suite.init(init),
+                      opts
+                    }));
+                    child = _.get(init, 'lastCall.thisValue');
+                    child.emit('suite:execute:begin');
+                  });
+
+                  it("should change the context to the child's", () => {
+                    expect(ui.context)
+                      .to
+                      .equal(child.context);
+                  });
+
+                  describe('and when the child ends', () => {
+                    beforeEach(() => {
+                      child.emit('suite:execute:end');
+                    });
+
+                    it('should change the context to the parent', () => {
+                      expect(ui.context)
+                        .to
+                        .equal(suite.context);
+                    });
+
+                    describe('and when the parent ends', () => {
+                      beforeEach(() => {
+                        suite.emit('suite:execute:end');
+                      });
+
+                      it('should change the context to the root', () => {
+                        expect(ui.context)
+                          .to
+                          .equal(Suite.root.context);
+                      });
+                    });
+                  });
+                });
+            });
+          });
+        });
+      });
     });
 
     describe('method', () => {
       let ui;
-      let parent;
-      let delegate;
 
       beforeEach(() => {
-        delegate = EventEmittable();
-        ui = UI({
-          rootSuite: Suite(),
-          delegate
-        });
-        parent = Suite();
-      });
-
-      describe('setContext()', () => {
-        it('should set the Suite prop to be a factory having parent ref',
-          () => {
-            ui.setContext(parent);
-            expect(ui.Suite.fixed.refs.parent)
-              .to
-              .equal(parent);
-          });
-
-        describe('Suite prop', () => {
-          beforeEach(() => {
-            ui.setContext(parent);
-          });
-
-          describe('when instantiated', () => {
-            let suite;
-            let ctx;
-
-            beforeEach(() => {
-              ctx = {};
-              sandbox.stub(parent, 'spawnContext')
-                .returns(ctx);
-              sandbox.stub(ui.Suite.fixed.methods, 'once');
-              suite = ui.Suite();
-            });
-
-            it('should call spawnContext() on the parent suite', () => {
-              expect(parent.spawnContext).to.have.been.calledOnce;
-            });
-
-            it(
-              'should set the "context" prop to the return value of the spawnContext() call',
-              () => {
-                expect(suite.context)
-                  .to
-                  .equal(ctx);
-              });
-
-            it('should listen for event "will-execute"', () => {
-              expect(suite.once)
-                .to
-                .have
-                .been
-                .calledWith('will-execute');
-            });
-
-            it('should listen for event "did-execute"', () => {
-              expect(suite.once)
-                .to
-                .have
-                .been
-                .calledWith('did-execute');
-            });
-          });
-        });
-
-        describe('and when "will-execute" is emitted', () => {
-          it('should call setContext() with the Suite', () => {
-            const suite = ui.Suite();
-            sandbox.stub(ui, 'setContext');
-            suite.emit('will-execute', suite);
-            expect(ui.setContext)
-              .to
-              .have
-              .been
-              .calledWithExactly(suite);
-          });
-        });
-
-        describe('and when "did-execute" is emitted', () => {
-          it('should call setContext() with the Suite\'s parent', () => {
-            const suite = ui.Suite();
-            sandbox.stub(ui, 'setContext');
-            suite.emit('did-execute', suite);
-            expect(ui.setContext)
-              .to
-              .have
-              .been
-              .calledWithExactly(suite.parent);
-          });
-        });
-      });
-
-      describe('createTest()', () => {
-        let testDef;
-        let opts;
-
-        beforeEach(() => {
-          testDef = {
-            title: 'my test',
-            func: _.noop,
-            parent: Suite()
-          };
-          opts = {};
-          sandbox.stub(ui, 'broadcast');
-        });
-
-        it('should return a Test', () => {
-          expect(ui.createTest(testDef))
-            .to
-            .be
-            .an('object');
-        });
-
-        it('should instantiate a Test', () => {
-          sandbox.spy(ui, 'Test');
-          ui.createTest(testDef);
-          expect(ui.Test)
-            .to
-            .have
-            .been
-            .calledWithExactly(testDef);
-        });
-
-        it('should broadcast on the "test" channel', () => {
-          const test = ui.createTest(testDef, opts);
-          expect(ui.broadcast)
-            .to
-            .have
-            .been
-            .calledWithExactly('test', test, opts);
-        });
+        ui = UI();
       });
 
       describe('retries()', () => {
@@ -201,6 +255,43 @@ describe('ui/ui', () => {
         });
       });
 
+      describe('createTest()', () => {
+        let testDef;
+        let opts;
+
+        beforeEach(() => {
+          testDef = {
+            title: 'my test',
+            func: _.noop,
+            parent: Suite()
+          };
+          opts = {};
+          sandbox.stub(ui, 'createExecutable');
+        });
+
+        it('should not throw if no parameters supplied', () => {
+          expect(() => ui.createTest())
+            .not
+            .to
+            .throw(Error);
+        });
+
+        it('should return the ui', () => {
+          expect(ui.createTest(testDef, opts))
+            .to
+            .equal(ui);
+        });
+
+        it('should defer to createExecutable()', () => {
+          ui.createTest(testDef, opts);
+          expect(ui.createExecutable)
+            .to
+            .have
+            .been
+            .calledWithExactly(Test, testDef, opts);
+        });
+      });
+
       describe('createSuite()', () => {
         let suiteDef;
         let opts;
@@ -211,36 +302,124 @@ describe('ui/ui', () => {
             func: _.noop
           };
           opts = {};
-          sandbox.stub(ui.Suite.fixed.methods, 'execute')
-            .returns(new Promise(resolve => resolve()));
-          sandbox.stub(ui, 'broadcast');
-          sandbox.spy(ui, 'Suite');
-          sandbox.stub(ui, 'setContext');
+          sandbox.stub(ui, 'createExecutable');
         });
 
-        it('should return a Suite', () => {
-          expect(ui.createSuite(suiteDef))
+        it('should not throw if no parameters supplied', () => {
+          expect(() => ui.createSuite())
+            .not
             .to
-            .be
-            .an('object');
+            .throw(Error);
         });
 
-        it('should instantiate a Suite', () => {
-          ui.createSuite(suiteDef);
-          expect(ui.Suite)
+        it('should defer to createExecutable()', () => {
+          ui.createSuite(suiteDef, opts);
+          expect(ui.createExecutable)
             .to
             .have
             .been
-            .calledWithExactly(suiteDef);
+            .calledWithExactly(Suite, suiteDef, opts);
         });
 
-        it('should broadcast on the "suite" channel', () => {
-          const suite = ui.createSuite(suiteDef, opts);
-          expect(ui.broadcast)
+        it('should return the ui', () => {
+          expect(ui.createSuite(suiteDef, opts))
+            .to
+            .equal(ui);
+        });
+      });
+
+      describe('createExecutable', () => {
+        let Factory;
+        let opts;
+        let definition;
+
+        beforeEach(() => {
+          Factory = Suite;
+          sandbox.stub(ui, 'write');
+          opts = {};
+          definition = {};
+        });
+
+        it('should throw if passed no Factory', () => {
+          expect(ui.createExecutable)
+            .to
+            .throw(Error);
+        });
+
+        it('should not throw if passed a Factory', () => {
+          expect(() => ui.createExecutable(Factory))
+            .not
+            .to
+            .throw(Error);
+        });
+
+        it('should return the ui', () => {
+          expect(ui.createExecutable(Factory))
+            .to
+            .equal(ui);
+        });
+
+        it('should defer to writeExecutable()', () => {
+          ui.createExecutable(Factory, definition, opts);
+          expect(ui.write)
             .to
             .have
             .been
-            .calledWithExactly('suite', suite, opts);
+            .calledWithMatch(ui.dynamo$, sinon.match({
+              Factory: sinon.match.func,
+              opts
+            }));
+        });
+      });
+
+      describe('write', () => {
+        let value;
+
+        beforeEach(() => {
+          value = {};
+          sandbox.stub(ui.dynamo$, 'plug');
+        });
+
+        it('should not throw if not passed parameters', () => {
+          expect(() => ui.write())
+            .not
+            .to
+            .throw();
+        });
+
+        it('should call Kefir.constant() on the value', () => {
+          ui.write(ui.dynamo$, value);
+          expect(Kefir.constant)
+            .to
+            .have
+            .been
+            .calledWithExactly(value);
+        });
+
+        it('should plug the resulting Observable into the dynamo$ pool', () => {
+          ui.write(ui.dynamo$, value);
+          expect(ui.dynamo$.plug)
+            .to
+            .have
+            .been
+            .calledWithExactly(Kefir.constant.lastCall.returnValue);
+        });
+
+        describe('when curried', () => {
+          let write;
+
+          beforeEach(() => {
+            write = ui.write(ui.dynamo$);
+          });
+
+          it('should call plug() on the pool', () => {
+            write(value);
+            expect(ui.dynamo$.plug)
+              .to
+              .have
+              .been
+              .calledWithExactly(Kefir.constant.lastCall.returnValue);
+          });
         });
       });
     });

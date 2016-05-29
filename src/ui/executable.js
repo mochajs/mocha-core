@@ -1,8 +1,8 @@
 import stampit from 'stampit';
 import is from 'check-more-types';
-import {Unique, EventEmittable} from '../core';
-import results from './helpers/results';
-import {once, assign} from 'lodash';
+import {Unique, EventEmittable, Streamable, typed} from '../core';
+import instrument from './helpers/results';
+import {once} from 'lodash';
 import * as executionContext from './helpers/execution-context';
 import Context from './context';
 import {setImmediate, Promise} from '../util';
@@ -36,14 +36,15 @@ const Executable = stampit({
     });
   },
   methods: {
-    execute (opts = {}) {
+    execute () {
       const func = this.func;
+      const results = instrument();
 
-      this.emit('will-execute', this);
+      this.emit('execute:begin', this);
 
       return new Promise(resolve => {
         if (this.pending) {
-          return resolve(results.skipped.abort());
+          return resolve(results.pending.complete());
         }
 
         let isAsync = false;
@@ -54,8 +55,7 @@ const Executable = stampit({
           }),
           onError: once(function onError (...args) {
             const err = args.pop();
-            setImmediate(resolve.bind(null,
-              results.async.complete(err)));
+            setImmediate(resolve.bind(null, results.async.complete(err)));
             return true;
           })
         });
@@ -85,15 +85,14 @@ const Executable = stampit({
         })
         .then(result => {
           executionContext.disable();
-          opts.result = result;
           this.lastResult = result;
           this.results.push(result);
-          this.emit('did-execute', this);
-          return assign(opts, {result});
+          this.emit('execute:end', result);
+          return result;
         });
     }
   }
 })
-  .compose(EventEmittable, Unique);
+  .compose(EventEmittable, Unique, Streamable, typed('Executable'));
 
 export default Executable;
