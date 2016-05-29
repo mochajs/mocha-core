@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {UI as _UI, Suite, Test} from '../../../src/ui';
+import {UI as _UI, Suite, Test, Hook} from '../../../src/ui';
 import {EventEmittable} from '../../../src/core';
 import {Kefir} from 'kefir';
 
@@ -18,13 +18,17 @@ describe('ui/ui', () => {
       delegate,
       executable$: delegate.executable$
     });
+    Suite.root.pre = [];
+    Suite.root.post = [];
+    Suite.root.preHooks = [];
+    Suite.root.postHooks = [];
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  describe.only('UI()', () => {
+  describe('UI()', () => {
     describe('Observable', () => {
       let ui;
 
@@ -265,6 +269,114 @@ describe('ui/ui', () => {
               })
                 .to
                 .emitFrom(ui, 'ui:test');
+            });
+          });
+
+          describe('when plugged with a Hook', () => {
+            let hook;
+            let func;
+
+            beforeEach(() => {
+              Factory = Hook.init(init);
+              func = sandbox.spy();
+            });
+
+            it('should emit "ui:hook"', () => {
+              const opts = {
+                hooks: 'pre'
+              };
+              expect(() => {
+                dynamo$.plug(Kefir.constant({
+                  Factory: Factory.refs({func}),
+                  opts
+                }));
+              })
+                .to
+                .emitFrom(ui, 'ui:hook');
+            });
+
+            describe('and the hook should be run once, before tests', () => {
+              let opts;
+              beforeEach(() => {
+                opts = {
+                  hooks: 'pre'
+                };
+                dynamo$.plug(Kefir.constant({
+                  Factory: Factory.refs({func}),
+                  opts
+                }));
+                hook = _.get(init, 'lastCall.thisValue');
+              });
+
+              it('should add itself to the current Suite\'s "pre" hooks',
+                () => {
+                  expect(Suite.root.pre)
+                    .to
+                    .eql([hook]);
+                });
+            });
+
+            describe('and the hook should be run once, after tests', () => {
+              let opts;
+              beforeEach(() => {
+                opts = {
+                  hooks: 'post'
+                };
+                dynamo$.plug(Kefir.constant({
+                  Factory: Factory.refs({func}),
+                  opts
+                }));
+                hook = _.get(init, 'lastCall.thisValue');
+              });
+
+              it('should add itself to the current Suite\'s "post" hooks',
+                () => {
+                  expect(Suite.root.post)
+                    .to
+                    .eql([hook]);
+                });
+            });
+
+            describe('and the hook should be run before each test', () => {
+              let opts;
+              beforeEach(() => {
+                opts = {
+                  hooks: 'preEach'
+                };
+                dynamo$.plug(Kefir.constant({
+                  Factory: Factory.refs({func}),
+                  opts
+                }));
+                hook = _.get(init, 'lastCall.thisValue');
+              });
+
+              it('should add itself to the current Suite\'s "preEach" hooks',
+                () => {
+                  expect(Suite.root.preEach)
+                    .to
+                    .eql([hook]);
+                });
+            });
+
+            describe('and the hook should be after each test', () => {
+              let opts;
+              beforeEach(() => {
+                opts = {
+                  hooks: 'postEach'
+                };
+                dynamo$.plug(Kefir.constant({
+                  Factory: Factory.refs({func}),
+                  opts
+                }));
+                hook = _.get(init, 'lastCall.thisValue');
+              });
+
+              it('should add itself to the current Suite\'s "postEach" hooks',
+                () => {
+                  expect(Suite.root.postEach)
+                    .to
+                    .eql([hook]);
+                });
             });
           });
         });

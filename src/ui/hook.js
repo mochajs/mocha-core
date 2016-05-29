@@ -1,5 +1,6 @@
-import stampit from 'stampit';
+import {typed} from '../core';
+import Executable from './executable';
 
-const Hook = stampit();
+const Hook = Executable.compose(typed('Hook'));
 
 export default Hook;

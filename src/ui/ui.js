@@ -1,9 +1,10 @@
 import stampit from 'stampit';
 import {Decoratable, EventEmittable, Streamable} from '../core';
 import {Kefir} from 'kefir';
-import {constant, curry} from 'lodash/fp';
+import {assign, constant, curry} from 'lodash/fp';
 import Suite from './suite';
 import Test from './test';
+import Hook from './hook';
 import is from 'check-more-types';
 
 const UI = stampit({
@@ -11,6 +12,9 @@ const UI = stampit({
     recursive: true
   },
   methods: {
+    /**
+     * @private
+     */
     write: curry(function write (pool, value) {
       pool.plug(Kefir.constant(value));
       return this;
@@ -37,23 +41,35 @@ const UI = stampit({
       this.context.retries(num);
       return this;
     },
-    afterTests () {
-
+    afterTests (definition = {}, opts = {}) {
+      this.createExecutable(Hook, definition, assign(opts, {
+        hooks: 'post'
+      }));
+      return this;
     },
-    beforeTests () {
-
+    beforeTests (definition = {}, opts = {}) {
+      this.createExecutable(Hook, definition, assign(opts, {
+        hooks: 'pre'
+      }));
+      return this;
     },
-    afterEachTest () {
-
+    afterEachTest (definition = {}, opts = {}) {
+      this.createExecutable(Hook, definition, assign(opts, {
+        hooks: 'postEach'
+      }));
+      return this;
     },
-    beforeEachTest () {
-
+    beforeEachTest (definition = {}, opts = {}) {
+      this.createExecutable(Hook, definition, assign(opts, {
+        hooks: 'preEach'
+      }));
+      return this;
     }
   },
   init () {
     const dynamo$ = this.dynamo$ = Kefir.pool();
     const suite$ = this.suite$ = Kefir.pool();
-
+    const currentSuite$ = suite$.toProperty(() => Suite.root);
     const writeExecutable = this.write(this.executable$);
 
     /**
@@ -84,16 +100,32 @@ const UI = stampit({
       // HEADS UP! this is where the actual Executable object is
       // instantiated.  it doesn't matter if it's a Test or a Suite
       // or a Hook at this point.
-      executable: Factory.refs({parent})
-        .create(),
+      executable: Factory({
+        parent,
+        context: parent.spawnContext()
+      }),
       opts
     }))
       .onValue(({executable}) => writeExecutable(executable));
 
+    // XXX: here we're just sending the test off to the runner
+    // to ostensibly run later.  each Suite has a reference to the hooks
+    // which need to be run, which may not actually be necessary.
+    // note that currently, the Suite does NOT have a reference to its
+    // tests, because that doesn't (yet) seem necessary.
     executing$.filter(({executable}) => is.test(executable))
       .map(({executable}) => executable)
       .onValue(test => {
         this.emit('ui:test', test);
+      });
+
+    executing$.filter(({executable}) => is.hook(executable))
+      .onValue(({executable, opts}) => {
+        currentSuite$.onValue(suite => {
+          // XXX: I don't like the tight coupling here.
+          suite[opts.hooks].push(executable);
+        });
+        this.emit('ui:hook', executable);
       });
 
     executing$.filter(({executable}) => is.suite(executable))
@@ -101,13 +133,11 @@ const UI = stampit({
       .onValue(suite => {
         this.emit('ui:suite', suite);
       })
-      .flatMap(suite => suite.eventStream(
-        'suite:execute:begin')
+      .flatMap(suite => suite.eventStream('suite:execute:begin')
         .take(1)
         .map(constant(suite)))
       .onValue(setCurrentSuite)
-      .flatMap(suite => suite.eventStream(
-        'suite:execute:end')
+      .flatMap(suite => suite.eventStream('suite:execute:end')
         .take(1)
         .map(constant(suite.parent)))
       .onValue(setCurrentSuite);

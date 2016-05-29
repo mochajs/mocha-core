@@ -13,43 +13,12 @@ describe('ui/suite', () => {
   });
 
   describe('Suite()', () => {
-    describe('if created with a function for a title', () => {
-      let suite;
-
-      beforeEach(() => {
-        suite = Suite({title: _.noop});
-      });
-
-      it('should set the "func" prop to the "title"', () => {
-        expect(suite)
-          .to
-          .have
-          .property('func', _.noop);
-      });
-
-      it('should set the "title" prop to an empty string', () => {
-        expect(suite)
-          .to
-          .have
-          .property('title', '');
-      });
-    });
-
     it('should return an object with a null "parent" prop', () => {
       expect(Suite().parent).to.be.null;
     });
 
     it('should return an object with a false "pending" prop', () => {
       expect(Suite().pending).to.be.false;
-    });
-
-    it('should return an object with an empty "children" prop', () => {
-      const suite = Suite();
-      expect(suite.children)
-        .to
-        .be
-        .an('array');
-      expect(suite.children).to.be.empty;
     });
 
     describe('when given a non-falsy "parent" prop', () => {

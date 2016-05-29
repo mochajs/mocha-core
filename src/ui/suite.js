@@ -1,11 +1,18 @@
 import stampit from 'stampit';
 import Executable from './executable';
-import is from 'check-more-types';
 import Context from './context';
 import {typed} from '../core';
+import {forEach, getOr} from 'lodash/fp';
 
 // todo put this and shit like it elsewhere
 const ROOT_SUITE_ID = '__root__';
+
+const HOOKS = [
+  'pre',
+  'post',
+  'preEach',
+  'postEach'
+];
 
 const Suite = stampit({
   refs: {
@@ -13,20 +20,22 @@ const Suite = stampit({
     func: null,
     context: Context({id: ROOT_SUITE_ID})
   },
+  props: {
+    pre: [],
+    post: [],
+    preEach: [],
+    postEach: []
+  },
   methods: {
     spawnContext () {
       return this.context.spawn();
     }
   },
   init () {
-    if (is.function(this.title)) {
-      this.func = this.title;
-      this.title = '';
-    }
-
-    if (this.parent) {
-      this.context = this.parent.spawnContext();
-    }
+    const getParentHooks = getOr([], this);
+    forEach(hooks => {
+      this[hooks].unshift(...getParentHooks(`parent.${hooks}`));
+    }, HOOKS);
 
     Object.defineProperties(this, {
       // array for reporter to format as necessary
