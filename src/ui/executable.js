@@ -40,7 +40,7 @@ const Executable = stampit({
       const func = this.func;
       const results = instrument();
 
-      this.emit('execute:begin', this);
+      this.emit('executable:execute:begin');
 
       return new Promise(resolve => {
         if (this.pending) {
@@ -87,7 +87,7 @@ const Executable = stampit({
           executionContext.disable();
           this.lastResult = result;
           this.results.push(result);
-          this.emit('execute:end', result);
+          this.emit('executable:execute:end');
           return result;
         });
     }

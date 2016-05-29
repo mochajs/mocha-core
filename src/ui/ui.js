@@ -13,6 +13,7 @@ const UI = stampit({
   methods: {
     write: curry(function write (pool, value) {
       pool.plug(Kefir.constant(value));
+      return this;
     }),
     createExecutable (Factory, definition = {}, opts = {}) {
       if (!Factory) {
@@ -71,21 +72,7 @@ const UI = stampit({
       this.emit('ui:context', context);
     };
 
-    // summary:
-    // - set the context when there's a new current suite
-    // - if the new current suite is the root Suite, do nothing
-    // - ostensibly the next current suite will be a child of the root suite,
-    //   so we progress through the stream
-    // - once we reach the root suite again, then the stream ends, and we
-    //   emit `ui:suites:done`
-    // ASSUMPTION: the root suite has one child suite.
-    suite$.onValue(setContext)
-      .skipWhile(executable => executable === Suite.root)
-      .takeWhile(executable => executable !== Suite.root)
-      .onEnd(() => {
-        // this signifies that all suites have executed.
-        this.emit('ui:suites:done');
-      });
+    suite$.onValue(setContext);
 
     // summary:
     // - get the current suite (`parent` param)
@@ -103,8 +90,17 @@ const UI = stampit({
     }))
       .onValue(({executable}) => writeExecutable(executable));
 
+    executing$.filter(({executable}) => is.test(executable))
+      .map(({executable}) => executable)
+      .onValue(test => {
+        this.emit('ui:test', test);
+      });
+
     executing$.filter(({executable}) => is.suite(executable))
       .map(({executable}) => executable)
+      .onValue(suite => {
+        this.emit('ui:suite', suite);
+      })
       .flatMap(suite => suite.eventStream(
         'suite:execute:begin')
         .take(1)
@@ -122,34 +118,5 @@ const UI = stampit({
   }
 })
   .compose(EventEmittable, Decoratable, Streamable);
-// .init(function initRootSuite () {
-// })
-// .init(function initSuiteMaker () {
-//   const suites = this.suites;
-//   const emitCreate = ({suite, opts}) => this.emit('suite:create', suite,
-//     opts);
-//   this.suiteMaker = Kefir.fromEvents(this, 'ui:suite:create')
-//     .combine(this.parentSuite, ({suiteDef, opts}, parent) => {
-//       return {
-//         suite: Suite.refs({parent})
-//           .once('execute:begin', function onExecuteBegin () {
-//             suites.plug(Kefir.constant(this));
-//           })
-//           .once('execute:end', function onExecuteEnd () {
-//             suites.plug(Kefir.constant(this.parent));
-//           })
-//           .create(suiteDef),
-//         opts
-//       };
-//     })
-//     .onValue(emitCreate);
-//   this.on('suites:done', () => this.suiteMaker.offValue(emitCreate));
-// })
-// .init(function initTestMaker () {
-//   const emitCreate = ({test, opts}) => this.emit('test:create', test,
-// opts); this.testMaker = Kefir.fromEvents(this, 'ui:test:create')
-// .combine(this.parentSuite, ({testDef, opts}, parent) => { return { test:
-// Test.refs({parent}) .create(testDef), opts }; }) .onValue(emitCreate);
-// this.on('suites:done', () => this.testMaker.offValue(emitCreate)); });
 
 export default UI;

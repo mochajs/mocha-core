@@ -29,13 +29,7 @@ describe('ui/ui', () => {
       let ui;
 
       beforeEach(() => {
-        // this is a safeguard; if this happens upon instantiation,
-        // something is wrong.
-        ui = UI.once('ui:suites:done', () => {
-          throw new Error('ui:suites:done prematurely emitted');
-        })();
-        // if we got this far, then we're fine, and can remove the listener.
-        ui.removeAllListeners('ui:suites:done');
+        ui = UI();
         sandbox.stub(ui.executable$, 'plug');
       });
 
@@ -94,12 +88,6 @@ describe('ui/ui', () => {
                   .to
                   .equal(Suite.root.context);
               });
-
-            it('should emit "ui:suites:done"', () => {
-              expect(() => suite$.plug(Kefir.constant(Suite.root)))
-                .to
-                .emitFrom(ui, 'ui:suites:done');
-            });
           });
         });
       });
@@ -114,16 +102,18 @@ describe('ui/ui', () => {
           opts = {};
           dynamo$ = ui.dynamo$;
           init = sandbox.spy();
-          Factory = Suite.init(init);
         });
 
         describe('initial state', () => {
           describe('when plugged with a Suite', () => {
             let suite;
+            let func;
 
             beforeEach(() => {
+              func = sandbox.spy();
+              Factory = Suite.init(init);
               dynamo$.plug(Kefir.constant({
-                Factory,
+                Factory: Factory.refs({func}),
                 opts
               }));
               suite = _.get(init, 'lastCall.thisValue');
@@ -146,6 +136,11 @@ describe('ui/ui', () => {
                 .have
                 .been
                 .calledWithExactly(Kefir.constant.lastCall.returnValue);
+            });
+
+            it('should not execute', () => {
+              // the runner should deal w/ this
+              expect(func).not.to.have.been.called;
             });
 
             it('should retain the parent context', () => {
@@ -221,6 +216,55 @@ describe('ui/ui', () => {
                     });
                   });
                 });
+            });
+          });
+
+          describe('when plugged with a Test', () => {
+            let test;
+            let func;
+
+            beforeEach(() => {
+              Factory = Test.init(init);
+              func = sandbox.spy();
+              dynamo$.plug(Kefir.constant({
+                Factory: Factory.refs({func}),
+                opts
+              }));
+              test = _.get(init, 'lastCall.thisValue');
+            });
+
+            it('should not affect the current Suite', () => {
+              expect(ui.context)
+                .to
+                .equal(Suite.root.context);
+            });
+
+            it('should have a parent of the current Suite', () => {
+              expect(test.parent)
+                .to
+                .equal(Suite.root);
+            });
+
+            it('should be shuttled off to executable$', () => {
+              expect(ui.executable$.plug)
+                .to
+                .be
+                .calledWithExactly(Kefir.constant.lastCall.returnValue);
+            });
+
+            it('should not execute', () => {
+              expect(func).not.to.have.been.called;
+            });
+
+            it('should emit "ui:test"', () => {
+              expect(() => {
+                dynamo$.plug(Kefir.constant({
+                  Factory: Factory.refs({func}),
+                  opts
+                }));
+              })
+                .to
+                .emitFrom(ui, 'ui:test');
             });
           });
         });
@@ -385,6 +429,12 @@ describe('ui/ui', () => {
             .not
             .to
             .throw();
+        });
+
+        it('should return the ui', () => {
+          expect(ui.write(ui.dynamo$, value))
+            .to
+            .equal(ui);
         });
 
         it('should call Kefir.constant() on the value', () => {

@@ -13,9 +13,6 @@ const Suite = stampit({
     func: null,
     context: Context({id: ROOT_SUITE_ID})
   },
-  props: {
-    children: []
-  },
   methods: {
     spawnContext () {
       return this.context.spawn();
@@ -47,10 +44,10 @@ const Suite = stampit({
   }
 })
   .compose(Executable, typed('Suite'))
-  .on('execute:begin', function onExecuteBegin () {
+  .on('executable:execute:begin', function onExecuteBegin () {
     this.emit('suite:execute:begin');
   })
-  .on('execute:end', function onExecuteEnd () {
+  .on('executable:execute:end', function onExecuteEnd () {
     this.emit('suite:execute:end');
   });
 
