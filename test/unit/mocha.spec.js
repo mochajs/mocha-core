@@ -148,8 +148,7 @@ describe('mocha', () => {
             .have
             .been
             .calledWithExactly({
-              delegate: mocha,
-              executable$: mocha.executable$
+              delegate: mocha
             });
         });
       });

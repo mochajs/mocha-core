@@ -34,7 +34,7 @@ describe('ui/ui', () => {
 
       beforeEach(() => {
         ui = UI();
-        sandbox.stub(ui.executable$, 'plug');
+        sandbox.stub(ui.delegate.executable$, 'plug');
       });
 
       describe('suite$', () => {
@@ -135,7 +135,7 @@ describe('ui/ui', () => {
             });
 
             it('should plug the executable into the executable$ stream', () => {
-              expect(ui.executable$.plug)
+              expect(ui.delegate.executable$.plug)
                 .to
                 .have
                 .been
@@ -250,7 +250,7 @@ describe('ui/ui', () => {
             });
 
             it('should be shuttled off to executable$', () => {
-              expect(ui.executable$.plug)
+              expect(ui.delegate.executable$.plug)
                 .to
                 .be
                 .calledWithExactly(Kefir.constant.lastCall.returnValue);

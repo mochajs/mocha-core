@@ -70,7 +70,7 @@ const UI = stampit({
     const dynamo$ = this.dynamo$ = Kefir.pool();
     const suite$ = this.suite$ = Kefir.pool();
     const currentSuite$ = suite$.toProperty(() => Suite.root);
-    const writeExecutable = this.write(this.executable$);
+    const writeExecutable = this.write(this.delegate.executable$);
 
     /**
      * Set the current suite by plugging it into the suite$ stream

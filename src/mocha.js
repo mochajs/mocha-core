@@ -22,8 +22,7 @@ const Mocha = stampit({
         throw new Error('Factory function required');
       }
       return Factory(assign({
-        delegate: this,
-        executable$: this.executable$
+        delegate: this
       }, properties));
     },
     createUI (properties = {}) {
