@@ -1,14 +1,13 @@
 import is from 'check-more-types';
 import _ from 'lodash';
+import {Observable} from 'kefir';
 
 is.mixin(function isSingularArray (value) {
   return _.isArray(value) && value.length === 1;
 }, 'singularArray');
 
 is.mixin(function isStamp (value) {
-  return _.isFunction(value) &&
-    value.name ===
-    'Factory' &&
+  return _.isFunction(value) && value.name === 'Factory' &&
     is.object(value.fixed);
 }, 'stamp');
 
@@ -25,3 +24,15 @@ is.mixin(_.isNull, 'null');
 is.mixin(_.isError, 'error');
 is.mixin(_.isFinite, 'finite');
 is.mixin(_.constant(true), 'any');
+
+Observable.prototype.reject = function reject (func = _.identity) {
+  return this.withHandler((emitter, event) => {
+    if (event.type === 'value') {
+      if (!func(event.value)) {
+        emitter.emit(event.value);
+      }
+      return;
+    }
+    emitter.emitEvent(event);
+  });
+};

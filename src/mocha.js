@@ -3,17 +3,16 @@ import {Pluggable} from './plugins';
 import {UI} from './ui';
 import {Runner} from './runner';
 import {Reporter} from './reporter';
-import {API} from './core';
 import pkg from './options/package';
 import {Kefir} from 'kefir';
 import {assign} from 'lodash/fp';
 import is from 'check-more-types';
+import {Streamable} from './core';
 
 const Mocha = stampit({
   refs: {
-    version: pkg.version
-  },
-  props: {
+    version: pkg.version,
+    executable$: Kefir.pool(),
     plugins: {}
   },
   methods: {
@@ -33,18 +32,13 @@ const Mocha = stampit({
     },
     createReporter (properties = {}) {
       return this.createAPI(Reporter, properties);
+    },
+    run () {
+      this.emit('mocha:run');
     }
-  },
-  init () {
-    Object.defineProperties(this, {
-      executable$: {
-        value: Kefir.pool(),
-        writable: false
-      }
-    });
   }
 })
-  .compose(Pluggable, API)
+  .compose(Pluggable, Streamable)
   .init(function init () {
     this.use(this.ui)
       .use(this.runner);

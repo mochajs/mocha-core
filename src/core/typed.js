@@ -21,7 +21,8 @@ function typed (__type__ = 'Factory') {
   return stampit({
     init () {
       if (is.set(this.__types__)) {
-        this.__types__ = new Set(from(this.__types__).concat(__type__));
+        this.__types__ = new Set(from(this.__types__)
+          .concat(__type__));
       } else {
         this.__types__ = new Set([__type__]);
       }

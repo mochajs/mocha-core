@@ -108,7 +108,7 @@ const PluginLoader = stampit({
       .map(build(this.seenPlugins))
       .onValue(plugin => {
         unloadedPlugins.add(plugin.name);
-        this.emit('plugin-loading', plugin);
+        this.emit('plugin-loader:plugin-loading', plugin);
       });
 
     const withoutDeps = loadStream.filter(pluginReady);
@@ -116,7 +116,7 @@ const PluginLoader = stampit({
     // TODO make this more efficient with reduce-like function (try scan()?)
     const withDeps = loadStream.filter(pluginNotReady)
       .onValue(plugin => {
-        this.emit('plugin-not-loaded', plugin.pattern);
+        this.emit('plugin-loader:plugin-not-loaded', plugin.pattern);
       })
       .sampledBy(withoutDeps, plugin => pluginReady(plugin) && plugin)
       .filter();
@@ -129,10 +129,10 @@ const PluginLoader = stampit({
           return this.emit('error', err);
         }
         this.loadedPlugins.set(plugin.name, plugin);
-        this.emit('plugin-loaded', plugin);
+        this.emit('plugin-loader:plugin-loaded', plugin);
         unloadedPlugins.delete(plugin.name);
         if (!this.unloadedPlugins.size) {
-          this.emit('ready');
+          this.emit('plugin-loader:ready');
         }
       })
       .takeErrors(1)

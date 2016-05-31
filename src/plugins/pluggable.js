@@ -22,16 +22,16 @@ const Pluggable = stampit({
 
       if (!this.loader) {
         loader = this.loader = PluginLoader()
-          .on('plugin-loading', () => {
+          .on('plugin-loader:plugin-loading', () => {
             this.ready = false;
           })
-          .on('plugin-loaded', plugin => {
+          .on('plugin-loader:plugin-loaded', plugin => {
             this.loadedPlugins.set(plugin.name, plugin);
           })
-          .on('plugin-not-loaded', plugin => {
+          .on('plugin-loader:plugin-not-loaded', plugin => {
             // debug here?
           })
-          .on('ready', () => {
+          .on('plugin-loader:ready', () => {
             this.ready = true;
           })
           .on('error', err => this.emit('error', err));

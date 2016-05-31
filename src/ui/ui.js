@@ -43,25 +43,27 @@ const UI = stampit({
     },
     afterTests (definition = {}, opts = {}) {
       this.createExecutable(Hook, definition, assign(opts, {
-        hooks: 'post'
+        when: 'post',
+        once: true
       }));
       return this;
     },
     beforeTests (definition = {}, opts = {}) {
       this.createExecutable(Hook, definition, assign(opts, {
-        hooks: 'pre'
+        when: 'pre',
+        once: true
       }));
       return this;
     },
     afterEachTest (definition = {}, opts = {}) {
       this.createExecutable(Hook, definition, assign(opts, {
-        hooks: 'postEach'
+        when: 'post'
       }));
       return this;
     },
     beforeEachTest (definition = {}, opts = {}) {
       this.createExecutable(Hook, definition, assign(opts, {
-        hooks: 'preEach'
+        when: 'pre'
       }));
       return this;
     }
@@ -106,7 +108,7 @@ const UI = stampit({
       }),
       opts
     }))
-      .onValue(({executable}) => writeExecutable(executable));
+      .onValue(writeExecutable);
 
     // XXX: here we're just sending the test off to the runner
     // to ostensibly run later.  each Suite has a reference to the hooks

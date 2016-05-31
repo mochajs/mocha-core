@@ -132,9 +132,9 @@ describe('plugins/pluggable', () => {
             .calledWithExactly(opts);
         });
 
-        describe('when PluginLoader instance emits "plugin-loading"', () => {
+        describe('when PluginLoader instance emits "plugin-loader:plugin-loading"', () => {
           beforeEach(() => {
-            pluggable.loader.emit('plugin-loading');
+            pluggable.loader.emit('plugin-loader:plugin-loading');
           });
 
           it('should set its "ready" prop to "false"', () => {
@@ -144,9 +144,9 @@ describe('plugins/pluggable', () => {
               .property('ready', false);
           });
 
-          describe('then when PluginLoader instance emits "ready"', () => {
+          describe('then when PluginLoader instance emits "plugin-loader:ready"', () => {
             beforeEach(() => {
-              pluggable.loader.emit('ready');
+              pluggable.loader.emit('plugin-loader:ready');
             });
 
             it('should set its "ready" prop to "true"', () => {
@@ -157,7 +157,7 @@ describe('plugins/pluggable', () => {
             });
           });
         });
-        
+
         describe('when PluginLoader instance emits "error"', () => {
           let err;
 
@@ -172,7 +172,7 @@ describe('plugins/pluggable', () => {
           });
         });
 
-        describe('when PluginLoader emits "plugin-loaded"', () => {
+        describe('when PluginLoader emits "plugin-loader:plugin-loaded"', () => {
           let plugin;
 
           beforeEach(() => {
@@ -180,14 +180,14 @@ describe('plugins/pluggable', () => {
           });
 
           it('should add the plugin to "loadedPlugins"', () => {
-            pluggable.loader.emit('plugin-loaded', plugin);
+            pluggable.loader.emit('plugin-loader:plugin-loaded', plugin);
             expect(pluggable.loadedPlugins.has('foo')).to.be.true;
           });
         });
 
-        describe('when PluginLoader emits "ready"', () => {
+        describe('when PluginLoader emits "plugin-loader:ready"', () => {
           it('should set "ready" to true', () => {
-            pluggable.loader.emit('ready');
+            pluggable.loader.emit('plugin-loader:ready');
             expect(pluggable)
               .to
               .have
