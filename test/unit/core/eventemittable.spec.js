@@ -1,4 +1,5 @@
 import {EventEmittable} from '../../../src/core';
+import {noop} from 'lodash';
 
 describe('core/eventemittable', () => {
   let sandbox;
@@ -26,6 +27,26 @@ describe('core/eventemittable', () => {
         .emitFrom(ee, 'event');
     });
 
+    it('should register events specified in prop "onEvents"', () => {
+      sandbox.stub(EventEmittable.fixed.methods, 'on');
+      EventEmittable({onEvents: {foo: noop}});
+      expect(EventEmittable.fixed.methods.on)
+        .to
+        .have
+        .been
+        .calledWithExactly('foo', noop);
+    });
+
+    it('should register events specified in prop "onceEvents"', () => {
+      sandbox.stub(EventEmittable.fixed.methods, 'once');
+      EventEmittable({onceEvents: {foo: noop}});
+      expect(EventEmittable.fixed.methods.once)
+        .to
+        .have
+        .been
+        .calledWithExactly('foo', noop);
+    });
+
     describe('static method', () => {
       describe('init()', () => {
         it('should allow a new stamp to be created', () => {
@@ -39,22 +60,22 @@ describe('core/eventemittable', () => {
       });
 
       describe('on()', () => {
-        it('should register an on() listener upon instantiation', () => {
-          const stub = sandbox.stub();
-          const ee = EventEmittable.on('foo', stub)();
-          ee.emit('foo');
-          ee.emit('foo');
-          expect(stub).to.have.been.calledTwice;
+        it('should add an "on" event to the Factory', () => {
+          expect(EventEmittable.on('foo', noop))
+            .to
+            .have
+            .deep
+            .property('fixed.refs.onEvents.foo', noop);
         });
       });
 
       describe('once()', () => {
-        it('should register an once() listener upon instantiation', () => {
-          const stub = sandbox.stub();
-          const ee = EventEmittable.once('foo', stub)();
-          ee.emit('foo');
-          ee.emit('foo');
-          expect(stub).to.have.been.calledOnce;
+        it('should add an "once" event to the Factory', () => {
+          expect(EventEmittable.once('foo', noop))
+            .to
+            .have
+            .deep
+            .property('fixed.refs.onceEvents.foo', noop);
         });
       });
     });
@@ -70,11 +91,7 @@ describe('core/eventemittable', () => {
         it('should return a Promise which is resolved when an event is emitted',
           () => {
             setTimeout(() => ee.emit('bar'));
-            return expect(ee.waitOn('bar'))
-              .to
-              .eventually
-              .be
-              .undefined;
+            return expect(ee.waitOn('bar')).to.eventually.be.undefined;
           });
 
         describe('if a finite "timeout" option is supplied', () => {
@@ -124,11 +141,7 @@ describe('core/eventemittable', () => {
         describe('if the event emits no parameters', () => {
           it('should return nothing', () => {
             setTimeout(() => ee.emit('bar'));
-            return expect(ee.waitOn('bar'))
-              .to
-              .eventually
-              .be
-              .undefined;
+            return expect(ee.waitOn('bar')).to.eventually.be.undefined;
           });
         });
       });

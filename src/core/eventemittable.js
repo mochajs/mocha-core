@@ -1,12 +1,12 @@
 import {EventEmitter} from 'events';
 import stampit from 'stampit';
 import is from 'check-more-types';
-import {head, forEach, curry} from 'lodash/fp';
-import {assign} from 'lodash';
+import {head, curry} from 'lodash/fp';
+import {forEach, assign} from 'lodash';
 import {Promise} from '../util';
 
 const subscriber = curry(function subscriber (obj, type, events) {
-  return forEach((action, event) => obj[type](event, action), events);
+  return forEach(events, (action, event) => obj[type](event, action));
 });
 
 const EventEmittable = stampit.convertConstructor(EventEmitter)
