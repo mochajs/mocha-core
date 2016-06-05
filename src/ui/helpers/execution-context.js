@@ -7,7 +7,6 @@ const listener = process.addAsyncListener({
 });
 
 function enable (opts = {}) {
-  listener.create = opts.onAsync || noop;
   listener.error = opts.onError || noop;
 }
 

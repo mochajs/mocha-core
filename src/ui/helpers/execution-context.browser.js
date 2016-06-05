@@ -12,7 +12,6 @@ let currentZone;
 
 function enable (opts = {}) {
   currentZone = zone.fork({
-    addTask: opts.onAsync || noop,
     onError: opts.onError || noop
   });
 }

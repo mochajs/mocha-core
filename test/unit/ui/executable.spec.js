@@ -179,7 +179,7 @@ describe('ui/executable', () => {
         });
 
         describe('when the executable is not pending', () => {
-          describe('and the executable is synchronous', () => {
+          describe("and the executable's function has no callback", () => {
             beforeEach(() => {
               executable.func = sandbox.spy();
             });
@@ -199,6 +199,13 @@ describe('ui/executable', () => {
               it('should return a "passed" result', () => {
                 expect(result.passed).to.be.true;
               });
+
+              it('should not have a callback', () => {
+                expect(result)
+                  .to
+                  .have
+                  .property('hasCallback', false);
+              });
             });
           });
 
@@ -217,6 +224,10 @@ describe('ui/executable', () => {
 
               delays.forEach(delay => {
                 describe(`with delay ${delay}`, () => {
+                  beforeEach(() => {
+                    executable.hasCallback = true;
+                  });
+
                   describe('and when the function does not throw an error',
                     () => {
                       let func;
@@ -267,11 +278,11 @@ describe('ui/executable', () => {
                             .property('fulfilled', 'pending');
                         });
 
-                        it('should have been "async"', () => {
+                        it('should have had a callback', () => {
                           expect(result)
                             .to
                             .have
-                            .property('async', true);
+                            .property('hasCallback', true);
                         });
                       });
 
@@ -311,6 +322,13 @@ describe('ui/executable', () => {
 
               it('should return a "passed" result', () => {
                 expect(result.passed).to.be.true;
+              });
+
+              it('should not have had a callback', () => {
+                expect(result)
+                  .to
+                  .have
+                  .property('hasCallback', false);
               });
             });
 

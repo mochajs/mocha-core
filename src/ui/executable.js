@@ -14,7 +14,7 @@ const Executable = stampit({
   },
   props: {
     results: [],
-    isAsync: true
+    hasCallback: true
   },
   init () {
     // this is intended to be "sticky".  if you set it, then you
@@ -51,7 +51,7 @@ const Executable = stampit({
         executionContext.enable({
           onError: once(function onError (...args) {
             const err = args.pop();
-            setImmediate(resolve.bind(null, results.async.complete(err)));
+            setImmediate(resolve.bind(null, results.callback.complete(err)));
             return true;
           })
         });
@@ -62,7 +62,9 @@ const Executable = stampit({
           retval =
             executionContext.run(func,
               this.context.withExecutable(func),
-              err => resolve(results.userCallback.complete(err)));
+              err => {
+                resolve(results.callback.complete(err && errorist(err), true));
+              });
         } catch (err) {
           return resolve(results.sync.complete(err));
         }
@@ -72,7 +74,7 @@ const Executable = stampit({
           retval
             .then(() => resolve(result.complete()),
               err => resolve(result.complete(errorist(err))));
-        } else if (!this.isAsync) {
+        } else if (!this.hasCallback) {
           resolve(results.sync.complete());
         }
       })

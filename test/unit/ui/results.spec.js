@@ -131,34 +131,28 @@ describe('ui/result', () => {
     });
 
     describe('property', () => {
-      describe('async', () => {
+      describe('hasCallback', () => {
         [
           'skipped',
           'error',
           'sync'
         ].forEach(fulfilled => {
           describe(`when "fulfilled" is "${fulfilled}"`, () => {
-            it('should be false', () => {
+            it('should be "false"', () => {
               expect(Result({fulfilled}))
                 .to
                 .have
-                .property('async', false);
+                .property('hasCallback', false);
             });
           });
         });
 
-        [
-          'userCallback',
-          'promise',
-          'async'
-        ].forEach(fulfilled => {
-          describe(`when "fulfilled" is "${fulfilled}"`, () => {
-            it('should be true', () => {
-              expect(Result({fulfilled}))
-                .to
-                .have
-                .property('async', true);
-            });
+        describe('when "fulfilled" is "callback"', () => {
+          it('should be "true"', () => {
+            expect(Result({fulfilled: 'callback'}))
+              .to
+              .have
+              .property('hasCallback', true);
           });
         });
       });

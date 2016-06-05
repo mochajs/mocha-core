@@ -1,5 +1,5 @@
 import stampit from 'stampit';
-import {reduce, includes} from 'lodash/fp';
+import {reduce} from 'lodash/fp';
 import moment from 'moment';
 import errorist from 'errorist';
 
@@ -7,21 +7,16 @@ const resultTypes = [
   'pending',
   'error',
   'sync',
-  'async',
-  'userCallback',
+  'callback',
   'promise'
 ];
 
 const Result = stampit({
   init () {
     Object.defineProperties(this, {
-      async: {
+      hasCallback: {
         get () {
-          return includes(this.fulfilled, [
-            'async',
-            'userCallback',
-            'promise'
-          ]);
+          return this.fulfilled === 'callback';
         }
       },
       passed: {
@@ -38,9 +33,12 @@ const Result = stampit({
       Object.freeze(this);
       return this;
     },
-    complete (err) {
+    complete (err, isOperational = false) {
       if (this.fulfilled !== 'pending') {
         if (err) {
+          if (this.fulfilled === 'callback') {
+            this.isOperational = isOperational;
+          }
           this.failed = true;
           this.reason = err;
         } else {
