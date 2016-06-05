@@ -26,6 +26,20 @@ function typed (__type__ = 'Factory') {
       } else {
         this.__types__ = new Set([__type__]);
       }
+    },
+    methods: {
+      toString () {
+        let str = __type__;
+        if (this.id) {
+          str += `#${this.id}`;
+        }
+        str = '<' + str;
+        if (this.title) {
+          str += `:"${this.title}"`;
+        }
+        str += '>';
+        return str;
+      }
     }
   });
 }

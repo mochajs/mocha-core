@@ -19,20 +19,72 @@ describe('core/typed', () => {
     });
 
     describe('Factory result', () => {
-      let obj;
+      describe('method', () => {
+        describe('toString()', () => {
+          describe('when the object has no "id" nor "title" prop', () => {
+            let obj;
 
-      beforeEach(() => {
-        obj = Factory();
-      });
+            beforeEach(() => {
+              obj = Factory();
+            });
 
-      it('should have a Set property "__types__"', () => {
-        expect(obj)
-          .to
-          .have
-          .property('__types__')
-          .that
-          .is
-          .a('Set');
+            it('should return a plain representation', () => {
+              expect(String(obj))
+                .to
+                .equal('<Factory>');
+            });
+          });
+
+          describe('when the object has an "id" prop, but not a "title" prop',
+            () => {
+              let obj;
+
+              beforeEach(() => {
+                obj = Factory({id: 'foo'});
+              });
+
+              it('should return a representation w/ the id', () => {
+                expect(String(obj))
+                  .to
+                  .equal('<Factory#foo>');
+              });
+            });
+
+          describe('when the object has an "id" prop and a "title" prop',
+            () => {
+              let obj;
+
+              beforeEach(() => {
+                obj = Factory({
+                  id: 'foo',
+                  title: 'bar'
+                });
+              });
+
+              it('should return a representation w/ the id and title', () => {
+                expect(String(obj))
+                  .to
+                  .equal('<Factory#foo:"bar">');
+              });
+            });
+
+          describe('when the object has no "id" prop but a "title" prop',
+            () => {
+              let obj;
+
+              beforeEach(() => {
+                obj = Factory({
+                  title: 'bar'
+                });
+              });
+
+              it('should return a representation w/ the title', () => {
+                expect(String(obj))
+                  .to
+                  .equal('<Factory:"bar">');
+              });
+            });
+        });
       });
     });
 
@@ -98,7 +150,7 @@ describe('core/typed', () => {
               beforeEach(() => {
                 obj = Factory();
               });
-              
+
               it('should be of type "factory"', () => {
                 expect(is.factory(obj)).to.be.true;
               });
