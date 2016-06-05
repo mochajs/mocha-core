@@ -2,7 +2,6 @@ import stampit from 'stampit';
 import Executable from './executable';
 import Context from './context';
 import {typed} from '../core';
-import {forEach, getOr} from 'lodash/fp';
 
 // todo put this and shit like it elsewhere
 const ROOT_SUITE_ID = '__root__';
