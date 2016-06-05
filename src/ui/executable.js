@@ -13,7 +13,8 @@ const Executable = stampit({
     context: Context()
   },
   props: {
-    results: []
+    results: [],
+    isAsync: true
   },
   init () {
     // this is intended to be "sticky".  if you set it, then you
@@ -47,12 +48,7 @@ const Executable = stampit({
           return resolve(results.pending.complete());
         }
 
-        let isAsync = false;
-
         executionContext.enable({
-          onAsync: once(function onAsync () {
-            isAsync = true;
-          }),
           onError: once(function onError (...args) {
             const err = args.pop();
             setImmediate(resolve.bind(null, results.async.complete(err)));
@@ -76,7 +72,7 @@ const Executable = stampit({
           retval
             .then(() => resolve(result.complete()),
               err => resolve(result.complete(errorist(err))));
-        } else if (!isAsync) {
+        } else if (!this.isAsync) {
           resolve(results.sync.complete());
         }
       })
