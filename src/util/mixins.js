@@ -36,3 +36,15 @@ Observable.prototype.reject = function reject (func = _.identity) {
     emitter.emitEvent(event);
   });
 };
+
+Observable.prototype.shortLog = function shortLog () {
+  const name = this.toString();
+  return this.withHandler((emitter, event) => {
+    if (event.type === 'end') {
+      console.log(name, '<end>');
+    } else {
+      console.log(name, `<${event.type}>`, String(event.value));
+    }
+    emitter.emitEvent(event);
+  });
+};

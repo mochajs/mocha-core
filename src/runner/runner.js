@@ -9,9 +9,30 @@ import {
 const Runner = stampit({
   init () {
     this.executable$ = this.delegate.executable$;
+  },
+  methods: {
+    run (executable) {
+      return executable.execute()
+        .catch(err => {
+          console.log('oops');
+
+          this.emit('error', err);
+        })
+        .then(result => {
+          console.log('ok');
+
+          this.emit('runner:result', result);
+          return executable;
+        });
+    }
   }
 })
   .compose(EventEmittable, Decoratable, Streamable)
+  .methods({
+    emit (event, ...data) {
+      return EventEmittable.fixed.methods.emit.call(this, event, ...data);
+    }
+  })
   .init(function initRunnables () {
     const executable$ = this.executable$;
     const inclusive$ = this.inclusive$ = executable$.filter(isInclusive);
@@ -22,72 +43,41 @@ const Runner = stampit({
   })
   .init(function initEvents () {
     const getExecutable = get('executable');
+    const run$ = this.delegate.eventStream('mocha:run');
 
-    const uniqueExecutable = curry((filter, obs) => {
-      return obs.filter(filter)
-        .map(dereference)
-        .skipDuplicates();
-    });
+    const uniqueExecutable = curry((filter, obs) => obs.filter(filter)
+      .map(dereference)
+      .skipDuplicates());
 
-    const emitOnValue = (obs, event) => {
-      return obs.onValue(value => {
-        this.emit(event, value);
-      });
-    };
+    const emitOnValue = curry((event, obs) => obs.onValue(value => {
+      this.emit(`runner:${event}`, value);
+    }));
 
     const emitBaseEvents = (type, extraFilter = identity) => {
-      const firstType = head(type.split(':'));
-      const filter = overEvery(pipe(getExecutable, is[firstType]), extraFilter);
+      const typeCheck = get(head(type.split(':')), is);
+      const filter = overEvery([pipe(getExecutable, typeCheck), extraFilter]);
       const unique = uniqueExecutable(filter);
-      emitOnValue(unique(this.executable$), `runner:${type}`);
-      emitOnValue(unique(this.inclusive$), `runner:${type}:include`);
-      emitOnValue(unique(this.excluded$), `runner:${type}:exclude`);
-      return emitOnValue(unique(this.runnable$), `runner:${type}:runnable`);
+      emitOnValue('executable', unique(this.executable$))
+        .onValue(value => {
+          this.emit(`runner:${type}`, value);
+        });
+      emitOnValue(`${type}:include`, unique(this.inclusive$));
+      emitOnValue(`${type}:exclude`, unique(this.excluded$));
+      return emitOnValue('runnable', unique(this.runnable$))
+        .onValue(value => {
+          this.emit(`runner:${type}:runnable`, value);
+        });
     };
-
-    this.runnableSuite$ =
-      emitOnValue(emitBaseEvents('suite'), 'runner:suite:run');
-    this.runnableTest$ = emitBaseEvents('test');
-    emitBaseEvents('hook');
 
     const isOnce = pipe(get('opts.once'), Boolean);
     const isPre = pipe(get('opts.when'), eq('pre'));
 
-    this.runnablePreHook$ =
-      emitBaseEvents('hook:pre', overEvery(isOnce, isPre));
-    this.runnablePostHook$ =
-      emitBaseEvents('hook:post', overEvery(isOnce, negate(isPre)));
-    this.runnablePreEachHook$ =
-      emitBaseEvents('hook:pre-each', overEvery(negate(isOnce), isPre));
-    this.runnablePostEachHook$ =
-      emitBaseEvents('hook:post-each', negate(overEvery(isOnce, isPre)));
-
-    const run$ = this.delegate.eventStream('mocha:run');
-
-    emitOnValue(this.runnablePreHook$.bufferBy(this.runnableSuite$)
-      .flatten()
-      .bufferBy(run$)
-      .flatten(), 'runner:hook:pre:run');
-
-    emitOnValue(this.runnablePreEachHook$.bufferBy(this.runnableSuite$)
-      .flatten()
-      .sampledBy(this.runnableTest$)
-      .bufferBy(run$)
-      .flatten(), 'runner:hook:pre-each:run');
-
-    emitOnValue(this.runnableTest$.bufferBy(run$)
-      .flatten(), 'runner:test:run');
-
-    emitOnValue(this.runnablePostHook$.bufferBy(this.runnableSuite$)
-      .flatten()
-      .bufferBy(run$)
-      .flatten(), 'runner:hook:post:run');
-
-    emitOnValue(this.runnablePreEachHook$.bufferBy(this.runnableSuite$)
-      .flatten()
-      .sampledBy(this.runnableTest$)
-      .bufferBy(run$)
-      .flatten(), 'runner:hook:pre-each:run');
+    emitBaseEvents('suite');
+    emitBaseEvents('hook:pre', overEvery([isOnce, isPre]));
+    emitBaseEvents('hook:pre-each', overEvery([negate(isOnce), isPre]));
+    emitBaseEvents('test');
+    emitBaseEvents('hook:post-each', overEvery([negate(isOnce), negate(isPre)]));
+    emitBaseEvents('hook:post', overEvery([isOnce, negate(isPre)]));
   });
 
 export default Runner;

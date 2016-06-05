@@ -4,7 +4,7 @@ import Suite from '../../../src/ui/suite';
 import Test from '../../../src/ui/test';
 import Hook from '../../../src/ui/hook';
 import {Kefir} from 'kefir';
-import {toPairs, forEach} from 'lodash/fp';
+import {forEach} from 'lodash/fp';
 
 describe('runner/runner', () => {
   let sandbox;
