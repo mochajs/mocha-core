@@ -273,7 +273,6 @@ describe('ui/ui', () => {
           });
 
           describe('when plugged with a Hook', () => {
-            let hook;
             let func;
 
             beforeEach(() => {
@@ -293,90 +292,6 @@ describe('ui/ui', () => {
               })
                 .to
                 .emitFrom(ui, 'ui:hook');
-            });
-
-            describe('and the hook should be run once, before tests', () => {
-              let opts;
-              beforeEach(() => {
-                opts = {
-                  hooks: 'pre'
-                };
-                dynamo$.plug(Kefir.constant({
-                  Factory: Factory.refs({func}),
-                  opts
-                }));
-                hook = _.get(init, 'lastCall.thisValue');
-              });
-
-              it('should add itself to the current Suite\'s "pre" hooks',
-                () => {
-                  expect(Suite.root.pre)
-                    .to
-                    .eql([hook]);
-                });
-            });
-
-            describe('and the hook should be run once, after tests', () => {
-              let opts;
-              beforeEach(() => {
-                opts = {
-                  hooks: 'post'
-                };
-                dynamo$.plug(Kefir.constant({
-                  Factory: Factory.refs({func}),
-                  opts
-                }));
-                hook = _.get(init, 'lastCall.thisValue');
-              });
-
-              it('should add itself to the current Suite\'s "post" hooks',
-                () => {
-                  expect(Suite.root.post)
-                    .to
-                    .eql([hook]);
-                });
-            });
-
-            describe('and the hook should be run before each test', () => {
-              let opts;
-              beforeEach(() => {
-                opts = {
-                  hooks: 'preEach'
-                };
-                dynamo$.plug(Kefir.constant({
-                  Factory: Factory.refs({func}),
-                  opts
-                }));
-                hook = _.get(init, 'lastCall.thisValue');
-              });
-
-              it('should add itself to the current Suite\'s "preEach" hooks',
-                () => {
-                  expect(Suite.root.preEach)
-                    .to
-                    .eql([hook]);
-                });
-            });
-
-            describe('and the hook should be after each test', () => {
-              let opts;
-              beforeEach(() => {
-                opts = {
-                  hooks: 'postEach'
-                };
-                dynamo$.plug(Kefir.constant({
-                  Factory: Factory.refs({func}),
-                  opts
-                }));
-                hook = _.get(init, 'lastCall.thisValue');
-              });
-
-              it('should add itself to the current Suite\'s "postEach" hooks',
-                () => {
-                  expect(Suite.root.postEach)
-                    .to
-                    .eql([hook]);
-                });
             });
           });
         });

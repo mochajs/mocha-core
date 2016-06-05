@@ -71,7 +71,6 @@ const UI = stampit({
   init () {
     const dynamo$ = this.dynamo$ = Kefir.pool();
     const suite$ = this.suite$ = Kefir.pool();
-    const currentSuite$ = suite$.toProperty(() => Suite.root);
     const writeExecutable = this.write(this.delegate.executable$);
 
     /**
@@ -123,10 +122,6 @@ const UI = stampit({
 
     executing$.filter(({executable}) => is.hook(executable))
       .onValue(({executable, opts}) => {
-        currentSuite$.onValue(suite => {
-          // XXX: I don't like the tight coupling here.
-          suite[opts.hooks].push(executable);
-        });
         this.emit('ui:hook', executable);
       });
 
