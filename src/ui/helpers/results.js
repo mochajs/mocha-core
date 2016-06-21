@@ -28,8 +28,8 @@ const Result = stampit({
   },
   methods: {
     finalize () {
-      delete this.startTime;
       this.elapsed = moment().diff(this.startTime);
+      delete this.startTime;
       Object.freeze(this);
       return this;
     },
