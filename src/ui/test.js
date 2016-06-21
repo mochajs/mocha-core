@@ -1,10 +1,10 @@
 import stampit from 'stampit';
-import {FSM, Taggable, typed} from '../core';
+import {FSM, Taggable} from '../core';
 import Executable from './executable';
 
 const Test = stampit({
 })
-  .compose(FSM, Taggable, Executable, typed('Test'))
+  .compose(FSM, Taggable, Executable)
   .initial('idle')
   .final('passed', 'errored')
   .events({

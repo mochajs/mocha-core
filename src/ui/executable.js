@@ -1,20 +1,21 @@
 import stampit from 'stampit';
 import is from 'check-more-types';
-import {Unique, EventEmittable, Streamable, typed} from '../core';
+import {Unique, Stateful} from '../core';
 import instrument from './helpers/results';
 import {once} from 'lodash';
 import * as executionContext from './helpers/execution-context';
 import Context from './context';
 import {setImmediate, Promise} from '../util';
 import errorist from 'errorist';
+import {fromPromise} from 'kefir';
 
 const Executable = stampit({
   refs: {
     context: Context()
   },
   props: {
-    results: [],
-    hasCallback: true
+    hasCallback: false,
+    results: []
   },
   init () {
     // this is intended to be "sticky".  if you set it, then you
@@ -40,10 +41,9 @@ const Executable = stampit({
     execute () {
       const func = this.func;
       const results = instrument();
+      this.executing = true;
 
-      this.emit('executable:execute:begin');
-
-      return new Promise(resolve => {
+      return fromPromise(new Promise(resolve => {
         if (this.pending) {
           return resolve(results.pending.complete());
         }
@@ -84,13 +84,22 @@ const Executable = stampit({
         .then(result => {
           executionContext.disable();
           this.lastResult = result;
-          this.results.push(result);
-          this.emit('executable:execute:end');
-          return result;
-        });
+          this.executing = false;
+          return this;
+        }));
     }
   }
 })
-  .compose(EventEmittable, Unique, Streamable, typed('Executable'));
+  .compose(Unique, Stateful)
+  .initialState({
+    executing: false,
+    lastResult: null
+  })
+  .init(function initResults () {
+    this.result$ = this.lastResult$.filter()
+      .onValue(result => {
+        this.results.push(result);
+      });
+  });
 
 export default Executable;

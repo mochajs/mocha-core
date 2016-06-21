@@ -51,6 +51,7 @@
     "errorist": "^0.1.4",
     "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
     "kefir": "^3.2.1",
+    "kefir-model": "^0.1.2",
     "lodash": "^4.11.1",
     "moment": "^2.13.0",
     "nodeify": "^1.0.0",

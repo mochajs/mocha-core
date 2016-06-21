@@ -1,18 +1,19 @@
 import stampit from 'stampit';
 import {Pluggable} from './plugins';
-import {UI} from './ui';
+import {UI, rootSuite} from './ui';
 import {Runner} from './runner';
 import {Reporter} from './reporter';
 import pkg from './options/package';
 import {Kefir} from 'kefir';
 import {assign} from 'lodash/fp';
 import is from 'check-more-types';
-import {Streamable} from './core';
+import {Mappable, Stateful} from './core';
 
 const Mocha = stampit({
   refs: {
     version: pkg.version,
-    executable$: Kefir.pool(),
+    runnable$: Kefir.pool(),
+    running$: Kefir.pool(),
     plugins: {}
   },
   methods: {
@@ -25,21 +26,36 @@ const Mocha = stampit({
       }, properties));
     },
     createUI (properties = {}) {
-      return this.createAPI(UI, properties);
+      return this.createAPI(UI, assign(properties, {
+        runnable$: this.runnable$
+      }));
     },
     createRunner (properties = {}) {
-      return this.createAPI(Runner, properties);
+      return this.createAPI(Runner, assign(properties, {
+        runnable$: this.runnable$,
+        running$: this.running$
+      }));
     },
     createReporter (properties = {}) {
       return this.createAPI(Reporter, properties);
     },
     run () {
-      this.emit('mocha:run');
+      this.running$.toProperty()
+        .onValue(current => {
+          if (current === rootSuite) {
+            this.emit('run');
+          }
+        });
     }
   }
 })
-  .compose(Pluggable, Streamable)
+  .compose(Pluggable, Stateful)
+  .initialState({
+    suite: rootSuite
+  })
   .init(function init () {
+    this.runners = Mappable();
+    this.plug(this.running$.map(running => ({suite: running})));
     this.use(this.ui)
       .use(this.runner);
   });

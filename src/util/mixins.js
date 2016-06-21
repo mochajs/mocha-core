@@ -37,6 +37,16 @@ Observable.prototype.reject = function reject (func = _.identity) {
   });
 };
 
+Observable.prototype.decode = function decode (mapping) {
+  return this.withHandler((emitter, event) => {
+    if (event.type === 'value') {
+      if (is.object(event.value)) {
+
+      }
+    }
+  })
+};
+
 Observable.prototype.shortLog = function shortLog () {
   const name = this.toString();
   return this.withHandler((emitter, event) => {

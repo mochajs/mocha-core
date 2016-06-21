@@ -14,7 +14,7 @@ describe('runner/runner', () => {
   beforeEach(() => {
     sandbox = sinon.sandbox.create('runner/runner');
     executable$ = Kefir.pool();
-    delegate = Streamable.compose(EventEmittable)({executable$});
+    delegate = Streamable.compose(EventEmittable)({input$});
   });
 
   describe('Runner()', () => {

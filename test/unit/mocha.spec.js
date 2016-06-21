@@ -77,7 +77,7 @@ describe('mocha', () => {
           sandbox.stub(mocha, 'createAPI')
             .returns(UI.refs({
               delegate: mocha,
-              executable$: mocha.executable$
+              input$: mocha.input$
             })());
           ui = mocha.createUI(props);
         });
@@ -103,7 +103,7 @@ describe('mocha', () => {
           sandbox.stub(mocha, 'createAPI')
             .returns(UI.refs({
               delegate: mocha,
-              executable$: mocha.executable$
+              input$: mocha.input$
             })());
           ui = mocha.createRunner(props);
         });
@@ -141,7 +141,7 @@ describe('mocha', () => {
             .an('object');
         });
 
-        it('should call Factory with a delegate and executable$ stream', () => {
+        it('should call Factory with a delegate and input$ stream', () => {
           mocha.createAPI(Factory);
           expect(Factory)
             .to

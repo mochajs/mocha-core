@@ -1,20 +1,35 @@
 import stampit from 'stampit';
 import Executable from './executable';
 import Context from './context';
-import {typed} from '../core';
-
-// todo put this and shit like it elsewhere
-const ROOT_SUITE_ID = '__root__';
+import {constant} from 'kefir';
+import {concat, flatMap} from 'lodash/fp';
 
 const Suite = stampit({
   refs: {
-    parent: null,
-    func: null,
-    context: Context({id: ROOT_SUITE_ID})
+    context: Context({root: true})
+  },
+  props: {
+    root: false,
+    tests: [],
+    preHooks: [],
+    preEachHooks: [],
+    postHooks: [],
+    postEachHooks: []
   },
   methods: {
     spawnContext () {
       return this.context.spawn();
+    },
+    executables () {
+      // TODO pipe()
+      return constant(concat(this.preHooks, [
+        flatMap(test => concat(this.preEachHooks, [
+          test,
+          this.postEachHooks
+        ]), this.tests),
+        this.postHooks
+      ]))
+        .flatten();
     }
   },
   init () {
@@ -31,14 +46,16 @@ const Suite = stampit({
         configurable: true
       }
     });
+
+    if (this.parent) {
+      this.preEachHooks =
+        this.preEachHooks.concat(this.parent.preEachHooks.slice());
+      this.postEachHooks =
+        this.postEachHooks.concat(this.parent.postEachHooks.slice());
+    }
   }
 })
-  .compose(Executable, typed('Suite'))
-  .on('executable:execute:begin', function onExecuteBegin () {
-    this.emit('suite:execute:begin');
-  })
-  .on('executable:execute:end', function onExecuteEnd () {
-    this.emit('suite:execute:end');
-  });
+  .compose(Executable);
 
-export default Suite.static({root: Suite({id: ROOT_SUITE_ID})});
+export const rootSuite = Suite({root: true, title: 'ROOT SUITE'});
+export default Suite;

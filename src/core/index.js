@@ -7,4 +7,4 @@ export {default as Singleton} from './singleton';
 export {default as Taggable} from './taggable';
 export {default as Unique} from './unique';
 export {default as Streamable} from './streamable';
-export {default as typed} from './typed';
+export {default as Stateful} from './stateful';

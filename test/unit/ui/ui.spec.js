@@ -12,11 +12,11 @@ describe('ui/ui', () => {
     sandbox = sinon.sandbox.create('ui/ui');
     sandbox.spy(Kefir, 'constant');
     delegate = EventEmittable({
-      executable$: Kefir.pool()
+      input$: Kefir.pool()
     });
     UI = _UI.refs({
       delegate,
-      executable$: delegate.executable$
+      input$: delegate.input$
     });
     Suite.root.pre = [];
     Suite.root.post = [];
@@ -34,7 +34,7 @@ describe('ui/ui', () => {
 
       beforeEach(() => {
         ui = UI();
-        sandbox.stub(ui.delegate.executable$, 'plug');
+        sandbox.stub(ui.delegate.input$, 'plug');
       });
 
       describe('suite$', () => {
@@ -134,8 +134,8 @@ describe('ui/ui', () => {
                 .property('parent', Suite.root);
             });
 
-            it('should plug the executable into the executable$ stream', () => {
-              expect(ui.delegate.executable$.plug)
+            it('should plug the executable into the input$ stream', () => {
+              expect(ui.delegate.input$.plug)
                 .to
                 .have
                 .been
@@ -249,8 +249,8 @@ describe('ui/ui', () => {
                 .equal(Suite.root);
             });
 
-            it('should be shuttled off to executable$', () => {
-              expect(ui.delegate.executable$.plug)
+            it('should be shuttled off to input$', () => {
+              expect(ui.delegate.input$.plug)
                 .to
                 .be
                 .calledWithExactly(Kefir.constant.lastCall.returnValue);

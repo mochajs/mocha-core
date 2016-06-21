@@ -1,149 +1,102 @@
 import stampit from 'stampit';
-import {Decoratable, EventEmittable, Streamable} from '../core';
-import {Kefir} from 'kefir';
-import {assign, constant, curry} from 'lodash/fp';
-import Suite from './suite';
+import {Decoratable, EventEmittable, Stateful} from '../core';
+import {assign, constant, get, curry} from 'lodash/fp';
+import Suite, {rootSuite} from './suite';
 import Test from './test';
 import Hook from './hook';
-import is from 'check-more-types';
+import {fromEvents, Kefir} from 'kefir';
 
 const UI = stampit({
   refs: {
+    // XXX not sure how to deal with this yet, or if it's necessary
+    // think : QUnit ui
     recursive: true
   },
   methods: {
-    /**
-     * @private
-     */
-    write: curry(function write (pool, value) {
-      pool.plug(Kefir.constant(value));
-      return this;
-    }),
-    createExecutable (Factory, definition = {}, opts = {}) {
-      if (!Factory) {
-        throw new Error('Factory function required');
-      }
-      this.write(this.dynamo$, {
-        Factory: Factory.refs(definition),
-        opts
-      });
+    withParentSuite (definition) {
+      return assign(definition, {parent: this.delegate.suite});
+    },
+    createSuite (definition = {}) {
+      this.emit('suite:create', this.withParentSuite(definition));
       return this;
     },
-    createSuite (definition = {}, opts = {}) {
-      this.createExecutable(Suite, definition, opts);
-      return this;
-    },
-    createTest (definition = {}, opts = {}) {
-      this.createExecutable(Test, definition, opts);
+    createTest (definition = {}) {
+      this.emit('test:create', this.withParentSuite(definition));
       return this;
     },
     retries (num) {
       this.context.retries(num);
       return this;
     },
-    afterTests (definition = {}, opts = {}) {
-      this.createExecutable(Hook, definition, assign(opts, {
-        when: 'post',
-        once: true
-      }));
+    afterTests (definition = {}) {
+      this.emit('hook:create',
+        this.withParentSuite(assign(definition, {kind: 'post'})));
       return this;
     },
-    beforeTests (definition = {}, opts = {}) {
-      this.createExecutable(Hook, definition, assign(opts, {
-        when: 'pre',
-        once: true
-      }));
+    beforeTests (definition = {}) {
+      this.emit('hook:create',
+        this.withParentSuite(assign(definition, {kind: 'pre'})));
       return this;
     },
-    afterEachTest (definition = {}, opts = {}) {
-      this.createExecutable(Hook, definition, assign(opts, {
-        when: 'post'
-      }));
+    afterEachTest (definition = {}) {
+      this.emit('hook:create',
+        this.withParentSuite(assign(definition, {kind: 'post-each'})));
       return this;
     },
-    beforeEachTest (definition = {}, opts = {}) {
-      this.createExecutable(Hook, definition, assign(opts, {
-        when: 'pre'
-      }));
+    beforeEachTest (definition = {}) {
+      this.emit('hook:create',
+        this.withParentSuite(assign(definition, {kind: 'pre-each'})));
       return this;
     }
   },
   init () {
-    const dynamo$ = this.dynamo$ = Kefir.pool();
-    const suite$ = this.suite$ = Kefir.pool();
-    const writeExecutable = this.write(this.delegate.executable$);
+    // this.currentSuite$ = this.runningSuite$.toProperty(constant(Suite.root));
+    //
+    // this.childSuite$ = Kefir.pool();
+    // this.childSuite$.filter(isExcluded)
+    //   .combine(this.currentSuite$,
+    //     (Factory, parent) => Factory({parent}));
+    //
+    // this.executable$ = Kefir.pool();
+    // TODO: the idea here would be to stall instantiation until we're
+    // sure there is no inclusive filter used.  if one is used, then we
+    // can go ahead and instantiate the applicable ones.  I think once
+    // the currentSuite$ returns to the Root (if it left; otherwise wait
+    // until run()), and no inclusive suites have shown up, then we can
+    // instantiate.
+    // seems like a pain in the ass but might save a fair amount of memory.
+    // this.executable$.filter(isExcluded)
+    //   .combine(this.currentSuite$,
+    //     // this function can be executed when we're ready
+    //     (Factory, parent) => parent.createChild.bind(parent, Factory))
 
-    /**
-     * Set the current suite by plugging it into the suite$ stream
-     * @param {Suite} suite
-     */
-    const setCurrentSuite = suite => {
-      suite$.plug(Kefir.constant(suite));
-    };
-
-    /**
-     * Sets the context from a Suite.
-     */
-    const setContext = ({context}) => {
-      this.context = context;
-      this.emit('ui:context', context);
-    };
-
-    suite$.onValue(setContext);
-
-    // summary:
-    // - get the current suite (`parent` param)
-    // - instantiate the Executable with the `parent`
-    // - plug into the executable$ pool for the runner to handle
-    // - once the runner begins to execute a Suite, set it current
-    // - once the execution is done, set the *parent* to current
-    const executing$ = dynamo$.combine(suite$, ({Factory, opts}, parent) => ({
-      // HEADS UP! this is where the actual Executable object is
-      // instantiated.  it doesn't matter if it's a Test or a Suite
-      // or a Hook at this point.
-      executable: Factory({
-        parent,
-        context: parent.spawnContext()
-      }),
-      opts
-    }))
-      .onValue(writeExecutable);
-
-    // XXX: here we're just sending the test off to the runner
-    // to ostensibly run later.  each Suite has a reference to the hooks
-    // which need to be run, which may not actually be necessary.
-    // note that currently, the Suite does NOT have a reference to its
-    // tests, because that doesn't (yet) seem necessary.
-    executing$.filter(({executable}) => is.test(executable))
-      .map(({executable}) => executable)
-      .onValue(test => {
-        this.emit('ui:test', test);
-      });
-
-    executing$.filter(({executable}) => is.hook(executable))
-      .onValue(({executable, opts}) => {
-        this.emit('ui:hook', executable);
-      });
-
-    executing$.filter(({executable}) => is.suite(executable))
-      .map(({executable}) => executable)
-      .onValue(suite => {
-        this.emit('ui:suite', suite);
-      })
-      .flatMap(suite => suite.eventStream('suite:execute:begin')
-        .take(1)
-        .map(constant(suite)))
-      .onValue(setCurrentSuite)
-      .flatMap(suite => suite.eventStream('suite:execute:end')
-        .take(1)
-        .map(constant(suite.parent)))
-      .onValue(setCurrentSuite);
-
-    // begin by plugging the root Suite into the stream, so it
-    // becomes current, and the context is set.
-    setCurrentSuite(Suite.root);
+    // const inclusive$ = executable$.filter(isInclusive);
   }
 })
-  .compose(EventEmittable, Decoratable, Streamable);
+  .compose(EventEmittable, Decoratable)
+  .init(function initState () {
+    const emitSuite = suite => {
+      this.emit('suite', suite);
+    };
+
+    const createSuite$ = fromEvents(this, 'suite:create');
+    const runnableSuite$ = createSuite$.reject(get('excluded'))
+      .map(Suite);
+
+    runnableSuite$.onValue(emitSuite);
+
+    const createTest$ = fromEvents(this, 'test:create');
+    const runnableTest$ = createTest$.reject(get('excluded'))
+      .map(Test);
+
+    this.runnable$.plug(runnableSuite$);
+
+    this.delegate.on('run', () => {
+      console.log('run');
+      runnableSuite$.offValue(emitSuite);
+      this.runnable$.unplug(runnableSuite$);
+      this.runnable$.plug(runnableTest$);
+    });
+  });
 
 export default UI;

@@ -1,12 +1,12 @@
 import stampit from 'stampit';
-import {Kefir} from 'kefir';
+import {constant, pool} from 'kefir';
 
-// needs to be composed with an EventEmitter, probably
 const Streamable = stampit({
-  methods: {
-    eventStream (event) {
-      return Kefir.fromEvents(this, event);
-    }
+  static: {
+    stream$: pool()
+  },
+  init ({stamp}) {
+    stamp.stream$.plug(constant(this));
   }
 });
 

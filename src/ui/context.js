@@ -3,6 +3,7 @@ import {Unique} from '../core';
 
 const Context = stampit({
   props: {
+    root: false,
     executable: {}
   },
   methods: {
