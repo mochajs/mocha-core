@@ -20,31 +20,18 @@
   "main": "lib/index.js",
   "engines": {
     "node": ">=0.10.0",
-    "npm": ">=1.7.4"
+    "npm": ">=2.0.0"
   },
   "files": [
     "lib/",
     "src/"
   ],
   "scripts": {
-    "build": "rimraf lib && BABEL_ENV=node babel --out-dir=lib src",
-    "bump:major": "npm version major -m 'Release v%s'",
-    "bump:minor": "npm version minor -m 'Release v%s'",
-    "bump:patch": "npm version patch -m 'Release v%s'",
-    "update": "updtr",
-    "lint": "eslint src/ test/ .*.js",
-    "nsp": "nsp check",
-    "prepublish": "npm run build",
-    "preversion": "npm run test",
-    "publish-please": "publish-please",
-    "test": "parallel lint nsp test:node test:browser",
-    "test:browser": "karma start .karma.conf.js --single-run",
-    "test:browser:dev": "karma start .karma.conf.js --browsers=Chrome",
-    "test:node": "nyc --require babel-register mocha --colors --require ./test/fixture --recursive",
-    "test:node:bare": "mocha --require source-map-support/register --require babel-register --require ./test/fixture --recursive --full-trace"
+    "start": "package-scripts",
+    "prepublish": "npm start build",
+    "preversion": "npm start test"
   },
   "dependencies": {
-    "async-listener": "^0.6.0",
     "check-more-types": "^2.20.2",
     "core-js": "^2.3.0",
     "debug": "^2.2.0",
@@ -95,16 +82,17 @@
     "karma-source-map-support": "^1.1.0",
     "minifyify": "^7.3.3",
     "mkdirp": "^0.5.1",
-    "mocha": "^2.3.4",
+    "mocha": "^3.0.0-2",
     "npm-parallel": "boneskull/npm-parallel#boneskull-patch-1",
     "nsp": "^2.3.1",
     "nyc": "^6.4.0",
+    "p-s": "^2.1.0",
     "phantomjs-prebuilt": "^2.1.7",
     "publish-please": "^1.1.0",
     "rimraf": "^2.5.2",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
-    "updtr": "^0.1.6",
+    "updtr": "^0.2.1",
     "wallabify": "^0.0.14",
     "watchify": "^3.7.0"
   },
