@@ -1,8 +1,10 @@
 import stampit from 'stampit';
+import {stream} from 'kefir';
 import Executable from './executable';
 import Context from './context';
-import {constant} from 'kefir';
-import {concat, flatMap} from 'lodash/fp';
+import {EventEmittable} from '../core';
+import Test from './test';
+import {always, assign, prop, pick} from 'lodash/fp';
 
 const Suite = stampit({
   refs: {
@@ -10,29 +12,64 @@ const Suite = stampit({
   },
   props: {
     root: false,
-    tests: [],
-    preHooks: [],
-    preEachHooks: [],
-    postHooks: [],
-    postEachHooks: []
+    parent: null
   },
   methods: {
     spawnContext () {
       return this.context.spawn();
     },
-    executables () {
-      // TODO pipe()
-      return constant(concat(this.preHooks, [
-        flatMap(test => concat(this.preEachHooks, [
-          test,
-          this.postEachHooks
-        ]), this.tests),
-        this.postHooks
-      ]))
-        .flatten();
+    createTest (definition = {}, opts = {}) {
+      const test = Test(assign(definition, {
+        parent: this,
+        opts
+      }));
+      this.runnables.emitEvent({
+        type: 'value',
+        value: test
+      });
+      return test;
+    },
+    createSuite (definition = {}, opts = {}) {
+      return Suite(assign(definition, {
+        parent: this,
+        queue$: this.queue$,
+        opts
+      }));
+    },
+    flush () {
+      // setImmediate(() => this.runnables.end());
+      // this.runnables.end();
+      // const retval = this.runnables$.onValue(value => {
+      //   console.log(value);
+      // })
+      //   .flatten();
+      // setImmediate(() => this.runnables.end());
+      // return retval;
+    },
+    toString () {
+      return `<Suite "${this.title}">`;
+    },
+    toJSON () {
+      return pick([
+        'id',
+        'title',
+        'fullTitle'
+      ]);
     }
   },
   init () {
+    this.runnables$ = stream(emitter => {
+      this.runnables = emitter;
+    })
+      .bufferWhile(always(true))
+      .flatten();
+
+    this.runnables$.observe({
+      error: err => {
+        this.emit('error', err);
+      }
+    });
+
     Object.defineProperties(this, {
       // array for reporter to format as necessary
       fullTitle: {
@@ -46,16 +83,8 @@ const Suite = stampit({
         configurable: true
       }
     });
-
-    if (this.parent) {
-      this.preEachHooks =
-        this.preEachHooks.concat(this.parent.preEachHooks.slice());
-      this.postEachHooks =
-        this.postEachHooks.concat(this.parent.postEachHooks.slice());
-    }
   }
 })
-  .compose(Executable);
+  .compose(Executable, EventEmittable);
 
-export const rootSuite = Suite({root: true, title: 'ROOT SUITE'});
 export default Suite;

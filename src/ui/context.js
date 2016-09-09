@@ -24,4 +24,3 @@ const Context = stampit({
 }).compose(Unique);
 
 export default Context;
-

@@ -1,7 +1,6 @@
 export {default as Collectable} from './collectable';
 export {default as Decoratable} from './decoratable';
 export {default as EventEmittable} from './eventemittable';
-export {default as FSM} from './fsm';
 export {default as Mappable} from './mappable';
 export {default as Singleton} from './singleton';
 export {default as Taggable} from './taggable';

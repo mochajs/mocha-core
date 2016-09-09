@@ -2,11 +2,21 @@ import stampit from 'stampit';
 
 const Reporter = stampit({
   init () {
-    const suiteResults = this.results
-      .filter(value => value.suite);
+    this.runner.on('suite', suite => {
+      console.log(`${suite} begin`);
+    });
 
-    // preliminary failures of suites, _before_ test runs
-    suiteResults.filter(({result}) => result.error || result.failure).log();
+    this.runner.on('suiteEnd', suite => {
+      console.log(`${suite} end`);
+    });
+
+    this.runner.on('test', test => {
+      console.log(`${test} begin`);
+    });
+
+    this.runner.on('testEnd', test => {
+      console.log(`${test} end`);
+    });
   }
 });
 

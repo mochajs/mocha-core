@@ -32,12 +32,12 @@
     "preversion": "npm start test"
   },
   "dependencies": {
+    "async-listener": "^0.6.3",
     "check-more-types": "^2.20.2",
     "core-js": "^2.3.0",
     "debug": "^2.2.0",
     "errorist": "^0.1.4",
-    "fsm-as-promised": "github:boneskull/fsm-as-promised#init-api",
-    "kefir": "^3.2.1",
+    "kefir": "^3.4.0",
     "kefir-model": "^0.1.2",
     "lodash": "^4.11.1",
     "moment": "^2.13.0",
@@ -83,7 +83,6 @@
     "minifyify": "^7.3.3",
     "mkdirp": "^0.5.1",
     "mocha": "^3.0.0-2",
-    "npm-parallel": "boneskull/npm-parallel#boneskull-patch-1",
     "nsp": "^2.3.1",
     "nyc": "^6.4.0",
     "p-s": "^2.1.0",

@@ -1,5 +1,6 @@
 import Mocha from '../../src/mocha';
 import {UI} from '../../src/ui';
+import {Runner} from '../../src/runner';
 
 describe('mocha', () => {
   let sandbox;
@@ -77,7 +78,7 @@ describe('mocha', () => {
           sandbox.stub(mocha, 'createAPI')
             .returns(UI.refs({
               delegate: mocha,
-              input$: mocha.input$
+              runnable$: mocha.runnable$
             })());
           ui = mocha.createUI(props);
         });
@@ -96,20 +97,21 @@ describe('mocha', () => {
 
       describe('createRunner()', () => {
         let props;
-        let ui;
+        let runner;
 
         beforeEach(() => {
           props = {};
           sandbox.stub(mocha, 'createAPI')
-            .returns(UI.refs({
+            .returns(Runner.refs({
               delegate: mocha,
-              input$: mocha.input$
+              runnable$: mocha.runnable$,
+              running$: mocha.running$
             })());
-          ui = mocha.createRunner(props);
+          runner = mocha.createRunner(props);
         });
 
         it('should return a Runner instance', () => {
-          expect(ui)
+          expect(runner)
             .to
             .be
             .an('object');
@@ -141,7 +143,7 @@ describe('mocha', () => {
             .an('object');
         });
 
-        it('should call Factory with a delegate and input$ stream', () => {
+        it('should call Factory with a delegate', () => {
           mocha.createAPI(Factory);
           expect(Factory)
             .to

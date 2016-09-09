@@ -1,6 +1,6 @@
 import {curry} from 'lodash/fp';
 
-export const remove = curry(function remove (prop, obj) {
+const remove = curry(function remove (prop, obj) {
   delete obj[prop];
   return obj;
 });
@@ -11,6 +11,6 @@ const Set = global.Set || require('core-js/library/fn/set');
 const WeakMap = global.WeakMap || require('core-js/library/fn/weak-map');
 const WeakSet = global.WeakSet || require('core-js/library/fn/weak-set');
 const from = Array.from || require('core-js/library/fn/array/from');
-const setImmediate = global.setImmediate || require('core-js/library/fn/set-immediate');
+const immediate = global.setImmediate || process.nextTick || require('core-js/library/fn/set-immediate');
 
-export {Promise, Map, Set, WeakMap, WeakSet, from, setImmediate};
+export {Promise, Map, Set, WeakMap, WeakSet, from, immediate, remove};

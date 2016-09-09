@@ -6,15 +6,6 @@ is.mixin(function isSingularArray (value) {
   return _.isArray(value) && value.length === 1;
 }, 'singularArray');
 
-is.mixin(function isStamp (value) {
-  return _.isFunction(value) && value.name === 'Factory' &&
-    is.object(value.fixed);
-}, 'stamp');
-
-is.mixin(function isMoment (value) {
-  return is.object(value) && Boolean(value._isAMomentObject);
-}, 'moment');
-
 is.mixin(_.isMap, 'map');
 is.mixin(_.isSet, 'set');
 is.mixin(_.isWeakMap, 'weakMap');
@@ -35,16 +26,6 @@ Observable.prototype.reject = function reject (func = _.identity) {
     }
     emitter.emitEvent(event);
   });
-};
-
-Observable.prototype.decode = function decode (mapping) {
-  return this.withHandler((emitter, event) => {
-    if (event.type === 'value') {
-      if (is.object(event.value)) {
-
-      }
-    }
-  })
 };
 
 Observable.prototype.shortLog = function shortLog () {

@@ -5,7 +5,7 @@ import instrument from './helpers/results';
 import {once} from 'lodash';
 import * as executionContext from './helpers/execution-context';
 import Context from './context';
-import {setImmediate, Promise} from '../util';
+import {immediate, Promise} from '../util';
 import errorist from 'errorist';
 import {fromPromise} from 'kefir';
 
@@ -51,7 +51,7 @@ const Executable = stampit({
         executionContext.enable({
           onError: once(function onError (...args) {
             const err = args.pop();
-            setImmediate(resolve.bind(null, results.callback.complete(err)));
+            immediate(resolve.bind(null, results.callback.complete(err)));
             return true;
           })
         });

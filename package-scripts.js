@@ -7,7 +7,7 @@ exports.scripts = {
   clean: 'rimraf lib/',
   build: {
     default: 'p-s clean && p-s build.node',
-    node: 'BABEL_ENV=node babel --out-dir=lib/ src/'
+    node: "BABEL_ENV=node babel --ignore '**/*.browser.js' --out-dir=lib/ src/"
   },
   lint: 'eslint src/ test/ .*.js',
   test: {
