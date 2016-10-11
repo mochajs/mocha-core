@@ -1,4 +1,4 @@
-import stampit from 'stampit';
+import stampit from '../ext/stampit';
 import {Decoratable} from '../core';
 
 const UI = stampit({
@@ -20,11 +20,13 @@ const UI = stampit({
     },
     afterTests (definition = {}) {
     },
-    beforeTests (definition = {}) {
+    preSuite (definition = {}) {
+      this.delegate.createHook(definition, {hook: 'pre-suite'});
     },
     afterEachTest (definition = {}) {
     },
-    beforeEachTest (definition = {}) {
+    preTest (definition = {}) {
+      this.delegate.createHook(definition, {hook: 'pre-test'});
     }
   }
 })

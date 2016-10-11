@@ -1,19 +1,19 @@
-import resolver from './resolver';
+import resolver from './resolver.cjs';
 import Plugin from './plugin';
-import {noop, get, flow, negate, every, curry} from 'lodash/fp';
+import {noop, prop, pipe, complement, all, curry} from 'lodash/fp';
 import {assign} from 'lodash';
 import {remove, Set} from '../util';
-import {Kefir} from 'kefir';
-import stampit from 'stampit';
+import {stream} from '../ext/kefir';
+import stampit from '../ext/stampit';
 import {EventEmittable, Mappable} from '../core';
 import is from 'check-more-types';
 
 export const helpers = {
   removePkg: remove('pkg'),
-  getName: get('func.attributes.name'),
-  getAttributes: get('func.attributes'),
-  getFunc: get('value.func'),
-  getPattern: get('value.pattern')
+  getName: prop('func.attributes.name'),
+  getAttributes: prop('func.attributes'),
+  getFunc: prop('value.func'),
+  getPattern: prop('value.pattern')
 };
 
 // TODO move this?
@@ -94,10 +94,10 @@ const PluginLoader = stampit({
     this.seenPlugins = new Set();
     this.loadedPlugins = Mappable();
 
-    const pluginReady = flow(get('dependencies'),
-      every(dep => this.loadedPlugins.has(dep)));
-    const pluginNotReady = negate(pluginReady);
-    const loadStream = this.loadStream = Kefir.stream(emitter => {
+    const pluginReady = pipe(prop('dependencies'),
+      all(dep => this.loadedPlugins.has(dep)));
+    const pluginNotReady = complement(pluginReady);
+    const loadStream = this.loadStream = stream(emitter => {
       this.loadEmitter = emitter;
     })
       .map(resolve)

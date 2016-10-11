@@ -1,4 +1,4 @@
-import stampit from 'stampit';
+import stampit from '../ext/stampit';
 import {Set} from '../util';
 
 function tag (...tags) {

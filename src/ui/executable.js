@@ -1,13 +1,13 @@
-import stampit from 'stampit';
+import stampit from '../ext/stampit';
 import is from 'check-more-types';
 import {Unique, Stateful} from '../core';
 import instrument from './helpers/results';
-import {once} from 'lodash';
-import * as executionContext from './helpers/execution-context';
+import {once} from 'lodash/fp';
+import * as executionContext from './helpers/execution-context.cjs';
 import Context from './context';
-import {immediate, Promise} from '../util';
+import {setImmediate, Promise} from '../util';
 import errorist from 'errorist';
-import {fromPromise} from 'kefir';
+import {fromPromise} from '../ext/kefir';
 
 const Executable = stampit({
   refs: {
@@ -51,7 +51,7 @@ const Executable = stampit({
         executionContext.enable({
           onError: once(function onError (...args) {
             const err = args.pop();
-            immediate(resolve.bind(null, results.callback.complete(err)));
+            setImmediate(resolve.bind(null, results.callback.complete(err)));
             return true;
           })
         });

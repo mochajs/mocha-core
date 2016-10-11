@@ -1,6 +1,6 @@
-import {EventEmittable, Singleton, Mappable} from '../core';
+import {EventEmittable, Mappable} from '../core';
 import rc from './rc';
-import stampit from 'stampit';
+import stampit from '../ext/stampit';
 
 const Config = stampit({
   refs: {
@@ -32,6 +32,6 @@ const Config = stampit({
     }
   }
 })
-  .compose(EventEmittable, Mappable, Singleton);
+  .compose(EventEmittable, Mappable);
 
 export default Config;

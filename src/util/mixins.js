@@ -1,22 +1,22 @@
 import is from 'check-more-types';
-import _ from 'lodash';
-import {Observable} from 'kefir';
+import {
+  isMap, isSet, isFunction, isNull, isError, isFinite, constant, identity
+} from 'lodash';
+import {Observable} from '../ext/kefir';
 
 is.mixin(function isSingularArray (value) {
-  return _.isArray(value) && value.length === 1;
+  return Array.isArray(value) && value.length === 1;
 }, 'singularArray');
 
-is.mixin(_.isMap, 'map');
-is.mixin(_.isSet, 'set');
-is.mixin(_.isWeakMap, 'weakMap');
-is.mixin(_.isWeakSet, 'weakSet');
-is.mixin(_.isFunction, 'function');
-is.mixin(_.isNull, 'null');
-is.mixin(_.isError, 'error');
-is.mixin(_.isFinite, 'finite');
-is.mixin(_.constant(true), 'any');
+is.mixin(isMap, 'map');
+is.mixin(isSet, 'set');
+is.mixin(isFunction, 'function');
+is.mixin(isNull, 'null');
+is.mixin(isError, 'error');
+is.mixin(isFinite, 'finite');
+is.mixin(constant(true), 'any');
 
-Observable.prototype.reject = function reject (func = _.identity) {
+Observable.prototype.reject = function reject (func = identity) {
   return this.withHandler((emitter, event) => {
     if (event.type === 'value') {
       if (!func(event.value)) {

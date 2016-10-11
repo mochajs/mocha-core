@@ -1,9 +1,6 @@
 import Model from 'kefir-model';
 import stampit from 'stampit';
 import {defaults, forEach, keys} from 'lodash/fp';
-import {WeakMap} from '../util';
-
-const stateMap = new WeakMap();
 
 const Stateful = stampit({
   static: {
@@ -14,15 +11,15 @@ const Stateful = stampit({
   },
   init () {
     const initialState = this.initialState;
-    const state = Model(initialState);
+    const state = this.state = Model(initialState);
     forEach(path => {
       Object.defineProperties(this, {
         [path]: {
           get () {
-            return stateMap.get(this).getIn(path);
+            return state.get(this).getIn(path);
           },
           set (newState) {
-            return stateMap.get(this).setIn(path, newState);
+            return state.get(this).setIn(path, newState);
           },
           configurable: true
         },
@@ -34,26 +31,25 @@ const Stateful = stampit({
         }
       });
     }, keys(initialState));
-    stateMap.set(this, state);
   },
   methods: {
     getState () {
-      return stateMap.get(this).get();
+      return this.state.get();
     },
     setState (newState) {
-      return stateMap.get(this).set(newState);
+      return this.state.set(newState);
     },
     modify (func) {
-      return stateMap.get(this).modify(func);
+      return this.state.modify(func);
     },
     plug (observable) {
-      return stateMap.get(this).plug(observable);
+      return this.state.plug(observable);
     },
     plugModify (observable) {
-      return stateMap.get(this).plugModify(observable);
+      return this.state.plugModify(observable);
     },
     lens (path) {
-      return stateMap.get(this).lens(path);
+      return this.state.lens(path);
     }
   }
 });

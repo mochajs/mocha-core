@@ -1,5 +1,5 @@
-import stampit from 'stampit';
-import {constant, pool} from 'kefir';
+import stampit from '../ext/stampit';
+import {constant, pool} from '../ext/kefir';
 
 const Streamable = stampit({
   static: {

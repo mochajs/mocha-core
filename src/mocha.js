@@ -1,4 +1,4 @@
-import stampit from 'stampit';
+import stampit from './ext/stampit';
 import {Pluggable} from './plugins';
 import {UI, Suite} from './ui';
 import {Runner} from './runner';
@@ -6,7 +6,7 @@ import {Reporter} from './reporter';
 import pkg from './options/package';
 import {assign} from 'lodash/fp';
 import is from 'check-more-types';
-import {pool, constant} from 'kefir';
+import {pool, constant} from './ext/kefir';
 
 const Mocha = stampit({
   refs: {
@@ -31,27 +31,27 @@ const Mocha = stampit({
       }));
     },
     createSuite (definition = {}, opts = {}) {
-      const suite = this.currentSuite.createSuite(definition, opts);
-      this.runner.enqueue(suite);
-      return suite;
+      this.currentSuite.createSuite(definition, opts);
     },
     createTest (definition = {}, opts = {}) {
-      return this.currentSuite.createTest(definition, opts);
+      this.currentSuite.createTest(definition, opts);
+    },
+    createHook (definition = {}, opts = {}) {
+      this.currentSuite.createHook(definition, opts);
     },
     run () {
-      return this.runner.run();
+      return this.rootSuite.run();
     }
   }
 })
   .compose(Pluggable)
   .init(function init () {
-    const runner = this.runner = Runner({delegate: this});
-
-    const rootSuite = Suite({
+    const rootSuite = this.rootSuite = Suite({
       root: true,
-      title: 'ROOT SUITE',
-      queue$: runner.queue$
+      title: 'ROOT SUITE'
     });
+
+    this.runner = Runner();
 
     this.currentSuite$ = pool();
 

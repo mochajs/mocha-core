@@ -1,15 +1,14 @@
-import {EventEmitter} from 'events';
-import stampit from 'stampit';
+import events from 'events';
+import stampit from '../ext/stampit';
 import is from 'check-more-types';
-import {head, curry} from 'lodash/fp';
-import {forEach, assign} from 'lodash';
+import {head, curry, forEach, assign} from 'lodash/fp';
 import {Promise} from '../util';
 
 const subscriber = curry(function subscriber (obj, type, events) {
-  return forEach(events, (action, event) => obj[type](event, action));
+  return forEach((action, event) => obj[type](event, action), events);
 });
 
-const EventEmittable = stampit.convertConstructor(EventEmitter)
+const EventEmittable = stampit.convertConstructor(events.EventEmitter)
   .static({
     on (event, action) {
       const onEvents = assign({}, this.fixed.refs.onEvents, {
@@ -38,10 +37,11 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
           }
 
           if (is.singularArray(results)) {
-            results = head(results);
-            if (is.error(results)) {
-              return reject(results);
+            const firstResult = head(results);
+            if (is.error(firstResult)) {
+              return reject(firstResult);
             }
+            return resolve(firstResult);
           }
 
           resolve(results);
@@ -54,7 +54,8 @@ const EventEmittable = stampit.convertConstructor(EventEmitter)
         setTimeout(() => {
           if (!fulfilled && is.finite(timeout) && is.positiveNumber(timeout)) {
             this.removeListener(event, listener);
-            reject(new Error(`Timed out while waiting for "${event} (${timeout}ms)"`));
+            reject(
+              new Error(`Timed out while waiting for "${event} (${timeout}ms)"`));
           }
         }, timeout);
       });

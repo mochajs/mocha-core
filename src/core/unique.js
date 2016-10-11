@@ -1,9 +1,9 @@
-import stampit from 'stampit';
-import {v4} from 'uuid';
+import stampit from '../ext/stampit';
+import cuid from 'cuid';
 
 const Unique = stampit({
   init () {
-    const id = this.id || v4();
+    const id = this.id || cuid();
     Object.defineProperty(this, 'id', {
       value: id,
       configurable: true,

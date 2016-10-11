@@ -1,10 +1,16 @@
-import stampit from 'stampit';
-import {stream} from 'kefir';
+import stampit from '../ext/stampit';
+import {merge, fromEvents} from '../ext/kefir';
 import Executable from './executable';
 import Context from './context';
 import {EventEmittable} from '../core';
 import Test from './test';
-import {always, assign, prop, pick} from 'lodash/fp';
+import Hook from './hook';
+import {pipe, eq, prop, assign, invoke, pick} from 'lodash/fp';
+
+const PRE_SUITE = 'pre-suite';
+const POST_SUITE = 'post-suite';
+const PRE_TEST = 'pre-test';
+const POST_TEST = 'post-test';
 
 const Suite = stampit({
   refs: {
@@ -18,33 +24,33 @@ const Suite = stampit({
     spawnContext () {
       return this.context.spawn();
     },
-    createTest (definition = {}, opts = {}) {
-      const test = Test(assign(definition, {
-        parent: this,
-        opts
-      }));
-      this.runnables.emitEvent({
-        type: 'value',
-        value: test
+    createChild (Factory, definition = {}, opts = {}) {
+      const child = Factory(assign(definition, {opts}));
+      this.emit('child', child);
+      return child;
+    },
+    attach (parent) {
+      this.parent = parent;
+      parent.preTests$.observe({
+        value: hook => {
+          this.emit(PRE_TEST, hook);
+        }
       });
-      return test;
+      parent.postTests$.observe({
+        value: hook => {
+          this.emit(POST_TEST, hook);
+        }
+      });
+      return this.execute();
+    },
+    createTest (definition = {}, opts = {}) {
+      this.createChild(Test, definition, opts);
     },
     createSuite (definition = {}, opts = {}) {
-      return Suite(assign(definition, {
-        parent: this,
-        queue$: this.queue$,
-        opts
-      }));
+      this.createChild(Suite, definition, opts);
     },
-    flush () {
-      // setImmediate(() => this.runnables.end());
-      // this.runnables.end();
-      // const retval = this.runnables$.onValue(value => {
-      //   console.log(value);
-      // })
-      //   .flatten();
-      // setImmediate(() => this.runnables.end());
-      // return retval;
+    createHook (definition = {}, opts = {}) {
+      this.createChild(Hook, definition, opts);
     },
     toString () {
       return `<Suite "${this.title}">`;
@@ -54,21 +60,35 @@ const Suite = stampit({
         'id',
         'title',
         'fullTitle'
-      ]);
+      ], this);
+    },
+    run () {
+      return merge([
+        this.preSuites$,
+        this.children$,
+        this.postSuites$
+      ])
+        .flatMapConcat(invoke('run')).log();
     }
   },
   init () {
-    this.runnables$ = stream(emitter => {
-      this.runnables = emitter;
-    })
-      .bufferWhile(always(true))
-      .flatten();
+    const children$ = fromEvents(this, 'child');
 
-    this.runnables$.observe({
-      error: err => {
-        this.emit('error', err);
+    children$.observe({
+      value: child => {
+        child.attach(this);
       }
     });
+
+    const hook = prop('opts.hook');
+    const hooks$ = children$.filter(hook);
+    this.children$ = children$.reject(hook).log();
+    this.preSuites$ = hooks$.filter(pipe(hook, eq(PRE_SUITE)));
+    this.postSuites$ = hooks$.filter(pipe(hook, eq(POST_SUITE)));
+    this.preTests$ = hooks$.filter(pipe(hook, eq(PRE_TEST)))
+      .merge(fromEvents(this, PRE_TEST));
+    this.postTests$ = hooks$.filter(pipe(hook, eq(POST_TEST)))
+      .merge(fromEvents(this, POST_TEST));
 
     Object.defineProperties(this, {
       // array for reporter to format as necessary

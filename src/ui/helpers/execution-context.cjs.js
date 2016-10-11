@@ -1,4 +1,5 @@
 import 'async-listener';
+
 import {noop} from 'lodash';
 
 const listener = process.addAsyncListener({

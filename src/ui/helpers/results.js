@@ -1,6 +1,5 @@
-import stampit from 'stampit';
+import stampit from '../../ext/stampit';
 import {reduce} from 'lodash/fp';
-import moment from 'moment';
 import errorist from 'errorist';
 
 const resultTypes = [
@@ -28,7 +27,7 @@ const Result = stampit({
   },
   methods: {
     finalize () {
-      this.elapsed = moment().diff(this.startTime);
+      this.elapsed = Date.now() - this.startTime;
       delete this.startTime;
       Object.freeze(this);
       return this;
@@ -60,7 +59,7 @@ const Result = stampit({
 export {Result, resultTypes};
 
 function instrument () {
-  const startTime = moment();
+  const startTime = Date.now();
   return reduce((acc, fulfilled) => {
     Object.defineProperty(acc, fulfilled, {
       get () {

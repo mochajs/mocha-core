@@ -1,4 +1,4 @@
-import stampit from 'stampit';
+import stampit from '../ext/stampit';
 import {Mappable, Singleton} from '../core';
 
 const OptionMap = stampit({

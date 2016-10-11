@@ -15,7 +15,7 @@ module.exports = function (config) {
       './src/**/*.js',
       './test/**/*.js',
       '!./test/unit/plugins/resolver.spec.js',
-      '!./src/ui/helpers/execution-context.js',
+      '!./src/ui/helpers/execution-context.cjs.js',
       '!./src/plugins/resolver.js',
       '!./src/options/rc.js'
     ]),

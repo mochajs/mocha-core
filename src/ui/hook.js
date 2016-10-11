@@ -1,30 +1,15 @@
-import Executable from './executable';
-import stampit from 'stampit';
-import camelCase from 'lodash/fp';
-import {constant} from 'kefir';
+import stampit from '../ext/stampit';
+import {constant} from '../ext/kefir';
 
 const Hook = stampit({
-  static: {
-    inits: {
-      'pre': hook => {
-        hook.parent.pre$.plug(constant(hook));
-      },
-      'pre-each': hook => {
-        hook.parent.pre$.plug(constant(hook));
-      },
-      'post': hook => {
-
-      },
-      'post-each': hook => {
-
-      }
+  methods: {
+    attach (parent) {
+      this.parent = parent;
+      return constant(this);
+    },
+    run () {
+      return this.execute();
     }
-  },
-  refs: {
-    kind: 'pre-each'
-  },
-  init ({stamp}) {
-    stamp.inits[this.kind](this);
   }
 });
 

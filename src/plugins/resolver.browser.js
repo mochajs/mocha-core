@@ -1,5 +1,5 @@
 import is from 'check-more-types';
-import {get, find} from 'lodash/fp';
+import {prop, find} from 'lodash/fp';
 
 const resolver = {
   resolve (pattern) {
@@ -10,7 +10,7 @@ const resolver = {
       const func = find([
         'attributes.name',
         pattern
-      ], get('mocha.plugins', global) || {});
+      ], prop('mocha.plugins', global) || {});
       if (is.function(func)) {
         return func;
       }

@@ -1,12 +1,7 @@
 /* global zone */
 
-import noop from 'lodash/noop';
+import {noop} from 'lodash';
 import 'zone.js/dist/zone-microtask';
-
-// best effort
-require('_process').nextTick = function () {
-  return setImmediate.apply(null, arguments);
-};
 
 let currentZone;
 

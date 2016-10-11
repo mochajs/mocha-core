@@ -1,4 +1,4 @@
-import stampit from 'stampit';
+import stampit from '../ext/stampit';
 import {Mappable, EventEmittable} from '../core';
 import PluginLoader from './loader';
 import is from 'check-more-types';
