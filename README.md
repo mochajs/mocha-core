@@ -24,4 +24,7 @@ Must be run as part of `prepublish` as neither `lib/` nor `dist/` are under VCS.
 
 ## License
 
-Apache-2.0, unless you have a better idea.
+Copyright (c) 2016 [JS Foundation](https://js.foundation) and contributors
+
+Licensed Apache-2.0
+
